@@ -1,0 +1,9 @@
+$fonts: 'SourceHanSans', 'SourceHanSerif', 'FangZhengHeiTi', 'FangZhengKaiTi', 'FangZhengShuSong', 'FangZhengFangSong', 'AlibabaPuHuiTi', 'ZhuQueFangSong', 'LXGWWenKai', 'WenDingPLKaiTi', 'DeYiHei', 'MiSans', 'CangerXiaowanzi', 'YousheTitleBlack', 'FengguangMingrui', 'ShetuModernSquare', 'ZcoolHappy', 'ZizhiQuXiMai', 'SucaiJishiKangkang', 'SucaiJishiCoolSquare', 'TuniuRounded', 'RuiziZhenyan';
+
+@each $font in $fonts {
+  @font-face {
+    font-display: swap;
+    font-family: $font;
+    src: url('https://asset.pptist.cn/font/#{$font}.woff2') format('woff2');
+  }
+}
