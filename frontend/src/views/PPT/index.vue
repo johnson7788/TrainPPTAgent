@@ -160,8 +160,7 @@ const createPPT = async () => {
 <style lang="scss" scoped>
 /* 与大纲页保持同样的页面骨架与背景 */
 :global(html, body, #app) {
-  height: auto;
-  min-height: 100%;
+  height: 100%;
   overflow-y: auto !important;
 }
 /* 页面容器，提供稳定的全屏背景承载 */
