@@ -12,6 +12,12 @@
 src/utils/fullscreen.ts
 src/hooks/useScreening.ts
 
+## 去掉加载默认的3页PPT
+[App.vue](../frontend/src/App.vue)
+onMounted(async () => {
+  // const slides = await api.getFileData('slides')
+  // slidesStore.setSlides(slides)
+
 # 后端
 
 ## 添加mock api方便测试

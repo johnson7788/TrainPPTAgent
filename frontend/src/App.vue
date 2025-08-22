@@ -32,8 +32,8 @@ if (import.meta.env.MODE !== 'development') {
 }
 
 onMounted(async () => {
-  const slides = await api.getFileData('slides')
-  slidesStore.setSlides(slides)
+  // const slides = await api.getFileData('slides')
+  // slidesStore.setSlides(slides)
 
   await deleteDiscardedDB()
   snapshotStore.initSnapshotDatabase()
