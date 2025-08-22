@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 class PPTBaseTestCase(unittest.TestCase):
     """
-    测试 FastAPI 接口
+    Test FastAPI interface
     """
     host = 'http://127.0.0.1'
     port = 6800
@@ -21,41 +21,59 @@ class PPTBaseTestCase(unittest.TestCase):
         port = env_port
     base_url = f"{host}:{port}"
 
-    def test_generate_outline(self):
+    def test_generate_outline_stream(self):
         """
-        测试生成大纲
+        Test generating an outline with streaming
         """
-        url = f"{self.base_url}/chat"
+        url = f"{self.base_url}/tools/aippt_outline"
         data = {
-            "userId": "123456",
-            "messages": [{"role": "user", "content": "Hello"}]
+            "content": "2025 tech trends",
+            "language": "en",
+            "model": "gpt-4",
+            "stream": True
         }
         start_time = time.time()
         headers = {'content-type': 'application/json'}
-        # 使用 httpx.stream 发起请求，并设置一个较大的超时时间或者不设置超时
         with httpx.stream("POST", url, json=data, headers=headers, timeout=None) as response:
-            self.assertEqual(response.status_code, 200, "knowledge_base_chat_a2a 接口状态码应为 200")
-            # 逐行读取流式响应内容
-            for line in response.iter_lines():
-                print(f"chat 响应片段: {line}")
-        print(f"chat 测试花费时间: {time.time() - start_time}秒")
-        print(f"调用的 server 是: {self.host}")
-    def test_generate_ppt(self):
+            self.assertEqual(response.status_code, 200, "aippt_outline stream endpoint should return 200")
+            response_text = ""
+            for chunk in response.iter_text():
+                response_text += chunk
+            self.assertIn("2025科技前沿动态", response_text)
+        print(f"outline: {response_text}")
+        print(f"Outline stream test took: {time.time() - start_time}s")
+        print(f"Server called: {self.host}")
+
+    async def test_generate_outline_no_stream(self):
         """
-        测试生成ppt内容
+        Test generating an outline without streaming
         """
-        url = f"{self.base_url}/chat"
+        url = f"{self.base_url}/tools/aippt_outline"
         data = {
-            "userId": "123456",
-            "messages": [{'role': 'user', 'content': "我叫Johnson Guo"}, {'role': 'ai', 'content': "很高兴认识你"}, {"role": "user", "content": "你知道我叫什么吗?"}]
+            "content": "2025 tech trends",
+            "language": "en",
+            "model": "gpt-4",
+            "stream": False
         }
         start_time = time.time()
         headers = {'content-type': 'application/json'}
-        # 使用 httpx.stream 发起请求，并设置一个较大的超时时间或者不设置超时
-        with httpx.stream("POST", url, json=data, headers=headers, timeout=None) as response:
-            self.assertEqual(response.status_code, 200, "knowledge_base_chat_a2a 接口状态码应为 200")
-            # 逐行读取流式响应内容
-            for line in response.iter_lines():
-                print(f"chat 响应片段: {line}")
-        print(f"chat 测试花费时间: {time.time() - start_time}秒")
-        print(f"调用的 server 是: {self.host}")
+        response_data = []
+        async with AsyncClient() as client:
+            async with client.stream("POST", url, json=data, headers=headers, timeout=None) as response:
+                assert response.status_code == 200, "aippt content endpoint should return 200"
+                async for line in response.aiter_lines():
+                    if line:
+                        try:
+                            json_object = json.loads(line)
+                            print(f"PPT content chunk: {json_object}")
+                            assert "type" in json_object
+                            assert "data" in json_object
+                            response_data.append(json_object)
+                        except json.JSONDecodeError:
+                            pytest.fail(f"Failed to decode JSON line: {line}")
+        print(f"content: {response_data}")
+        print(f"Outline no-stream test took: {time.time() - start_time}s")
+        print(f"Server called: {self.host}")
+
+if __name__ == "__main__":
+    unittest.main()
