@@ -14,8 +14,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://server.pptist.cn',
-        // target: 'http://127.0.0.1:6800',
+        // target: 'https://server.pptist.cn',
+        target: 'http://127.0.0.1:6800',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       }
