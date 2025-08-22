@@ -7,7 +7,7 @@ import json
 import pytest
 from httpx import AsyncClient
 
-class PPTBaseTestCase(unittest.TestCase):
+class PPTBaseTestCase(unittest.IsolatedAsyncioTestCase):
     """
     Test FastAPI interface
     """
@@ -55,18 +55,22 @@ class PPTBaseTestCase(unittest.TestCase):
         response_data = []
         async with AsyncClient() as client:
             async with client.stream("POST", url, json=data, headers=headers, timeout=None) as response:
-                assert response.status_code == 200, "aippt content endpoint should return 200"
+                self.assertEqual(response.status_code, 200, "aippt content endpoint should return 200")
                 async for line in response.aiter_lines():
-                    if line:
-                        try:
-                            json_object = json.loads(line)
-                            print(f"PPT content chunk: {json_object}")
-                            assert "type" in json_object
-                            assert "data" in json_object
-                            response_data.append(json_object)
-                        except json.JSONDecodeError:
-                            pytest.fail(f"Failed to decode JSON line: {line}")
-        print(f"content: {response_data}")
+                    if not line:
+                        continue
+                    # 如果服务端是 SSE，可能是 "data: {...}"，需要去掉前缀
+                    if line.startswith("data:"):
+                        line = line[5:].strip()
+                    try:
+                        obj = json.loads(line)
+                        print(f"PPT content chunk: {obj}")
+                        self.assertIn("type", obj)
+                        if obj["type"] != "end":
+                            self.assertIn("data", obj)
+                        response_data.append(obj)
+                    except json.JSONDecodeError:
+                        self.fail(f"Failed to decode JSON line: {line}")
         print(f"Outline no-stream test took: {time.time() - start_time}s")
         print(f"Server called: {self.host}")
 

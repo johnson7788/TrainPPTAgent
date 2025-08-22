@@ -6,5 +6,6 @@ pip install -r requirements.txt
 # 运行
 python main.py
 
-# 文件
-mock_main.py # 模拟返回
+# 目录 
+mock_api #模拟返回
+main_api #主程序

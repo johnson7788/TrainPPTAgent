@@ -1,0 +1,18 @@
+# 谷歌Gemini模型
+GOOGLE_API_KEY=xxx
+DEEPSEEK_API_KEY=xxx
+ALI_API_KEY=sk-xxx
+OPENAI_API_KEY=xxx
+CLAUDE_API_KEY=xxx
+# 使用LLM的流式的响应，测试gemini的效果很好，true表示开启流的请求和响应
+STREAMING=true
+MODEL_PROVIDER=google
+LLM_MODEL=gemini-2.0-flash
+
+#MODEL_PROVIDER=deepseek
+#LLM_MODEL=deepseek-chat
+
+
+# 是否使用代理
+HTTP_PROXY=http://127.0.0.1:7890
+HTTPS_PROXY=http://127.0.0.1:7890
