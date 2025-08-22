@@ -1,69 +1,126 @@
 <template>
-  <div class="aippt-dialog">
-    <div class="header">
-      <span class="title">AIPPT</span>
-      <span class="subtite" v-if="step === 'outline'">确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板</span>
-      <span class="subtite" v-else>在下方输入您的PPT主题，并适当补充信息，如行业、岗位、学科、用途等</span>
-    </div>
-    
-    <template v-if="step === 'setup'">
-      <Input class="input" 
-        ref="inputRef"
-        v-model:value="keyword" 
-        :maxlength="50" 
-        placeholder="请输入PPT主题，如：大学生职业生涯规划" 
-        @enter="createOutline()"
-      >
-        <template #suffix>
-          <span class="count">{{ keyword.length }} / 50</span>
-          <div class="submit" type="primary" @click="createOutline()"><IconSend class="icon" /> AI 生成</div>
-        </template>
-      </Input>
-      <div class="recommends">
-        <div class="recommend" v-for="(item, index) in recommends" :key="index" @click="setKeyword(item)">{{ item }}</div>
-      </div>
-      <div class="configs">
-        <div class="config-item">
-          <div class="label">语言：</div>
-          <Select 
-            class="config-content"
-            style="width: 80px;"
-            v-model:value="language"
-            :options="[
-              { label: '中文', value: '中文' },
-              { label: '英文', value: 'English' },
-              { label: '日文', value: '日本語' },
-            ]"
-          />
-        </div>
-        <div class="config-item">
-          <div class="label">模型：</div>
-          <Select 
-            class="config-content"
-            style="width: 190px;"
-            v-model:value="model"
-            :options="[
-              { label: 'GLM-4.5-Air', value: 'GLM-4.5-Air' },
-              { label: 'GLM-4.5-Flash', value: 'GLM-4.5-Flash' },
-              { label: 'Doubao-Seed-1.6-flash', value: 'ark-doubao-seed-1.6-flash' },
-              { label: 'Doubao-Seed-1.6', value: 'ark-doubao-seed-1.6' },
-            ]"
-          />
+  <div class="aippt-container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="brand">
+        <h1 class="title">
+          <span class="title-icon">🤖</span>
+          TrainPPTAgent
+        </h1>
+        <div class="subtitle">
+          {{ step === 'outline' ? '确认下方内容大纲，开始选择模板' : '输入您的PPT主题，AI将为您生成专业大纲' }}
         </div>
       </div>
-    </template>
-    <div class="preview" v-if="step === 'outline'">
-      <pre ref="outlineRef" v-if="outlineCreating">{{ outline }}</pre>
-       <div class="outline-view" v-else>
-         <OutlineEditor v-model:value="outline" />
-       </div>
-      <div class="btns" v-if="!outlineCreating">
-        <Button class="btn" type="primary" @click="goPPT">生成PPT</Button>
-        <Button class="btn" @click="outline = ''; step = 'setup'">返回重新生成</Button>
+      <div class="progress-indicator">
+        <div class="progress-step" :class="{ active: step === 'setup' }">
+          <div class="step-circle">1</div>
+          <span>输入主题</span>
+        </div>
+        <div class="progress-line" :class="{ completed: step === 'outline' }"></div>
+        <div class="progress-step" :class="{ active: step === 'outline' }">
+          <div class="step-circle">2</div>
+          <span>确认大纲</span>
+        </div>
       </div>
     </div>
 
-    <FullscreenSpin :loading="loading" tip="AI生成中，请耐心等待 ..." />
+    <!-- Setup Step -->
+    <div v-if="step === 'setup'" class="setup-section">
+      <div class="input-section">
+        <div class="input-wrapper">
+          <input
+            ref="inputRef"
+            v-model="keyword"
+            :maxlength="50"
+            class="main-input"
+            placeholder="请输入PPT主题，如：大学生职业生涯规划"
+            @keyup.enter="createOutline"
+          />
+          <div class="input-actions">
+            <span class="character-count">{{ keyword.length }}/50</span>
+            <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim()">
+              <span class="btn-icon">✨</span>
+              AI 生成
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="recommendations-section">
+        <h3 class="section-title">💡 推荐主题</h3>
+        <div class="recommendations-grid">
+          <button
+            v-for="(item, index) in recommends"
+            :key="index"
+            class="recommend-item"
+            @click="setKeyword(item)"
+          >
+            {{ item }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Configuration -->
+      <div class="config-section">
+        <h3 class="section-title">⚙️ 高级配置</h3>
+        <div class="config-grid">
+          <div class="config-item">
+            <label class="config-label">语言</label>
+            <select v-model="language" class="config-select">
+              <option value="中文">中文</option>
+              <option value="English">English</option>
+              <option value="日本語">日本語</option>
+            </select>
+          </div>
+          <div class="config-item">
+            <label class="config-label">AI模型</label>
+            <select v-model="model" class="config-select">
+              <option value="GLM-4.5-Air">GLM-4.5-Air</option>
+              <option value="GLM-4.5-Flash">GLM-4.5-Flash</option>
+              <option value="ark-doubao-seed-1.6-flash">Doubao-Seed-1.6-flash</option>
+              <option value="ark-doubao-seed-1.6">Doubao-Seed-1.6</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outline Step -->
+    <div v-if="step === 'outline'" class="outline-section">
+      <div class="outline-header">
+        <h3 class="section-title">📄 内容大纲</h3>
+        <div class="outline-info">
+          <span class="info-text">点击编辑内容，右键添加/删除大纲项</span>
+        </div>
+      </div>
+      
+      <div class="outline-content">
+        <div v-if="outlineCreating" class="outline-preview">
+          <div class="typing-indicator">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </div>
+          <pre ref="outlineRef" class="outline-text">{{ outline }}</pre>
+        </div>
+        <div v-else class="outline-editor">
+          <OutlineEditor v-model:value="outline" />
+        </div>
+      </div>
+
+      <div v-if="!outlineCreating" class="outline-actions">
+        <button class="primary-btn" @click="goPPT">
+          <span class="btn-icon">🎨</span>
+          生成PPT
+        </button>
+        <button class="secondary-btn" @click="resetToSetup">
+          <span class="btn-icon">↩️</span>
+          重新生成
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -73,9 +130,6 @@ import { useRouter } from 'vue-router'
 import api from '@/services'
 import useAIPPT from '@/hooks/useAIPPT'
 import message from '@/utils/message'
-import Input from '@/components/Input.vue'
-import Button from '@/components/Button.vue'
-import Select from '@/components/Select.vue'
 import FullscreenSpin from '@/components/FullscreenSpin.vue'
 import OutlineEditor from '@/components/OutlineEditor.vue'
 
@@ -90,7 +144,7 @@ const outlineCreating = ref(false)
 const step = ref<'setup' | 'outline'>('setup')
 const model = ref('GLM-4.5-Air')
 const outlineRef = ref<HTMLElement>()
-const inputRef = ref<InstanceType<typeof Input>>()
+const inputRef = ref<HTMLInputElement>()
 
 const recommends = ref([
   '2025科技前沿动态',
@@ -103,57 +157,74 @@ const recommends = ref([
   '区块链技术及其应用',
   '大学生职业生涯规划',
   '公司年会策划方案',
-]) 
+])
 
 onMounted(() => {
   setTimeout(() => {
-    inputRef.value!.focus()
+    inputRef.value?.focus()
   }, 500)
 })
 
 const setKeyword = (value: string) => {
   keyword.value = value
-  inputRef.value!.focus()
+  inputRef.value?.focus()
+}
+
+const resetToSetup = () => {
+  outline.value = ''
+  step.value = 'setup'
+  setTimeout(() => {
+    inputRef.value?.focus()
+  }, 100)
 }
 
 const createOutline = async () => {
-  if (!keyword.value) return message.error('请先输入PPT主题')
+  if (!keyword.value.trim()) {
+    message.error('请先输入PPT主题')
+    return
+  }
 
   loading.value = true
   outlineCreating.value = true
   
-  const stream = await api.AIPPT_Outline({
-    content: keyword.value,
-    language: language.value,
-    model: model.value,
-  })
-
-  loading.value = false
-  step.value = 'outline'
-
-  const reader: ReadableStreamDefaultReader = stream.body.getReader()
-  const decoder = new TextDecoder('utf-8')
-  
-  const readStream = () => {
-    reader.read().then(({ done, value }) => {
-      if (done) {
-        outline.value = getMdContent(outline.value)
-        outline.value = outline.value.replace(/<!--[\s\S]*?-->/g, '').replace(/<think>[\s\S]*?<\/think>/g, '')
-        outlineCreating.value = false
-        return
-      }
-  
-      const chunk = decoder.decode(value, { stream: true })
-      outline.value += chunk
-
-      if (outlineRef.value) {
-        outlineRef.value.scrollTop = outlineRef.value.scrollHeight + 20
-      }
-
-      readStream()
+  try {
+    const stream = await api.AIPPT_Outline({
+      content: keyword.value,
+      language: language.value,
+      model: model.value,
     })
+
+    loading.value = false
+    step.value = 'outline'
+
+    const reader: ReadableStreamDefaultReader = stream.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    
+    const readStream = () => {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          outline.value = getMdContent(outline.value)
+          outline.value = outline.value.replace(/<!--[\s\S]*?-->/g, '').replace(/<think>[\s\S]*?<\/think>/g, '')
+          outlineCreating.value = false
+          return
+        }
+    
+        const chunk = decoder.decode(value, { stream: true })
+        outline.value += chunk
+
+        if (outlineRef.value) {
+          outlineRef.value.scrollTop = outlineRef.value.scrollHeight + 20
+        }
+
+        readStream()
+      })
+    }
+    readStream()
+  } catch (error) {
+    loading.value = false
+    outlineCreating.value = false
+    message.error('生成失败，请重试')
   }
-  readStream()
 }
 
 const goPPT = () => {
@@ -169,127 +240,499 @@ const goPPT = () => {
 </script>
 
 <style lang="scss" scoped>
-.aippt-dialog {
-  margin: -20px;
-  padding: 30px;
+/* 全局：确保页面可滚动 */
+:global(html, body, #app) {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto !important;
 }
-.header {
-  margin-bottom: 12px;
+
+.aippt-container {
+  max-width: 100%; /* 满屏宽度 */
+  margin: 0 auto;
+  padding: 2rem 4rem; /* 上下 2rem，左右 4rem */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Header Section */
+.header-section {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: white;
+}
+
+.brand {
+  margin-bottom: 2rem;
 
   .title {
-    font-weight: 700;
-    font-size: 20px;
-    margin-right: 8px;
-    background: linear-gradient(270deg, #d897fd, #33bcfc);
-    background-clip: text;
-    color: transparent;
-    vertical-align: text-bottom;
-    line-height: 1.1;
-  }
-  .subtite {
-    color: #888;
-    font-size: 12px;
-  }
-}
-.preview {
-  pre {
-    max-height: 450px;
-    padding: 10px;
-    margin-bottom: 15px;
-    background-color: #f1f1f1;
-    overflow: auto;
-  }
-  .outline-view {
-    max-height: 450px;
-    padding: 10px;
-    margin-bottom: 15px;
-    background-color: #f1f1f1;
-    overflow: auto;
-  }
-  .btns {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0 0 1rem 0;
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-
-    .btn {
-      width: 120px;
-      margin: 0 5px;
+    gap: 1rem;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradientShift 3s ease infinite;
+    
+    .title-icon {
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
   }
-}
-.recommends {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 10px;
 
-  .recommend {
-    font-size: 12px;
-    background-color: #f1f1f1;
-    border-radius: $borderRadius;
-    padding: 3px 5px;
-    margin-right: 5px;
-    margin-top: 5px;
-    cursor: pointer;
-
-    &:hover {
-      color: $themeColor;
-    }
+  .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
   }
 }
-.configs {
-  margin-top: 15px;
-  display: flex;
-  justify-content: space-between;
 
-  .config-item {
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-  }
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
-.count {
-  font-size: 12px;
-  color: #999;
-  margin-right: 10px;
-}
-.submit {
-  height: 20px;
-  font-size: 12px;
-  background-color: $themeColor;
-  color: #fff;
+
+.progress-indicator {
   display: flex;
   align-items: center;
-  padding: 0 8px 0 6px;
-  border-radius: $borderRadius;
-  cursor: pointer;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 
-  &:hover {
-    background-color: $themeHoverColor;
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+
+    &.active {
+      opacity: 1;
+      font-weight: 600;
+    }
+
+    .step-circle {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border: 2px solid rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+    }
+
+    &.active .step-circle {
+      background: rgba(255,255,255,0.9);
+      color: #667eea;
+      transform: scale(1.1);
+    }
   }
 
-  .icon {
-    font-size: 15px;
-    margin-right: 3px;
+  .progress-line {
+    width: 4rem;
+    height: 2px;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.3s ease;
+
+    &.completed {
+      background: rgba(255,255,255,0.7);
+    }
   }
 }
 
-@media screen and (width <= 800px) {
-  .configs {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column;
+/* Setup Section */
+.setup-section {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
 
-    .config-item {
-      margin-top: 8px;
+.input-section {
+  margin-bottom: 2rem;
 
-      .label {
-        flex-shrink: 0;
-      }
+  .input-wrapper {
+    position: relative;
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+    overflow: hidden;
 
-      .config-content {
-        width: 100% !important;
+    &:focus-within {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .main-input {
+      width: 100%;
+      padding: 1.25rem 1.5rem;
+      border: none;
+      background: transparent;
+      font-size: 1.1rem;
+      outline: none;
+      resize: none;
+
+      &::placeholder {
+        color: #94a3b8;
       }
     }
+
+    .input-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem 1.25rem;
+      gap: 1rem;
+
+      .character-count {
+        font-size: 0.875rem;
+        color: #64748b;
+      }
+
+      .generate-btn {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .btn-icon {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}
+
+/* Recommendations Section */
+.recommendations-section {
+  margin-bottom: 2rem;
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+
+    .recommend-item {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      text-align: left;
+
+      &:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+    }
+  }
+}
+
+/* Configuration Section */
+.config-section {
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+
+    .config-item {
+      .config-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #475569;
+        font-size: 0.9rem;
+      }
+
+      .config-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: white;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #667eea;
+        }
+      }
+    }
+  }
+}
+
+/* Outline Section */
+.outline-section {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+
+  .outline-header {
+    margin-bottom: 1.5rem;
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .outline-info {
+      .info-text {
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .outline-content {
+    margin-bottom: 2rem;
+
+    .outline-preview {
+      position: relative;
+
+      .typing-indicator {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 1rem;
+        align-items: center;
+
+        &::before {
+          content: 'AI正在生成大纲';
+          margin-right: 0.5rem;
+          color: #64748b;
+          font-size: 0.9rem;
+        }
+
+        .typing-dot {
+          width: 0.5rem;
+          height: 0.5rem;
+          background: #667eea;
+          border-radius: 50%;
+          animation: typingBounce 1.4s infinite;
+
+          &:nth-child(2) { animation-delay: 0.2s; }
+          &:nth-child(3) { animation-delay: 0.4s; }
+        }
+      }
+
+      .outline-text {
+        max-height: 400px;
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 1rem;
+        border: 1px solid #e2e8f0;
+        overflow-y: auto;
+        font-family: 'SF Mono', Monaco, monospace;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+    }
+
+    .outline-editor {
+      max-height: 400px;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-radius: 1rem;
+      border: 1px solid #e2e8f0;
+      overflow-y: auto;
+    }
+  }
+
+  .outline-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+
+    .primary-btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-icon {
+        font-size: 1.2rem;
+      }
+    }
+
+    .secondary-btn {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #d1d5db;
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+
+      &:hover {
+        background: #e2e8f0;
+        transform: translateY(-2px);
+      }
+
+      .btn-icon {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-0.5rem); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .aippt-container {
+    padding: 1rem;
+  }
+
+  .setup-section,
+  .outline-section {
+    padding: 1.5rem;
+  }
+
+  .brand .title {
+    font-size: 2.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .progress-indicator {
+    flex-direction: column;
+    gap: 1rem;
+
+    .progress-line {
+      width: 2px;
+      height: 2rem;
+    }
+  }
+
+  .recommendations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .input-actions {
+    flex-direction: column;
+    align-items: stretch !important;
+
+    .generate-btn {
+      justify-content: center;
+    }
+  }
+
+  .outline-actions {
+    flex-direction: column;
+
+    .primary-btn,
+    .secondary-btn {
+      justify-content: center;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .brand .title {
+    font-size: 2rem;
+  }
+
+  .brand .subtitle {
+    font-size: 1rem;
+  }
+
+  .setup-section,
+  .outline-section {
+    padding: 1rem;
   }
 }
 </style>
