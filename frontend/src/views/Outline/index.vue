@@ -1,126 +1,134 @@
 <template>
-  <div class="aippt-container">
-    <!-- Header Section -->
-    <div class="header-section">
-      <div class="brand">
-        <h1 class="title">
-          <span class="title-icon">🤖</span>
-          PPTAgent
-        </h1>
-        <div class="subtitle">
-          {{ step === 'outline' ? '确认下方内容大纲，开始选择模板' : '输入您的PPT主题，AI将为您生成专业大纲' }}
-        </div>
-      </div>
-      <div class="progress-indicator">
-        <div class="progress-step" :class="{ active: step === 'setup' }">
-          <div class="step-circle">1</div>
-          <span>输入主题</span>
-        </div>
-        <div class="progress-line" :class="{ completed: step === 'outline' }"></div>
-        <div class="progress-step" :class="{ active: step === 'outline' }">
-          <div class="step-circle">2</div>
-          <span>确认大纲</span>
-        </div>
-      </div>
+  <div class="aippt-page">
+    <!-- 全局背景：渐变 + 网格 -->
+    <div class="page-bg" aria-hidden="true">
+      <div class="bg-blob b1"></div>
+      <div class="bg-blob b2"></div>
+      <div class="grid"></div>
     </div>
 
-    <!-- Setup Step -->
-    <div v-if="step === 'setup'" class="setup-section">
-      <div class="input-section">
-        <div class="input-wrapper">
-          <input
-            ref="inputRef"
-            v-model="keyword"
-            :maxlength="50"
-            class="main-input"
-            placeholder="请输入PPT主题，如：大学生职业生涯规划"
-            @keyup.enter="createOutline"
-          />
-          <div class="input-actions">
-            <span class="character-count">{{ keyword.length }}/50</span>
-            <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim()">
-              <span class="btn-icon">✨</span>
-              AI 生成
+    <div class="aippt-dialog">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="brand">
+          <h1 class="title">
+            <span class="title-icon">🤖</span>
+            PPTAgent
+          </h1>
+          <div class="subtitle">
+            {{ step === 'outline' ? '确认下方内容大纲，开始选择模板' : '输入您的PPT主题，AI将为您生成专业大纲' }}
+          </div>
+        </div>
+        <div class="progress-indicator">
+          <div class="progress-step" :class="{ active: step === 'setup' }">
+            <div class="step-circle">1</div>
+            <span>输入主题</span>
+          </div>
+          <div class="progress-line" :class="{ completed: step === 'outline' }"></div>
+          <div class="progress-step" :class="{ active: step === 'outline' }">
+            <div class="step-circle">2</div>
+            <span>确认大纲</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Setup Step -->
+      <div v-if="step === 'setup'" class="setup-section">
+        <div class="input-section">
+          <div class="input-wrapper">
+            <input
+              ref="inputRef"
+              v-model="keyword"
+              :maxlength="50"
+              class="main-input"
+              placeholder="请输入PPT主题，如：大学生职业生涯规划"
+              @keyup.enter="createOutline"
+            />
+            <div class="input-actions">
+              <span class="character-count">{{ keyword.length }}/50</span>
+              <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim()">
+                <span class="btn-icon">✨</span>
+                AI 生成
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations-section">
+          <h3 class="section-title">💡 推荐主题</h3>
+          <div class="recommendations-grid">
+            <button
+              v-for="(item, index) in recommends"
+              :key="index"
+              class="recommend-item"
+              @click="setKeyword(item)"
+            >
+              {{ item }}
             </button>
           </div>
         </div>
+
+        <!-- Configuration -->
+        <div class="config-section">
+          <h3 class="section-title">⚙️ 高级配置</h3>
+          <div class="config-grid">
+            <div class="config-item">
+              <label class="config-label">语言</label>
+              <select v-model="language" class="config-select">
+                <option value="中文">中文</option>
+                <option value="English">English</option>
+                <option value="日本語">日本語</option>
+              </select>
+            </div>
+            <div class="config-item">
+              <label class="config-label">AI模型</label>
+              <select v-model="model" class="config-select">
+                <option value="GLM-4.5-Air">GLM-4.5-Air</option>
+                <option value="GLM-4.5-Flash">GLM-4.5-Flash</option>
+                <option value="ark-doubao-seed-1.6-flash">Doubao-Seed-1.6-flash</option>
+                <option value="ark-doubao-seed-1.6">Doubao-Seed-1.6</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Recommendations -->
-      <div class="recommendations-section">
-        <h3 class="section-title">💡 推荐主题</h3>
-        <div class="recommendations-grid">
-          <button
-            v-for="(item, index) in recommends"
-            :key="index"
-            class="recommend-item"
-            @click="setKeyword(item)"
-          >
-            {{ item }}
+      <!-- Outline Step -->
+      <div v-if="step === 'outline'" class="outline-section">
+        <div class="outline-header">
+          <h3 class="section-title">📄 内容大纲</h3>
+          <div class="outline-info">
+            <span class="info-text">点击编辑内容，右键添加/删除大纲项</span>
+          </div>
+        </div>
+
+        <div class="outline-content">
+          <div v-if="outlineCreating" class="outline-preview">
+            <div class="typing-indicator">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+            <pre ref="outlineRef" class="outline-text">{{ outline }}</pre>
+          </div>
+          <div v-else class="outline-editor">
+            <OutlineEditor v-model:value="outline" />
+          </div>
+        </div>
+
+        <div v-if="!outlineCreating" class="outline-actions">
+          <button class="primary-btn" @click="goPPT">
+            <span class="btn-icon">🎨</span>
+            生成PPT
+          </button>
+          <button class="secondary-btn" @click="resetToSetup">
+            <span class="btn-icon">↩️</span>
+            重新生成
           </button>
         </div>
       </div>
-
-      <!-- Configuration -->
-      <div class="config-section">
-        <h3 class="section-title">⚙️ 高级配置</h3>
-        <div class="config-grid">
-          <div class="config-item">
-            <label class="config-label">语言</label>
-            <select v-model="language" class="config-select">
-              <option value="中文">中文</option>
-              <option value="English">English</option>
-              <option value="日本語">日本語</option>
-            </select>
-          </div>
-          <div class="config-item">
-            <label class="config-label">AI模型</label>
-            <select v-model="model" class="config-select">
-              <option value="GLM-4.5-Air">GLM-4.5-Air</option>
-              <option value="GLM-4.5-Flash">GLM-4.5-Flash</option>
-              <option value="ark-doubao-seed-1.6-flash">Doubao-Seed-1.6-flash</option>
-              <option value="ark-doubao-seed-1.6">Doubao-Seed-1.6</option>
-            </select>
-          </div>
-        </div>
-      </div>
     </div>
-
-    <!-- Outline Step -->
-    <div v-if="step === 'outline'" class="outline-section">
-      <div class="outline-header">
-        <h3 class="section-title">📄 内容大纲</h3>
-        <div class="outline-info">
-          <span class="info-text">点击编辑内容，右键添加/删除大纲项</span>
-        </div>
-      </div>
-
-      <div class="outline-content">
-        <div v-if="outlineCreating" class="outline-preview">
-          <div class="typing-indicator">
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-          </div>
-          <pre ref="outlineRef" class="outline-text">{{ outline }}</pre>
-        </div>
-        <div v-else class="outline-editor">
-          <OutlineEditor v-model:value="outline" />
-        </div>
-      </div>
-
-      <div v-if="!outlineCreating" class="outline-actions">
-        <button class="primary-btn" @click="goPPT">
-          <span class="btn-icon">🎨</span>
-          生成PPT
-        </button>
-        <button class="secondary-btn" @click="resetToSetup">
-          <span class="btn-icon">↩️</span>
-          重新生成
-        </button>
-      </div>
-    </div>
-
   </div>
 </template>
 
@@ -240,27 +248,59 @@ const goPPT = () => {
 </script>
 
 <style lang="scss" scoped>
-/* 全局：确保页面可滚动 */
+/* 与大纲页保持同样的页面骨架与背景 */
 :global(html, body, #app) {
-  height: auto;
-  min-height: 100%;
+  height: 100%;
   overflow-y: auto !important;
 }
+/* 页面容器，提供稳定的全屏背景承载 */
+.aippt-page {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+}
 
-.aippt-container {
-  max-width: 100%; /* 满屏宽度 */
+/* 背景层 */
+.page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(102, 126, 234, 0.12), rgba(0, 0, 0, 0) 60%),
+    radial-gradient(1000px 600px at 90% 110%, rgba(118, 75, 162, 0.12), rgba(0, 0, 0, 0) 60%),
+    linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  pointer-events: none;
+}
+.page-bg .grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px, 32px 32px;
+  mask-image: radial-gradient(60% 50% at 50% 50%, #000 60%, transparent 100%);
+}
+.bg-blob {
+  position: absolute;
+  filter: blur(40px);
+  opacity: 0.6;
+}
+.bg-blob.b1 { width: 520px; height: 520px; left: -160px; top: -160px; background: #c7d2fe; }
+.bg-blob.b2 { width: 420px; height: 420px; right: -120px; bottom: -120px; background: #e9d5ff; }
+
+/* 主内容卡片 */
+.aippt-dialog {
+  position: relative;
+  z-index: 1;
   margin: 0 auto;
-  padding: 2rem 4rem; /* 上下 2rem，左右 4rem */
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 40px 24px 32px;
+  max-width: 1160px;
+  box-sizing: border-box;
 }
 
 /* Header Section */
 .header-section {
   text-align: center;
   margin-bottom: 3rem;
-  color: white;
+  color: #475569;
 }
 
 .brand {
@@ -287,10 +327,10 @@ const goPPT = () => {
 
   .subtitle {
     font-size: 1.1rem;
-    opacity: 0.9;
     line-height: 1.6;
     max-width: 600px;
     margin: 0 auto;
+    color: #475569;
   }
 }
 
@@ -313,6 +353,7 @@ const goPPT = () => {
     gap: 0.5rem;
     opacity: 0.6;
     transition: opacity 0.3s ease;
+    color: #475569;
 
     &.active {
       opacity: 1;
@@ -323,30 +364,31 @@ const goPPT = () => {
       width: 2rem;
       height: 2rem;
       border-radius: 50%;
-      background: rgba(255,255,255,0.2);
+      background: #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid #cbd5e1;
       transition: all 0.3s ease;
     }
 
     &.active .step-circle {
-      background: rgba(255,255,255,0.9);
-      color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
       transform: scale(1.1);
+      border-color: transparent;
     }
   }
 
   .progress-line {
     width: 4rem;
     height: 2px;
-    background: rgba(255,255,255,0.3);
+    background: #e2e8f0;
     transition: background 0.3s ease;
 
     &.completed {
-      background: rgba(255,255,255,0.7);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
   }
 }
@@ -668,7 +710,7 @@ const goPPT = () => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .aippt-container {
+  .aippt-dialog {
     padding: 1rem;
   }
 
