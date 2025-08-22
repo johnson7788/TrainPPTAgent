@@ -1,10 +1,9 @@
 // 进入全屏
-export const enterFullscreen = () => {
-  const docElm = document.documentElement
-  if (docElm.requestFullscreen) docElm.requestFullscreen() 
-  else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen() 
-  else if (docElm.webkitRequestFullScreen) docElm.webkitRequestFullScreen()
-  else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen()
+export const enterFullscreen = (el = document.documentElement) => {
+  if (el.requestFullscreen) el.requestFullscreen()
+  else if (el.mozRequestFullScreen) el.mozRequestFullScreen()
+  else if (el.webkitRequestFullScreen) el.webkitRequestFullScreen()
+  else if (el.msRequestFullscreen) el.msRequestFullscreen()
 }
 
 // 退出全屏

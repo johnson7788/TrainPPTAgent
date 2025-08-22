@@ -7,7 +7,8 @@ export default () => {
 
   // 进入放映状态（从当前页开始）
   const enterScreening = () => {
-    enterFullscreen()
+    const el = document.querySelector('.center-body')
+    enterFullscreen(el)
     screenStore.setScreening(true)
   }
 
