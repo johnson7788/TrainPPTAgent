@@ -5,7 +5,7 @@
       <div class="brand">
         <h1 class="title">
           <span class="title-icon">🤖</span>
-          TrainPPTAgent
+          PPTAgent
         </h1>
         <div class="subtitle">
           {{ step === 'outline' ? '确认下方内容大纲，开始选择模板' : '输入您的PPT主题，AI将为您生成专业大纲' }}
