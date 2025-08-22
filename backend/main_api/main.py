@@ -1,5 +1,7 @@
 import asyncio
 import json
+import os
+import dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
@@ -12,7 +14,10 @@ from a2a.types import (
     SendMessageRequest,
     SendStreamingMessageRequest
 )
+from outline_client import A2AOutlineClientWrapper
+dotenv.load_dotenv()
 
+OUTLINE_API = os.environ["OUTLINE_API"]
 app = FastAPI()
 
 # Allow CORS for the frontend development server
@@ -32,42 +37,10 @@ class AipptRequest(BaseModel):
 
 async def stream_agent_response(prompt: str):
     """A generator that yields parts of the agent response."""
-    timeout = httpx.Timeout(300.0)  # Set a longer timeout for streaming
-    async with httpx.AsyncClient(timeout=timeout) as httpx_client:
-        try:
-            client = await A2AClient.get_client_from_agent_card_url(
-                httpx_client, 'http://localhost:10001'
-            )
-        except Exception as e:
-            print(f"Error connecting to agent: {e}")
-            yield f"Error connecting to agent: {e}"
-            return
-
-        request_id = uuid.uuid4().hex
-        send_message_payload = {
-            'message': {
-                'role': 'user',
-                'parts': [{'type': 'text', 'text': prompt}],
-                'messageId': request_id,
-            }
-        }
-
-        streaming_request = SendStreamingMessageRequest(
-            id=request_id,
-            params=MessageSendParams(**send_message_payload)
-        )
-
-        try:
-            stream_response = client.send_message_streaming(streaming_request)
-            async for chunk in stream_response:
-                if chunk.message and chunk.message.parts:
-                    text_part = chunk.message.parts[0]
-                    if hasattr(text_part, 'text'):
-                        yield text_part.text
-        except Exception as e:
-            print(f"Error during streaming: {e}")
-            yield f"Error during streaming: {e}"
-
+    outline_wrapper = A2AOutlineClientWrapper(session_id=uuid.uuid4().hex, agent_url=OUTLINE_API)
+    async for chunk_data in outline_wrapper.generate(prompt):
+        if chunk_data["type"] == "text":
+            yield chunk_data["text"]
 
 async def get_agent_response(prompt: str):
     """Gets a complete response from the agent."""

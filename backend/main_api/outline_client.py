@@ -17,7 +17,7 @@ PUBLIC_AGENT_CARD_PATH = '/.well-known/agent.json'
 EXTENDED_AGENT_CARD_PATH = '/agent/authenticatedExtendedCard'
 
 
-class A2AClientWrapper:
+class A2AOutlineClientWrapper:
     def __init__(self, session_id: str, agent_url: str):
         self.session_id = session_id
         self.agent_url = agent_url
@@ -129,7 +129,7 @@ class A2AClientWrapper:
                                 print(part)
                             else:
                                 # text文本
-                                yield part
+                                yield {"type": "text", "text": part["text"]}
                 elif result.get("kind") == "artifact-update":
                     artifact = result.get("artifact", {})
                     parts = artifact.get("parts", [])
