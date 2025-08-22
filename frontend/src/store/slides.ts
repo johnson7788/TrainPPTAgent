@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { omit } from 'lodash'
+import { customAlphabet } from 'nanoid'
 import type { Slide, SlideTheme, PPTElement, PPTAnimation, SlideTemplate } from '@/types/slides'
 
 interface RemovePropData {
@@ -28,6 +29,8 @@ export interface SlidesState {
   templates: SlideTemplate[]
 }
 
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 10)
+
 export const useSlidesStore = defineStore('slides', {
   state: (): SlidesState => ({
     title: '未命名演示文稿', // 幻灯片标题
@@ -48,7 +51,12 @@ export const useSlidesStore = defineStore('slides', {
         style: 'solid',
       },
     }, // 主题样式
-    slides: [], // 幻灯片页面数据
+    slides: [
+      {
+        id: nanoid(),
+        elements: [],
+      }
+    ], // 幻灯片页面数据
     slideIndex: 0, // 当前页面索引
     viewportSize: 1000, // 可视区域宽度基数
     viewportRatio: 0.5625, // 可视区域比例，默认16:9

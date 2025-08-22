@@ -4,7 +4,7 @@
       <Popover trigger="click" placement="bottom-start" v-model:value="mainMenuVisible">
         <template #content>
           <div class="main-menu">
-            <div class="ai-menu" @click="openAIPPTDialog(); mainMenuVisible = false">
+            <div class="ai-menu" @click="router.push('/outline'); mainMenuVisible = false">
               <div class="icon"><IconClick theme="two-tone" :fill="['#ffc158', '#fff']" /></div>
               <div class="aippt-content">
                 <div class="aippt"><span>AIPPT</span></div>
@@ -84,7 +84,7 @@
           <div class="arrow-btn"><IconDown class="arrow" /></div>
         </Popover>
       </div>
-      <div class="menu-item" v-tooltip="'AI生成PPT'" @click="openAIPPTDialog(); mainMenuVisible = false">
+      <div class="menu-item" v-tooltip="'AI生成PPT'" @click="router.push('/outline')">
         <span class="text ai">AI</span>
       </div>
       <div class="menu-item" v-tooltip="'导出'" @click="setDialogForExport('pptx')">
@@ -110,6 +110,7 @@
 
 <script lang="ts" setup>
 import { nextTick, ref, useTemplateRef } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useMainStore, useSlidesStore } from '@/store'
 import useScreening from '@/hooks/useScreening'
@@ -126,6 +127,7 @@ import Popover from '@/components/Popover.vue'
 import PopoverMenuItem from '@/components/PopoverMenuItem.vue'
 import Divider from '@/components/Divider.vue'
 
+const router = useRouter()
 const mainStore = useMainStore()
 const slidesStore = useSlidesStore()
 const { title } = storeToRefs(slidesStore)
@@ -162,10 +164,6 @@ const setDialogForExport = (type: DialogForExportTypes) => {
 
 const openMarkupPanel = () => {
   mainStore.setMarkupPanelState(true)
-}
-
-const openAIPPTDialog = () => {
-  mainStore.setAIPPTDialogState(true)
 }
 </script>
 

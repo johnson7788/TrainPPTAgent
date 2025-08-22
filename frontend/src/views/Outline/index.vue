@@ -2,8 +2,7 @@
   <div class="aippt-dialog">
     <div class="header">
       <span class="title">AIPPT</span>
-      <span class="subtite" v-if="step === 'template'">从下方挑选合适的模板，开始生成PPT</span>
-      <span class="subtite" v-else-if="step === 'outline'">确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板</span>
+      <span class="subtite" v-if="step === 'outline'">确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板</span>
       <span class="subtite" v-else>在下方输入您的PPT主题，并适当补充信息，如行业、岗位、学科、用途等</span>
     </div>
     
@@ -38,21 +37,6 @@
           />
         </div>
         <div class="config-item">
-          <div class="label">风格：</div>
-          <Select 
-            class="config-content"
-            style="width: 80px;"
-            v-model:value="style"
-            :options="[
-              { label: '通用', value: '通用' },
-              { label: '学术风', value: '学术风' },
-              { label: '职场风', value: '职场风' },
-              { label: '教育风', value: '教育风' },
-              { label: '营销风', value: '营销风' },
-            ]"
-          />
-        </div>
-        <div class="config-item">
           <div class="label">模型：</div>
           <Select 
             class="config-content"
@@ -66,20 +50,6 @@
             ]"
           />
         </div>
-        <div class="config-item">
-          <div class="label">配图：</div>
-          <Select 
-            class="config-content"
-            style="width: 100px;"
-            v-model:value="img"
-            :options="[
-              { label: '无', value: '' },
-              { label: '模拟测试', value: 'test' },
-              { label: 'AI搜图', value: 'ai-search', disabled: true },
-              { label: 'AI生图', value: 'ai-create', disabled: true },
-            ]"
-          />
-        </div>
       </div>
     </template>
     <div class="preview" v-if="step === 'outline'">
@@ -88,24 +58,8 @@
          <OutlineEditor v-model:value="outline" />
        </div>
       <div class="btns" v-if="!outlineCreating">
-        <Button class="btn" type="primary" @click="step = 'template'">选择模板</Button>
+        <Button class="btn" type="primary" @click="goPPT">生成PPT</Button>
         <Button class="btn" @click="outline = ''; step = 'setup'">返回重新生成</Button>
-      </div>
-    </div>
-    <div class="select-template" v-if="step === 'template'">
-      <div class="templates">
-        <div class="template" 
-          :class="{ 'selected': selectedTemplate === template.id }" 
-          v-for="template in templates" 
-          :key="template.id" 
-          @click="selectedTemplate = template.id"
-        >
-          <img :src="template.cover" :alt="template.name">
-        </div>
-      </div>
-      <div class="btns">
-        <Button class="btn" type="primary" @click="createPPT()">生成</Button>
-        <Button class="btn" @click="step = 'outline'">返回大纲</Button>
       </div>
     </div>
 
@@ -114,37 +68,29 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, useTemplateRef } from 'vue'
-import { storeToRefs } from 'pinia'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/services'
 import useAIPPT from '@/hooks/useAIPPT'
-import type { AIPPTSlide } from '@/types/AIPPT'
-import type { Slide, SlideTheme } from '@/types/slides'
 import message from '@/utils/message'
-import { useMainStore, useSlidesStore } from '@/store'
 import Input from '@/components/Input.vue'
 import Button from '@/components/Button.vue'
 import Select from '@/components/Select.vue'
 import FullscreenSpin from '@/components/FullscreenSpin.vue'
 import OutlineEditor from '@/components/OutlineEditor.vue'
 
-const mainStore = useMainStore()
-const slideStore = useSlidesStore()
-const { templates } = storeToRefs(slideStore)
-const { AIPPT, presetImgPool, getMdContent } = useAIPPT()
+const router = useRouter()
+const { getMdContent } = useAIPPT()
 
 const language = ref('中文')
-const style = ref('通用')
-const img = ref('')
 const keyword = ref('')
 const outline = ref('')
-const selectedTemplate = ref('template_1')
 const loading = ref(false)
 const outlineCreating = ref(false)
-const step = ref<'setup' | 'outline' | 'template'>('setup')
+const step = ref<'setup' | 'outline'>('setup')
 const model = ref('GLM-4.5-Air')
-const outlineRef = useTemplateRef<HTMLElement>('outlineRef')
-const inputRef = useTemplateRef<InstanceType<typeof Input>>('inputRef')
+const outlineRef = ref<HTMLElement>()
+const inputRef = ref<InstanceType<typeof Input>>()
 
 const recommends = ref([
   '2025科技前沿动态',
@@ -210,54 +156,15 @@ const createOutline = async () => {
   readStream()
 }
 
-const createPPT = async () => {
-  loading.value = true
-
-  const stream = await api.AIPPT({
-    content: outline.value,
-    language: language.value,
-    style: style.value,
-    model: model.value,
+const goPPT = () => {
+  router.push({
+    name: 'PPT',
+    query: {
+      outline: outline.value,
+      language: language.value,
+      model: model.value,
+    }
   })
-
-  if (img.value === 'test') {
-    const imgs = await api.getMockData('imgs')
-    presetImgPool(imgs)
-  }
-
-  const templateData = await api.getFileData(selectedTemplate.value)
-  const templateSlides: Slide[] = templateData.slides
-  const templateTheme: SlideTheme = templateData.theme
-
-  const reader: ReadableStreamDefaultReader = stream.body.getReader()
-  const decoder = new TextDecoder('utf-8')
-  
-  const readStream = () => {
-    reader.read().then(({ done, value }) => {
-      if (done) {
-        loading.value = false
-        mainStore.setAIPPTDialogState(false)
-        slideStore.setTheme(templateTheme)
-        return
-      }
-  
-      const chunk = decoder.decode(value, { stream: true })
-      try {
-        const text = chunk.replace('```json', '').replace('```', '').trim()
-        if (text) {
-          const slide: AIPPTSlide = JSON.parse(chunk)
-          AIPPT(templateSlides, [slide])
-        }
-      }
-      catch (err) {
-        // eslint-disable-next-line
-        console.error(err)
-      }
-
-      readStream()
-    })
-  }
-  readStream()
 }
 </script>
 
@@ -298,43 +205,6 @@ const createPPT = async () => {
     margin-bottom: 15px;
     background-color: #f1f1f1;
     overflow: auto;
-  }
-  .btns {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .btn {
-      width: 120px;
-      margin: 0 5px;
-    }
-  }
-}
-.select-template {
-  .templates {
-    display: flex;
-    margin-bottom: 10px;
-    @include flex-grid-layout();
-  
-    .template {
-      border: 2px solid $borderColor;
-      border-radius: $borderRadius;
-      width: 324px;
-      height: 184px;
-      margin-bottom: 12px;
-
-      &:not(:nth-child(2n)) {
-        margin-right: 12px;
-      }
-
-      &.selected {
-        border-color: $themeColor;
-      }
-  
-      img {
-        width: 100%;
-      }
-    }
   }
   .btns {
     display: flex;
@@ -418,24 +288,6 @@ const createPPT = async () => {
 
       .config-content {
         width: 100% !important;
-      }
-    }
-  }
-  .select-template {
-    .templates {
-      max-height: 450px;
-      display: block;
-      overflow: auto;
-    
-      .template {
-        width: 100%;
-        height: unset;
-        margin-bottom: 0 !important;
-        margin-right: 0 !important;
-
-        & + .template {
-          margin-top: 20px;
-        }
       }
     }
   }
