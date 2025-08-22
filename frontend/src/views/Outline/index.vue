@@ -1,246 +1,157 @@
 <template>
   <div class="aippt-container">
-    <!-- Header Section -->
+    <!-- Header Section（与大纲页一致） -->
     <div class="header-section">
       <div class="brand">
         <h1 class="title">
           <span class="title-icon">🤖</span>
           PPTAgent
         </h1>
-        <div class="subtitle">
-          {{ step === 'outline' ? '确认下方内容大纲，开始选择模板' : '输入您的PPT主题，AI将为您生成专业大纲' }}
-        </div>
+        <div class="subtitle">从下方挑选合适的模板，开始生成PPT</div>
       </div>
+
+      <!-- 进度指示：在大纲页的基础上新增第3步 -->
       <div class="progress-indicator">
-        <div class="progress-step" :class="{ active: step === 'setup' }">
+        <div class="progress-step">
           <div class="step-circle">1</div>
           <span>输入主题</span>
         </div>
-        <div class="progress-line" :class="{ completed: step === 'outline' }"></div>
-        <div class="progress-step" :class="{ active: step === 'outline' }">
+        <div class="progress-line completed"></div>
+        <div class="progress-step">
           <div class="step-circle">2</div>
           <span>确认大纲</span>
         </div>
-      </div>
-    </div>
-
-    <!-- Setup Step -->
-    <div v-if="step === 'setup'" class="setup-section">
-      <div class="input-section">
-        <div class="input-wrapper">
-          <input
-            ref="inputRef"
-            v-model="keyword"
-            :maxlength="50"
-            class="main-input"
-            placeholder="请输入PPT主题，如：大学生职业生涯规划"
-            @keyup.enter="createOutline"
-          />
-          <div class="input-actions">
-            <span class="character-count">{{ keyword.length }}/50</span>
-            <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim()">
-              <span class="btn-icon">✨</span>
-              AI 生成
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recommendations -->
-      <div class="recommendations-section">
-        <h3 class="section-title">💡 推荐主题</h3>
-        <div class="recommendations-grid">
-          <button
-            v-for="(item, index) in recommends"
-            :key="index"
-            class="recommend-item"
-            @click="setKeyword(item)"
-          >
-            {{ item }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Configuration -->
-      <div class="config-section">
-        <h3 class="section-title">⚙️ 高级配置</h3>
-        <div class="config-grid">
-          <div class="config-item">
-            <label class="config-label">语言</label>
-            <select v-model="language" class="config-select">
-              <option value="中文">中文</option>
-              <option value="English">English</option>
-              <option value="日本語">日本語</option>
-            </select>
-          </div>
-          <div class="config-item">
-            <label class="config-label">AI模型</label>
-            <select v-model="model" class="config-select">
-              <option value="GLM-4.5-Air">GLM-4.5-Air</option>
-              <option value="GLM-4.5-Flash">GLM-4.5-Flash</option>
-              <option value="ark-doubao-seed-1.6-flash">Doubao-Seed-1.6-flash</option>
-              <option value="ark-doubao-seed-1.6">Doubao-Seed-1.6</option>
-            </select>
-          </div>
+        <div class="progress-line completed"></div>
+        <div class="progress-step active">
+          <div class="step-circle">3</div>
+          <span>选择模板</span>
         </div>
       </div>
     </div>
 
-    <!-- Outline Step -->
-    <div v-if="step === 'outline'" class="outline-section">
-      <div class="outline-header">
-        <h3 class="section-title">📄 内容大纲</h3>
-        <div class="outline-info">
-          <span class="info-text">点击编辑内容，右键添加/删除大纲项</span>
-        </div>
-      </div>
-      
-      <div class="outline-content">
-        <div v-if="outlineCreating" class="outline-preview">
-          <div class="typing-indicator">
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
+    <!-- Template Section（与大纲页的白卡片风格一致） -->
+    <div class="template-section">
+      <h3 class="section-title">🎨 可用模板</h3>
+      <div class="templates-grid">
+        <div
+          class="template-card"
+          :class="{ selected: selectedTemplate === template.id }"
+          v-for="template in templates"
+          :key="template.id"
+          @click="selectedTemplate = template.id"
+        >
+          <div class="template-image">
+            <img :src="template.cover" :alt="template.name" />
+            <div class="overlay">
+              <div class="check-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+            </div>
           </div>
-          <pre ref="outlineRef" class="outline-text">{{ outline }}</pre>
-        </div>
-        <div v-else class="outline-editor">
-          <OutlineEditor v-model:value="outline" />
+          <div class="template-info">
+            <span class="template-name">{{ template.name || '经典模板' }}</span>
+          </div>
         </div>
       </div>
 
-      <div v-if="!outlineCreating" class="outline-actions">
-        <button class="primary-btn" @click="goPPT">
-          <span class="btn-icon">🎨</span>
+      <div class="template-actions">
+        <button class="primary-btn" @click="createPPT()">
+          <span class="btn-icon">🚀</span>
           生成PPT
         </button>
-        <button class="secondary-btn" @click="resetToSetup">
+        <button class="secondary-btn" @click="$router.back()">
           <span class="btn-icon">↩️</span>
-          重新生成
+          返回大纲
         </button>
       </div>
     </div>
 
+    <FullscreenSpin :loading="loading" tip="AI生成中，请耐心等待 ..." />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import api from '@/services'
 import useAIPPT from '@/hooks/useAIPPT'
-import message from '@/utils/message'
+import type { AIPPTSlide } from '@/types/AIPPT'
+import type { Slide, SlideTheme } from '@/types/slides'
+import { useMainStore, useSlidesStore } from '@/store'
 import FullscreenSpin from '@/components/FullscreenSpin.vue'
-import OutlineEditor from '@/components/OutlineEditor.vue'
 
+const route = useRoute()
 const router = useRouter()
-const { getMdContent } = useAIPPT()
+const mainStore = useMainStore()
+const slideStore = useSlidesStore()
+const { templates } = storeToRefs(slideStore)
+const { AIPPT, presetImgPool } = useAIPPT()
 
-const language = ref('中文')
-const keyword = ref('')
-const outline = ref('')
+const outline = ref(route.query.outline as string)
+const language = ref(route.query.language as string)
+const model = ref(route.query.model as string)
+const style = ref('通用')
+const img = ref('')
+
+const selectedTemplate = ref('template_1')
 const loading = ref(false)
-const outlineCreating = ref(false)
-const step = ref<'setup' | 'outline'>('setup')
-const model = ref('GLM-4.5-Air')
-const outlineRef = ref<HTMLElement>()
-const inputRef = ref<HTMLInputElement>()
 
-const recommends = ref([
-  '2025科技前沿动态',
-  '大数据如何改变世界',
-  '餐饮市场调查与研究',
-  'AIGC在教育领域的应用',
-  '社交媒体与品牌营销',
-  '5G技术如何改变我们的生活',
-  '年度工作总结与展望',
-  '区块链技术及其应用',
-  '大学生职业生涯规划',
-  '公司年会策划方案',
-])
-
-onMounted(() => {
-  setTimeout(() => {
-    inputRef.value?.focus()
-  }, 500)
-})
-
-const setKeyword = (value: string) => {
-  keyword.value = value
-  inputRef.value?.focus()
-}
-
-const resetToSetup = () => {
-  outline.value = ''
-  step.value = 'setup'
-  setTimeout(() => {
-    inputRef.value?.focus()
-  }, 100)
-}
-
-const createOutline = async () => {
-  if (!keyword.value.trim()) {
-    message.error('请先输入PPT主题')
-    return
-  }
-
+const createPPT = async () => {
   loading.value = true
-  outlineCreating.value = true
-  
-  try {
-    const stream = await api.AIPPT_Outline({
-      content: keyword.value,
-      language: language.value,
-      model: model.value,
-    })
 
-    loading.value = false
-    step.value = 'outline'
-
-    const reader: ReadableStreamDefaultReader = stream.body.getReader()
-    const decoder = new TextDecoder('utf-8')
-    
-    const readStream = () => {
-      reader.read().then(({ done, value }) => {
-        if (done) {
-          outline.value = getMdContent(outline.value)
-          outline.value = outline.value.replace(/<!--[\s\S]*?-->/g, '').replace(/<think>[\s\S]*?<\/think>/g, '')
-          outlineCreating.value = false
-          return
-        }
-    
-        const chunk = decoder.decode(value, { stream: true })
-        outline.value += chunk
-
-        if (outlineRef.value) {
-          outlineRef.value.scrollTop = outlineRef.value.scrollHeight + 20
-        }
-
-        readStream()
-      })
-    }
-    readStream()
-  } catch (error) {
-    loading.value = false
-    outlineCreating.value = false
-    message.error('生成失败，请重试')
-  }
-}
-
-const goPPT = () => {
-  router.push({
-    name: 'PPT',
-    query: {
-      outline: outline.value,
-      language: language.value,
-      model: model.value,
-    }
+  const stream = await api.AIPPT({
+    content: outline.value,
+    language: language.value,
+    style: style.value,
+    model: model.value,
   })
+
+  if (img.value === 'test') {
+    const imgs = await api.getMockData('imgs')
+    presetImgPool(imgs)
+  }
+
+  const templateData = await api.getFileData(selectedTemplate.value)
+  const templateSlides: Slide[] = templateData.slides
+  const templateTheme: SlideTheme = templateData.theme
+
+  const reader: ReadableStreamDefaultReader = stream.body.getReader()
+  const decoder = new TextDecoder('utf-8')
+
+  const readStream = () => {
+    reader.read().then(({ done, value }) => {
+      if (done) {
+        loading.value = false
+        mainStore.setAIPPTDialogState(false)
+        slideStore.setTheme(templateTheme)
+        router.push('/editor')
+        return
+      }
+
+      const chunk = decoder.decode(value, { stream: true })
+      try {
+        const text = chunk.replace('```json', '').replace('```', '').trim()
+        if (text) {
+          const slide: AIPPTSlide = JSON.parse(text) // 解析清洗后的内容
+          AIPPT(templateSlides, [slide])
+        }
+      } catch (err) {
+        // eslint-disable-next-line
+        console.error(err)
+      }
+
+      readStream()
+    })
+  }
+  readStream()
 }
 </script>
 
 <style lang="scss" scoped>
-/* 全局：确保页面可滚动 */
+/* 与大纲页保持同样的页面骨架与背景 */
 :global(html, body, #app) {
   height: auto;
   min-height: 100%;
@@ -248,15 +159,15 @@ const goPPT = () => {
 }
 
 .aippt-container {
-  max-width: 100%; /* 满屏宽度 */
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem 4rem; /* 上下 2rem，左右 4rem */
+  padding: 2rem 4rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Header Section */
+/* Header Section（复用大纲页风格） */
 .header-section {
   text-align: center;
   margin-bottom: 3rem;
@@ -279,9 +190,9 @@ const goPPT = () => {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: gradientShift 3s ease infinite;
-    
+
     .title-icon {
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     }
   }
 
@@ -300,6 +211,7 @@ const goPPT = () => {
   100% { background-position: 0% 50%; }
 }
 
+/* 进度条（新增第3步） */
 .progress-indicator {
   display: flex;
   align-items: center;
@@ -323,17 +235,17 @@ const goPPT = () => {
       width: 2rem;
       height: 2rem;
       border-radius: 50%;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       transition: all 0.3s ease;
     }
 
     &.active .step-circle {
-      background: rgba(255,255,255,0.9);
+      background: rgba(255, 255, 255, 0.9);
       color: #667eea;
       transform: scale(1.1);
     }
@@ -342,338 +254,197 @@ const goPPT = () => {
   .progress-line {
     width: 4rem;
     height: 2px;
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     transition: background 0.3s ease;
 
     &.completed {
-      background: rgba(255,255,255,0.7);
+      background: rgba(255, 255, 255, 0.7);
     }
   }
 }
 
-/* Setup Section */
-.setup-section {
+/* Template Section：与大纲页的白卡片风格一致 */
+.template-section {
   background: white;
   border-radius: 1.5rem;
   padding: 2.5rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
-.input-section {
-  margin-bottom: 2rem;
-
-  .input-wrapper {
-    position: relative;
-    background: #f8fafc;
-    border-radius: 1rem;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
-    overflow: hidden;
-
-    &:focus-within {
-      border-color: #667eea;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-    }
-
-    .main-input {
-      width: 100%;
-      padding: 1.25rem 1.5rem;
-      border: none;
-      background: transparent;
-      font-size: 1.1rem;
-      outline: none;
-      resize: none;
-
-      &::placeholder {
-        color: #94a3b8;
-      }
-    }
-
-    .input-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem 1.25rem;
-      gap: 1rem;
-
-      .character-count {
-        font-size: 0.875rem;
-        color: #64748b;
-      }
-
-      .generate-btn {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.75rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-
-        &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .btn-icon {
-          font-size: 1.1rem;
-        }
-      }
-    }
-  }
-}
-
-/* Recommendations Section */
-.recommendations-section {
-  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
   .section-title {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
     color: #334155;
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-
-  .recommendations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-
-    .recommend-item {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.75rem;
-      padding: 0.75rem 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-      text-align: left;
-
-      &:hover {
-        background: #667eea;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-      }
-    }
-  }
 }
 
-/* Configuration Section */
-.config-section {
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .config-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 1.5rem;
-
-    .config-item {
-      .config-label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: #475569;
-        font-size: 0.9rem;
-      }
-
-      .config-select {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        background: white;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: border-color 0.3s ease;
-
-        &:focus {
-          outline: none;
-          border-color: #667eea;
-        }
-      }
-    }
-  }
+/* 模板网格与卡片（颜色、圆角、阴影与大纲页一致风格） */
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
-/* Outline Section */
-.outline-section {
-  background: white;
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
+.template-card {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
-  .outline-header {
-    margin-bottom: 1.5rem;
-
-    .section-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #334155;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .outline-info {
-      .info-text {
-        color: #64748b;
-        font-size: 0.9rem;
-      }
-    }
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.18);
+    border-color: #cbd5e1;
   }
 
-  .outline-content {
-    margin-bottom: 2rem;
+  &.selected {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 10px 24px rgba(102, 126, 234, 0.25);
 
-    .outline-preview {
-      position: relative;
-
-      .typing-indicator {
-        display: flex;
-        gap: 0.25rem;
-        margin-bottom: 1rem;
-        align-items: center;
-
-        &::before {
-          content: 'AI正在生成大纲';
-          margin-right: 0.5rem;
-          color: #64748b;
-          font-size: 0.9rem;
-        }
-
-        .typing-dot {
-          width: 0.5rem;
-          height: 0.5rem;
-          background: #667eea;
-          border-radius: 50%;
-          animation: typingBounce 1.4s infinite;
-
-          &:nth-child(2) { animation-delay: 0.2s; }
-          &:nth-child(3) { animation-delay: 0.4s; }
-        }
-      }
-
-      .outline-text {
-        max-height: 400px;
-        padding: 1.5rem;
-        background: #f8fafc;
-        border-radius: 1rem;
-        border: 1px solid #e2e8f0;
-        overflow-y: auto;
-        font-family: 'SF Mono', Monaco, monospace;
-        font-size: 0.9rem;
-        line-height: 1.6;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-      }
+    .overlay {
+      opacity: 1;
+      visibility: visible;
     }
 
-    .outline-editor {
-      max-height: 400px;
-      padding: 1.5rem;
-      background: #f8fafc;
-      border-radius: 1rem;
-      border: 1px solid #e2e8f0;
-      overflow-y: auto;
-    }
-  }
-
-  .outline-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-
-    .primary-btn {
+    .template-info {
       background: linear-gradient(135deg, #667eea, #764ba2);
       color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      font-size: 1rem;
+    }
+  }
 
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      }
+  .template-image {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #f8fafc;
 
-      .btn-icon {
-        font-size: 1.2rem;
-      }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+      display: block;
     }
 
-    .secondary-btn {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #d1d5db;
-      padding: 1rem 2rem;
-      border-radius: 0.75rem;
-      font-weight: 500;
-      cursor: pointer;
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(102, 126, 234, 0.25);
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
       transition: all 0.3s ease;
-      font-size: 1rem;
 
-      &:hover {
-        background: #e2e8f0;
-        transform: translateY(-2px);
-      }
+      .check-icon {
+        width: 32px;
+        height: 32px;
+        color: white;
+        background: #667eea;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(102, 126, 234, 0.45);
 
-      .btn-icon {
-        font-size: 1.2rem;
+        svg {
+          width: 16px;
+          height: 16px;
+        }
       }
+    }
+  }
+
+  .template-info {
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+
+    .template-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: inherit;
+    }
+  }
+
+  &:hover .template-image img {
+    transform: scale(1.05);
+  }
+}
+
+/* Actions：复用大纲页按钮风格 */
+.template-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+
+  .primary-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  .secondary-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #d1d5db;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+
+    &:hover {
+      background: #e2e8f0;
+      transform: translateY(-2px);
+    }
+
+    .btn-icon {
+      font-size: 1.2rem;
     }
   }
 }
 
-@keyframes typingBounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-0.5rem); }
-}
-
-/* Responsive Design */
+/* Responsive Design（与大纲页一致） */
 @media (max-width: 768px) {
   .aippt-container {
     padding: 1rem;
   }
 
-  .setup-section,
-  .outline-section {
+  .template-section {
     padding: 1.5rem;
   }
 
@@ -693,25 +464,7 @@ const goPPT = () => {
     }
   }
 
-  .recommendations-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .config-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .input-actions {
-    flex-direction: column;
-    align-items: stretch !important;
-
-    .generate-btn {
-      justify-content: center;
-    }
-  }
-
-  .outline-actions {
+  .template-actions {
     flex-direction: column;
 
     .primary-btn,
@@ -730,8 +483,7 @@ const goPPT = () => {
     font-size: 1rem;
   }
 
-  .setup-section,
-  .outline-section {
+  .template-section {
     padding: 1rem;
   }
 }
