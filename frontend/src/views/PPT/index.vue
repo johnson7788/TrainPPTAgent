@@ -81,7 +81,7 @@ const createPPT = async () => {
         loading.value = false
         mainStore.setAIPPTDialogState(false)
         slideStore.setTheme(templateTheme)
-        router.push('/')
+        router.push('/editor')
         return
       }
   

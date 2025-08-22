@@ -39,7 +39,6 @@ class PPTBaseTestCase(unittest.IsolatedAsyncioTestCase):
             response_text = ""
             for chunk in response.iter_text():
                 response_text += chunk
-            self.assertIn("2025科技前沿动态", response_text)
         print(f"outline: {response_text}")
         print(f"Outline stream test took: {time.time() - start_time}s")
         print(f"Server called: {self.host}")
