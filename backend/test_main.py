@@ -27,8 +27,8 @@ class PPTBaseTestCase(unittest.IsolatedAsyncioTestCase):
         """
         url = f"{self.base_url}/tools/aippt_outline"
         data = {
-            "content": "2025 tech trends",
-            "language": "en",
+            "content": "我想调研电动汽车发展",
+            "language": "Chinese",
             "model": "gpt-4",
             "stream": True
         }
