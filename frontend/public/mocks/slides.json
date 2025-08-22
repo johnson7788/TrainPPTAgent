@@ -38,7 +38,7 @@
         "width": 450,
         "height": 188,
         "lineHeight": 1.2,
-        "content": "<p><strong><span style=\"font-size: 112px;\">PPTist</span></strong></p>",
+        "content": "<p><strong><span style=\"font-size: 112px;\">PPT Agent</span></strong></p>",
         "rotate": 0,
         "defaultFontName": "",
         "defaultColor": "#333"
@@ -50,7 +50,7 @@
         "top": 253.25,
         "width": 585,
         "height": 56,
-        "content": "<p><span style=\"font-size: 24px;\">基于 Vue 3.x + TypeScript 的在线演示文稿应用</span></p>",
+        "content": "<p><span style=\"font-size: 24px;\">训练的PPT Agent</span></p>",
         "rotate": 0,
         "defaultFontName": "",
         "defaultColor": "#333"
