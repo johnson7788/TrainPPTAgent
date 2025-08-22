@@ -4,10 +4,10 @@
       <Popover trigger="click" placement="bottom-start" v-model:value="mainMenuVisible">
         <template #content>
           <div class="main-menu">
-            <div class="ai-menu" @click="router.push('/outline'); mainMenuVisible = false">
+            <div class="ai-menu" @click="router.push('/'); mainMenuVisible = false">
               <div class="icon"><IconClick theme="two-tone" :fill="['#ffc158', '#fff']" /></div>
               <div class="aippt-content">
-                <div class="aippt"><span>AIPPT</span></div>
+                <div class="aippt"><span>PPTAgent</span></div>
                 <div class="aippt-subtitle">输入一句话，智能生成演示文稿</div>
               </div>
             </div>
@@ -22,7 +22,7 @@
               }">
                 <span class="icon"><IconFilePdf theme="multi-color" :fill="['#333', '#d14424', '#fff']" /></span>
                 <span class="label">PPTX</span>
-                <span class="sub-label">（仅供测试）</span>
+                <span class="sub-label">（测试）</span>
               </FileInput>
               <FileInput class="import-block" accept=".json" @change="files => {
                 importJSON(files)
@@ -30,7 +30,7 @@
               }">
                 <span class="icon"><IconFileJpg theme="multi-color" :fill="['#333', '#d14424', '#fff']" /></span>
                 <span class="label">JSON</span>
-                <span class="sub-label">（仅供测试）</span>
+                <span class="sub-label">（测试）</span>
               </FileInput>
               <FileInput class="import-block" accept=".pptist" @change="files => {
                 importSpecificFile(files)
@@ -48,8 +48,6 @@
           <PopoverMenuItem class="popover-menu-item" @click="resetSlides(); mainMenuVisible = false"><IconRefresh class="icon" /> 重置幻灯片</PopoverMenuItem>
           <PopoverMenuItem class="popover-menu-item" @click="openMarkupPanel(); mainMenuVisible = false"><IconMark class="icon" /> 幻灯片类型标注</PopoverMenuItem>
           <PopoverMenuItem class="popover-menu-item" @click="mainMenuVisible = false; hotkeyDrawerVisible = true"><IconCommand class="icon" /> 快捷操作</PopoverMenuItem>
-          <PopoverMenuItem class="popover-menu-item" @click="goLink('https://github.com/pipipi-pikachu/PPTist/issues')"><IconComment class="icon" /> 意见反馈</PopoverMenuItem>
-          <PopoverMenuItem class="popover-menu-item" @click="goLink('https://github.com/pipipi-pikachu/PPTist/blob/master/doc/Q&A.md')"><IconHelpcenter class="icon" /> 常见问题</PopoverMenuItem>
         </template>
         <div class="menu-item"><IconHamburgerButton class="icon" /></div>
       </Popover>
@@ -176,6 +174,7 @@ const openMarkupPanel = () => {
   align-items: center;
 }
 .menu-item {
+  height: 30px;
   height: 30px;
   display: flex;
   justify-content: center;
