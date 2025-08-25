@@ -20,7 +20,7 @@ def my_before_model_callback(callback_context: CallbackContext, llm_request: Llm
     # 返回 None，继续调用 LLM
     return None
 
-split_topic_agent = Agent(
+split_outline_agent = Agent(
     name="SplitTopicAgent",
     model=create_model(model=SPLIT_TOPIC_AGENT_CONFIG["model"], provider=SPLIT_TOPIC_AGENT_CONFIG["provider"]),
     description="专门负责分析写作大纲并将其拆分成独立的研究主题",
