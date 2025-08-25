@@ -139,7 +139,7 @@ class PPTWriterSubAgent(LlmAgent):
 ppt_writer_sub_agent = PPTWriterSubAgent(
     model=create_model(model=PPT_WRITER_AGENT_CONFIG["model"], provider=PPT_WRITER_AGENT_CONFIG["provider"]),
     name="PPTWriterSubAgent",
-    description="根据每一页的幻灯片计划内容，写出完整的XML格式的PPT单页内容",
+    description="根据每一页的幻灯片slide的json结构，丰富幻灯片的slide的内容",
     instruction=prompt.XML_PPT_AGENT_NEXT_PAGE_PROMPT,
     before_agent_callback=my_writer_before_agent_callback,
     after_agent_callback=my_after_agent_callback,
@@ -205,26 +205,9 @@ def my_super_before_agent_callback(callback_context: CallbackContext):
     :return:
     """
     # print(callback_context)
-    # 获取slides_plan生成ppt的页数
-    slides_plan_num = callback_context.state.get("slides_plan_num")
-    if slides_plan_num is None:
-        print(f"slides_plan_num没有设置，设定默认值: {slides_plan_num}")
-        logger.info(f"slides_plan_num没有设置，设定默认值: {slides_plan_num}")
-        slides_plan_num = 10  #默认10篇，需要从前端获取metadata
-    callback_context.state["slides_plan_num"] = slides_plan_num
     # 初始化重试次数记录
     if "rewrite_retry_count_map" not in callback_context.state:
         callback_context.state["rewrite_retry_count_map"] = {}
-    research_output_keys = callback_context.state.get("research_output_keys", [])
-    assert len(research_output_keys) >0, "没有获取到research_output_keys，请检查research agent的输出代码"
-    # 逐个读取所有研究发现的内容
-    research_outputs = []
-    for research_output_key in research_output_keys:
-        research_output = callback_context.state.get(research_output_key, "")
-        assert research_output, f"没有获取到{research_output}的agent的输出，请检查research agent的输出"
-        research_outputs.append(research_output_key + '\n' + research_output)
-    research_outputs_content = "\n\n".join(research_outputs)
-    callback_context.state["research_outputs_content"] = research_outputs_content
     return None
 
 # --- 3. SlideLoopConditionAgent (The Condition Checker) ---
