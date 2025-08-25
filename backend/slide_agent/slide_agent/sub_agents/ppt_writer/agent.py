@@ -135,7 +135,7 @@ class PPTWriterSubAgent(LlmAgent):
             )
 
 # --- 2. PPTWriterSubAgent (The Worker Agent) ---
-# 这个代理负责根据单页大纲生成XML内容
+# 这个代理负责根据单页大纲生成具体内容
 ppt_writer_sub_agent = PPTWriterSubAgent(
     model=create_model(model=PPT_WRITER_AGENT_CONFIG["model"], provider=PPT_WRITER_AGENT_CONFIG["provider"]),
     name="PPTWriterSubAgent",

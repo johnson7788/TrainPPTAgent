@@ -11,6 +11,7 @@ PREFIX_PAGE_PROMPT = """
 严禁输出除 JSON 外的任何内容（包括说明、Markdown、代码块围栏）。
 """
 
+
 # input_slide_data代表slide的json的模版
 COVER_PAGE_PROMPT="""
 封面页（type: "cover"）
@@ -46,4 +47,11 @@ END_PAGE_PROMPT = """
 满足“通用约束”。
 {input_slide_data}
 """
-
+# 不同的类型的页面对应的prompt
+prompt_mapper = {
+    "cover": COVER_PAGE_PROMPT,
+    "contents": CONTENTS_PAGE_PROMPT,
+    "transition": TRANSITION_PAGE_PROMPT,
+    "content": CONTENT_PAGE_PROMPT,
+    "end": END_PAGE_PROMPT,
+}
