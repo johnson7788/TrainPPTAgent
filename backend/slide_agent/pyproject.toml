@@ -1,0 +1,21 @@
+[project]
+name = "slide_agent"
+version = "0.1.0"
+description = "slide_agent"
+authors = [{ name = "johnson", email = "linghuchongxajh@google.com" }]
+license = "Apache License 2.0"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-genai (>=1.5.0,<2.0.0)",
+    "google-adk (>=1.0.0,<2.0.0)",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+google-adk = { extras = ["eval"], version = "^1.0.0" }
+pytest-asyncio = "^0.26.0"
+pytest = "^8.3.5"

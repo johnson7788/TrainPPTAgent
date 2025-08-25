@@ -1,0 +1,12 @@
+GOOGLE_API_KEY=xx
+DEEPSEEK_API_KEY=xx
+OPENAI_API_KEY=xx
+CLAUDE_API_KEY=xx
+# 阿里云api
+ALI_API_KEY=xx
+#流式的响应，多Agent的中每个Agent的流式响应需要更多测试，因为split_topic agent要求json格式结果解析，流式有问题
+STREAMING=false
+
+# 是否使用代理
+HTTP_PROXY=http://127.0.0.1:7890
+HTTPS_PROXY=http://127.0.0.1:7890
