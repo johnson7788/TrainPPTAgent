@@ -13,10 +13,8 @@ def before_agent_callback(callback_context: CallbackContext) -> None:
     """
     metadata = callback_context.state.get("metadata", {})
     print(f"传入的metadata信息如下: {metadata}")
-    slides_plan_num = metadata.get("numSlides",10)
     language = metadata.get("language","EN-US")
     # 设置幻灯片数量和语言
-    callback_context.state["slides_plan_num"] = slides_plan_num
     callback_context.state["language"] = language
     # 返回 None，继续调用 LLM
     return None
