@@ -18,6 +18,10 @@ onMounted(async () => {
   // const slides = await api.getFileData('slides')
   // slidesStore.setSlides(slides)
 
+## 去掉大纲和模版选择页面不能下滑的问题
+[global.scss](../frontend/src/assets/styles/global.scss) 去掉-  overflow: hidden;
+
+
 # 后端
 
 ## 添加mock api方便测试
