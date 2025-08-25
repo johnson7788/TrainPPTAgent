@@ -1,6 +1,5 @@
 from google.adk.agents.llm_agent import Agent
 from google.adk.agents.sequential_agent import SequentialAgent
-from .sub_agents.split_outline.agent import split_outline_agent
 from .sub_agents.ppt_writer.agent import ppt_generator_loop_agent
 from google.adk.agents.callback_context import CallbackContext
 from dotenv import load_dotenv
@@ -9,7 +8,7 @@ load_dotenv('.env')
 
 def before_agent_callback(callback_context: CallbackContext) -> None:
     """
-    在调用LLM之前，从会话状态中获取当前幻灯片计划，并格式化LLM输入。
+    在调用LLM之前，从会话状态中获取当前幻灯片计划，并格式化LLM输入。把传入的markdown大纲变成json格式
     """
     metadata = callback_context.state.get("metadata", {})
     print(f"传入的metadata信息如下: {metadata}")
@@ -23,7 +22,6 @@ root_agent = SequentialAgent(
     name="WritingSystemAgent",
     description="多Agent写作系统的总协调器",
     sub_agents=[
-        split_outline_agent,
         ppt_generator_loop_agent
     ],
     before_agent_callback=before_agent_callback
