@@ -7,12 +7,12 @@ CLAUDE_API_KEY=xxx
 # 使用LLM的流式的响应，测试gemini的效果很好，true表示开启流的请求和响应
 STREAMING=true
 # 使用哪个模型供应商
-MODEL_PROVIDER=google
+#MODEL_PROVIDER=google
 # 使用哪个模型
-LLM_MODEL=gemini-2.0-flash
+#LLM_MODEL=gemini-2.0-flash
 
-#MODEL_PROVIDER=deepseek
-#LLM_MODEL=deepseek-chat
+MODEL_PROVIDER=deepseek
+LLM_MODEL=deepseek-chat
 # 是否使用代理，clash的代理7890
 # HTTP_PROXY=http://127.0.0.1:7890
 # HTTPS_PROXY=http://127.0.0.1:7890

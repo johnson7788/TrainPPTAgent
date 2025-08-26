@@ -48,11 +48,26 @@ TrainPPTAgent/
     pip install -r requirements.txt
     ```
 
-3.  **启动服务**:
+3.  **启动API服务**:
     ```bash
-    python main_api/main.py
+    cd main_api
+    python main.py
     ```
     后端服务默认运行在 `http://127.0.0.1:6800`。
+4. ** 启动大纲生成 **：
+    ```bash
+    cd backend/simpleOutline
+    cp env_template .env
+    python main_api.py
+    ```
+    大纲服务默认运行在 `http://127.0.0.1:10001`。
+5. **启动生成PPT内容**:
+    ```bash
+    cd backend/slide_agent
+    cp env_template .env
+    python main_api.py
+    ```
+    后端服务默认运行在 `http://127.0.0.1:10011`。
 
 ### 前端开发
 
