@@ -95,25 +95,14 @@ class PPTWriterSubAgent(LlmAgent):
         # 清空历史记录，防止历史记录进行干扰
         ctx.session.events = []
         if current_slide_index == 0:
-            # 在第一个子Agent返回前返回 XML 开头
-            yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="""```xml
-<PRESENTATION>
-""")]),
-            )
+            print(f"正在生成第{current_slide_index}页幻灯片...")
         # 调用父类逻辑（最终结果）
         async for event in super()._run_async_impl(ctx):
             print(f"{self.name} 收到事件：{event}")
             logger.info(f"{self.name} 收到事件：{event}")
             yield event
         if current_slide_index == slides_plan_num - 1:
-            # 在最后一个子Agent返回后返回 XML 结尾
-            yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="""
-</PRESENTATION>```""")]),
-            )
+            print(f"生成第{current_slide_index}页幻灯片完成...")
 
     def _get_dynamic_instruction(self, ctx: InvocationContext) -> str:
         """动态整合所有研究发现并生成指令"""
