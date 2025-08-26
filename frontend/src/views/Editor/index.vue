@@ -29,7 +29,10 @@
   >
     <ExportDialog />
   </Modal>
-  <FullscreenSpin v-if="isGenerating" :loading="true" tip="AI 生成中，请耐心等待…" />
+  <div v-if="isGenerating" class="bottom-loading">
+    <span>AI 生成中，请耐心等待…</span>
+  </div>
+  
 </template>
 
 <script lang="ts" setup>
@@ -52,7 +55,7 @@ import NotesPanel from './NotesPanel.vue'
 import SymbolPanel from './SymbolPanel.vue'
 import MarkupPanel from './MarkupPanel.vue'
 import Modal from '@/components/Modal.vue'
-import FullscreenSpin from '@/components/FullscreenSpin.vue'
+
 
 const mainStore = useMainStore()
 const { dialogForExport, showSelectPanel, showSearchPanel, showNotesPanel, showSymbolPanel, showMarkupPanel, isGenerating } = storeToRefs(mainStore)
@@ -91,5 +94,17 @@ usePasteEvent()
 .layout-content-right {
   width: 260px;
   height: 100%;
+}
+
+.bottom-loading {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 8px;
+  z-index: 1000;
 }
 </style>

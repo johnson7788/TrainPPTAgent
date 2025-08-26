@@ -87,6 +87,7 @@ const router = useRouter()
 const mainStore = useMainStore()
 const slideStore = useSlidesStore()
 const { templates } = storeToRefs(slideStore)
+const { sessionId } = storeToRefs(mainStore)
 const { AIPPTGenerator, presetImgPool } = useAIPPT()
 
 const outline = ref(route.query.outline as string)
@@ -102,7 +103,7 @@ const createPPT = async () => {
   mainStore.setGenerating(true)
   loading.value = true
 
-  router.push('/editor')
+  router.push(`/editor?session_id=${sessionId.value}`)
 
   try {
     const stream = await api.AIPPT({
