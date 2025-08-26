@@ -103,6 +103,8 @@ const createPPT = async () => {
   mainStore.setGenerating(true)
   loading.value = true
 
+  slideStore.resetSlides()
+
   router.push(`/editor?session_id=${sessionId.value}`)
 
   try {

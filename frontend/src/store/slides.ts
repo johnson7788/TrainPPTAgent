@@ -140,11 +140,27 @@ export const useSlidesStore = defineStore('slides', {
     setTemplates(templates: SlideTemplate[]) {
       this.templates = templates
     },
+
+    resetSlides() {
+      this.slides = [
+        {
+          id: nanoid(),
+          elements: [],
+        }
+      ]
+      this.slideIndex = 0
+    },
   
     addSlide(slide: Slide | Slide[]) {
       const slides = Array.isArray(slide) ? slide : [slide]
       for (const slide of slides) {
         if (slide.sectionTag) delete slide.sectionTag
+      }
+
+      if (this.slides.length === 1 && this.slides[0].elements.length === 0) {
+        this.slides = slides
+        this.slideIndex = 0
+        return
       }
 
       const addIndex = this.slideIndex + 1
