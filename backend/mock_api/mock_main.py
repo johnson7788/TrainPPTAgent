@@ -235,7 +235,7 @@ async def aippt_content_streamer(markdown_content: str):
     slides = preset_json_to_slides(markdown_content)
     for slide in slides:
         yield json.dumps(slide, ensure_ascii=False) + '\n'
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(1)
 
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
