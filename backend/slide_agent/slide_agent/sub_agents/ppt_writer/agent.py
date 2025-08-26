@@ -128,7 +128,7 @@ class PPTWriterSubAgent(LlmAgent):
         print(f"当前要生成第{current_slide_index}页的ppt， 类型为：{current_slide_type}， 具体内容为：{current_slide_schema}")
         # 根据不同的类型，形成不同的prompt
         slide_prompt = prompt.prompt_mapper[current_slide_type]
-        prompt_instruction = prompt.PREFIX_PAGE_PROMPT + slide_prompt.format(input_slide_data="current_slide_schema")
+        prompt_instruction = prompt.PREFIX_PAGE_PROMPT + slide_prompt.format(input_slide_data=current_slide_schema)
         print(f"第{current_slide_index}页的prompt是：{prompt_instruction}")
         return prompt_instruction
 
