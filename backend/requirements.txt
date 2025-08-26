@@ -12,4 +12,3 @@ pytest
 click
 BeautifulSoup4
 lxml
-dotenv
