@@ -249,7 +249,7 @@ const goPPT = () => {
 
 <style lang="scss" scoped>
 /* 与大纲页保持同样的页面骨架与背景 */
-/* 页面容器，提供稳定的全屏背景承载 */
+  /* 页面容器，提供稳定的全屏背景承载 */
 .aippt-page {
   position: relative;
   min-height: 100dvh;

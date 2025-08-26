@@ -50,38 +50,6 @@ def my_writer_before_agent_callback(callback_context: CallbackContext) -> None:
     """
     current_slide_index: int = callback_context.state.get("current_slide_index", 0)  # Default to 0
     slides_plan_num = callback_context.state.get("slides_plan_num")
-
-    research_outputs_content: str = callback_context.state.get("research_outputs_content")
-    if not research_outputs_content:
-        raise ValueError("research_outputs_content is missing in session state. Please ensure research_outputs_content ran successfully.")
-    # 所有研究Agent的图片的内容输出结果进行拼接
-
-    formatted_slide_outline = f"Page {current_slide_index + 1}"
-
-    print(f"--- 正在生成第{current_slide_index + 1}页PPT ---")
-    logger.info(f"--- 正在生成第{current_slide_index + 1}页PPT ---")
-    page_num = f"{current_slide_index + 1}/{slides_plan_num}"
-    # 第一页的prompt和后面ppt的页的prompt是不一样的，因为后面页的prompt需要继续前一页的继续生成
-    # 构建LLM请求的contents
-    callback_context.state["research_doc"] = research_outputs_content
-    callback_context.state["page_num"] = page_num
-
-    rewrite_reason = callback_context.state.get("rewrite_reason")
-    if rewrite_reason:
-        print(f"[PPTWriterSubAgent] 上一轮校验失败，收到重写建议: {rewrite_reason}")
-        callback_context.state["other_suggestion"] = f"⚠️ 上一轮审核未通过，请特别注意以下问题：" + rewrite_reason
-        callback_context.state["rewrite_reason"] = "" # 清空重写原因，防止下次重复使用
-    else:
-        callback_context.state["other_suggestion"] = ""
-
-    # 第一页和其它页只有历史记录和页码不一样
-    if current_slide_index == 0:
-        # 用于初始化prompt
-        callback_context.state["history_slides_xml"] = ""
-    else:
-        all_generated_slides_content: List[str] = callback_context.state.get("generated_slides_content", [])
-        history_slides_xml = "\n\n".join(all_generated_slides_content)
-        callback_context.state["history_slides_xml"] = history_slides_xml
     # 返回 None，继续调用 LLM
     return None
 
@@ -118,7 +86,6 @@ class PPTWriterSubAgent(LlmAgent):
             after_agent_callback=my_after_agent_callback,
             before_model_callback=my_before_model_callback,
             after_model_callback=my_after_model_callback,
-            tools=[SearchImage]
             **kwargs
         )
 
@@ -150,19 +117,19 @@ class PPTWriterSubAgent(LlmAgent):
 
     def _get_dynamic_instruction(self, ctx: InvocationContext) -> str:
         """动态整合所有研究发现并生成指令"""
-        outline = ctx.state.get("outline", "未提供大纲")
-
-        research_findings = []
-        for key, value in ctx.state.items():
-            if key.startswith("research_result_"):
-                research_findings.append(f"--- 主题研究结果 ({key}) ---\n{value}\n")
-
-        if not research_findings:
-            findings_text = "警告：未能找到任何研究结果，无法进行总结。"
-        else:
-            findings_text = "\n".join(research_findings)
-
-        prompt_instruction = prompt.PREFIX_PAGE_PROMPT + prompt.COVER_PAGE_PROMPT.format(input_slide_data="hello")
+        # 当前正在生成第几页的ppt
+        current_slide_index: int = ctx.state.get("current_slide_index", 0)
+        # 获取大纲
+        outline_json: list = ctx.state.get("outline_json")
+        # 获取要生成的ppt的这一页的schema大纲
+        current_slide_schema = outline_json[current_slide_index]
+        # 这页ppt的类型
+        current_slide_type = current_slide_schema.get("type")
+        print(f"当前要生成第{current_slide_index}页的ppt， 类型为：{current_slide_type}， 具体内容为：{current_slide_schema}")
+        # 根据不同的类型，形成不同的prompt
+        slide_prompt = prompt.prompt_mapper[current_slide_type]
+        prompt_instruction = prompt.PREFIX_PAGE_PROMPT + slide_prompt.format(input_slide_data="current_slide_schema")
+        print(f"第{current_slide_index}页的prompt是：{prompt_instruction}")
         return prompt_instruction
 
 def my_super_before_agent_callback(callback_context: CallbackContext):
