@@ -108,6 +108,20 @@ def my_after_agent_callback(callback_context: CallbackContext) -> None:
 
 
 class PPTWriterSubAgent(LlmAgent):
+    def __init__(self, **kwargs):
+        super().__init__(
+            name="PPTWriterSubAgent",
+            model=create_model(model=PPT_WRITER_AGENT_CONFIG["model"], provider=PPT_WRITER_AGENT_CONFIG["provider"]),
+            description="根据每一页的幻灯片slide的json结构，丰富幻灯片的slide的内容",
+            instruction=self._get_dynamic_instruction,
+            before_agent_callback=my_writer_before_agent_callback,
+            after_agent_callback=my_after_agent_callback,
+            before_model_callback=my_before_model_callback,
+            after_model_callback=my_after_model_callback,
+            tools=[SearchImage]
+            **kwargs
+        )
+
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         slides_plan_num: int = ctx.session.state.get("slides_plan_num")
         current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
@@ -134,69 +148,22 @@ class PPTWriterSubAgent(LlmAgent):
 </PRESENTATION>```""")]),
             )
 
-# --- 2. PPTWriterSubAgent (The Worker Agent) ---
-# 这个代理负责根据单页大纲生成具体内容
-ppt_writer_sub_agent = PPTWriterSubAgent(
-    model=create_model(model=PPT_WRITER_AGENT_CONFIG["model"], provider=PPT_WRITER_AGENT_CONFIG["provider"]),
-    name="PPTWriterSubAgent",
-    description="根据每一页的幻灯片slide的json结构，丰富幻灯片的slide的内容",
-    instruction=prompt.XML_PPT_AGENT_NEXT_PAGE_PROMPT,
-    before_agent_callback=my_writer_before_agent_callback,
-    after_agent_callback=my_after_agent_callback,
-    before_model_callback=my_before_model_callback,
-    after_model_callback=my_after_model_callback,
-    tools=[SearchImage]
-)
+    def _get_dynamic_instruction(self, ctx: InvocationContext) -> str:
+        """动态整合所有研究发现并生成指令"""
+        outline = ctx.state.get("outline", "未提供大纲")
 
-## PPT检查Agent
-class PPTCheckerAgent(LlmAgent):
-    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
-        generated_slides_content: List[str] = ctx.session.state.get("generated_slides_content", [])
-        rewrite_retry_count_map: Dict[int, int] = ctx.session.state.get("rewrite_retry_count_map", {})
+        research_findings = []
+        for key, value in ctx.state.items():
+            if key.startswith("research_result_"):
+                research_findings.append(f"--- 主题研究结果 ({key}) ---\n{value}\n")
 
-        if current_slide_index >= len(generated_slides_content):
-            print(f"[PPTCheckerAgent] 没有找到当前页内容 index={current_slide_index}")
-            yield Event(author=self.name, actions=EventActions())
-            return
+        if not research_findings:
+            findings_text = "警告：未能找到任何研究结果，无法进行总结。"
+        else:
+            findings_text = "\n".join(research_findings)
 
-        current_slide = generated_slides_content[current_slide_index]
-        history_slides = "\n\n".join(generated_slides_content[:current_slide_index])
-        ctx.session.events = []
-        ctx.session.state["slide_to_check"] = current_slide
-        ctx.session.state["history_slides"] = history_slides  #用于ppt的生成结果的检查
-        async for event in super()._run_async_impl(ctx):
-            print(f"{self.name} 检查结果事件：{event}")
-            result = event.content.parts[0].text.strip()
-
-            if "需要重写" in result:
-                retry_count = rewrite_retry_count_map.get(current_slide_index, 0)
-                if retry_count < 3:
-                    ctx.session.state["rewrite_reason"] = result
-                    print(f"[PPTCheckerAgent] 第 {retry_count + 1} 次尝试重写 slide {current_slide_index + 1}")
-                    ctx.session.state["generated_slides_content"].pop()
-                    if current_slide_index == 0:
-                        # 第一次初始化，如果为-1，那么
-                        ctx.session.state["current_slide_index"] = -1
-                    else:
-                        ctx.session.state["current_slide_index"] = current_slide_index - 1
-                    rewrite_retry_count_map[current_slide_index] = retry_count + 1
-                    ctx.session.state["rewrite_retry_count_map"] = rewrite_retry_count_map
-                else:
-                    print(f"[PPTCheckerAgent] 第 {retry_count} 次重写失败，已达最大次数，跳过当前页")
-                    yield Event(author=self.name, content=types.Content(parts=[types.Part(text="写失败，已达最大次数，跳过当前页检查，使用最后一次生成的结果")]))
-
-            yield event
-
-
-ppt_checker_agent = PPTCheckerAgent(
-    model=create_model(model=PPT_CHECKER_AGENT_CONFIG["model"], provider=PPT_CHECKER_AGENT_CONFIG["provider"]),
-    name="PPTCheckerAgent",
-    description="检查幻灯片内容是否合格",
-    instruction=prompt.CHECKER_AGENT_PROMPT,
-)
-
-
+        prompt_instruction = prompt.PREFIX_PAGE_PROMPT + prompt.COVER_PAGE_PROMPT.format(input_slide_data="hello")
+        return prompt_instruction
 
 def my_super_before_agent_callback(callback_context: CallbackContext):
     """
@@ -210,41 +177,12 @@ def my_super_before_agent_callback(callback_context: CallbackContext):
         callback_context.state["rewrite_retry_count_map"] = {}
     return None
 
-# --- 3. SlideLoopConditionAgent (The Condition Checker) ---
-# 这个代理负责更新当前幻灯片索引，并决定是否继续循环
-class SlideLoopConditionAgent(BaseAgent):
-    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
-        slides_plan_num: int = ctx.session.state.get("slides_plan_num")
-        current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
-
-        if not slides_plan_num:
-            # 如果没有 slides_plan，则直接结束循环 (可能在前面步骤出错), 幻灯片的生成计划是必须的
-            print("No slides_plan_num found. Terminating loop.")
-            logger.info("No slides_plan_num found. Terminating loop.")
-            yield Event(author=self.name, actions=EventActions(escalate=True))
-            return
-
-        # 检查是否所有幻灯片都已处理
-        if current_slide_index >= slides_plan_num - 1:
-            print(f"--- All {slides_plan_num} slides processed. Terminating loop. ---")
-            logger.info(f"--- All {slides_plan_num} slides processed. Terminating loop. ---")
-            yield Event(author=self.name, actions=EventActions(escalate=True))  # 提升事件，停止循环
-        else:
-            # 如果还有未处理的幻灯片，则更新索引并继续
-            new_slide_index = current_slide_index + 1
-            ctx.session.state["current_slide_index"] = new_slide_index
-            print(f"--- 开始生成第 {new_slide_index + 1} / {slides_plan_num} 幻灯片---")
-            logger.info(f"--- 开始生成第 {new_slide_index + 1} / {slides_plan_num} 幻灯片---")
-            yield Event(author=self.name, actions=EventActions())  # 不提升事件，继续循环
-
 # --- 4. PPTGeneratorLoopAgent ---
 ppt_generator_loop_agent = LoopAgent(
     name="PPTGeneratorLoopAgent",
     max_iterations=100,  # 设置一个足够大的最大迭代次数，以防万一。主要依赖ConditionAgent停止。
     sub_agents=[
-        ppt_writer_sub_agent,  # 首先生成当前页的内容
-        ppt_checker_agent,
-        SlideLoopConditionAgent(name="SlideCounter"),  # 然后检查并更新索引，决定是否继续
+        PPTWriterSubAgent(),  # 首先生成当前页的内容
     ],
     before_agent_callback=my_super_before_agent_callback,
 )
