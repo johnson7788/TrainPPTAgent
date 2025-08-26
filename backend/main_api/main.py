@@ -96,8 +96,8 @@ class AipptContentRequest(BaseModel):
 async def stream_content_response(prompt: str):
     """A generator that yields parts of the agent response."""
     # PPT的正文内容
-    outline_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
-    async for chunk_data in outline_wrapper.generate(prompt):
+    content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
+    async for chunk_data in content_wrapper.generate(prompt):
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 
