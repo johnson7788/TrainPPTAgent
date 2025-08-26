@@ -12,8 +12,11 @@ PPT的Agent采用强化学习GRPO进行训练，更符合自己的目标。
 ## 技术栈
 
 - **前端**: Vue.js, Vite, TypeScript
-- **后端**: Python, Flask/FastAPI (从目录结构推断)
+- **后端**: Python, Flask/FastAPI, A2A, ADK, MCP搜索
 - **AI模型**: 集成了能够生成PPT大纲和内容的语言模型
+
+## Todo
+开源强化学习训练Agent计划
 
 ## 项目结构
 
