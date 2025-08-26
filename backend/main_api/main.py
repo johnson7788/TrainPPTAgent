@@ -15,9 +15,11 @@ from a2a.types import (
     SendStreamingMessageRequest
 )
 from outline_client import A2AOutlineClientWrapper
+from content_client import A2AContentClientWrapper
 dotenv.load_dotenv()
 
 OUTLINE_API = os.environ["OUTLINE_API"]
+CONTENT_API = os.environ["CONTENT_API"]
 app = FastAPI()
 
 # Allow CORS for the frontend development server
@@ -91,14 +93,17 @@ async def aippt_outline(request: AipptRequest):
 class AipptContentRequest(BaseModel):
     content: str
 
-
+async def stream_content_response(prompt: str):
+    """A generator that yields parts of the agent response."""
+    # PPT的正文内容
+    outline_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
+    async for chunk_data in outline_wrapper.generate(prompt):
+        if chunk_data["type"] == "text":
+            yield chunk_data["text"]
 
 async def aippt_content_streamer(markdown_content: str):
     """Parses markdown and streams slide data as JSON objects."""
-    slides = parse_markdown_to_slides(markdown_content)
-    for slide in slides:
-        yield json.dumps(slide, ensure_ascii=False) + '\n'
-        await asyncio.sleep(0.1)
+    return StreamingResponse(stream_content_response(markdown_content), media_type="text/plain")
 
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
