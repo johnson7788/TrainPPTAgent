@@ -100,14 +100,10 @@ async def stream_content_response(prompt: str):
     async for chunk_data in content_wrapper.generate(prompt):
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
-
-async def aippt_content_streamer(markdown_content: str):
-    """Parses markdown and streams slide data as JSON objects."""
-    return StreamingResponse(stream_content_response(markdown_content), media_type="text/plain")
-
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
-    return StreamingResponse(aippt_content_streamer(request.content), media_type="application/json; charset=utf-8")
+    markdown_content = request.content
+    return StreamingResponse(stream_content_response(markdown_content), media_type="text/plain")
 
 if __name__ == "__main__":
     import uvicorn
