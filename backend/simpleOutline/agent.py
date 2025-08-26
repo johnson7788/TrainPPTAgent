@@ -10,34 +10,8 @@ from typing import Dict, List, Any, AsyncGenerator, Optional, Union
 from create_model import create_model
 from tools import DocumentSearch
 from dotenv import load_dotenv
+import prompt
 load_dotenv()
-
-instruction = """
-根据用户的描述生成大纲。按下面的格式生成大纲，仅生成大纲即可，无需多余说明, 可以在使用DocumentSearch进行大纲的细节补充。。
-输出格式与规则（严格遵守）：
-- 使用Markdown标题层级：# 标题 → ## 一级部分 → ### 二级小节 → 列表要点
-- 一级部分数量：5个；每个一级部分下含3–4个二级小节
-- 每个二级小节列出3–5个要点；要点使用短句，动词开头，不超过18字，不要句号
-- 全文不写引言/结语/目录，不写解释性段落，不加任何额外说明
-- 术语统一、风格一致，必要时加入可量化指标或示例
-- 语言：简体中文
-
-输出示例格式如下：
-# 标题
-
-## 一级部分
-### 二级小节
-- 要点1
-- 要点2
-- 要点3
-
-### 二级小节
-- 要点1
-- 要点2
-- 要点3
-- 要点4
-- 要点5
-"""
 
 model = create_model(model=os.environ["LLM_MODEL"], provider=os.environ["MODEL_PROVIDER"])
 
@@ -82,7 +56,7 @@ root_agent = Agent(
     description=(
         "generate outline"
     ),
-    instruction=instruction,
+    instruction=prompt.OUTLINE_INSTRUCTION,
     before_model_callback=before_model_callback,
     after_model_callback=after_model_callback,
     after_tool_callback=after_tool_callback,
