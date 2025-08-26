@@ -29,6 +29,7 @@
   >
     <ExportDialog />
   </Modal>
+  <FullscreenSpin v-if="isGenerating" :loading="true" tip="AI 生成中，请耐心等待…" />
 </template>
 
 <script lang="ts" setup>
@@ -51,9 +52,10 @@ import NotesPanel from './NotesPanel.vue'
 import SymbolPanel from './SymbolPanel.vue'
 import MarkupPanel from './MarkupPanel.vue'
 import Modal from '@/components/Modal.vue'
+import FullscreenSpin from '@/components/FullscreenSpin.vue'
 
 const mainStore = useMainStore()
-const { dialogForExport, showSelectPanel, showSearchPanel, showNotesPanel, showSymbolPanel, showMarkupPanel } = storeToRefs(mainStore)
+const { dialogForExport, showSelectPanel, showSearchPanel, showNotesPanel, showSymbolPanel, showMarkupPanel, isGenerating } = storeToRefs(mainStore)
 
 const closeExportDialog = () => mainStore.setDialogForExport('')
 

@@ -66,10 +66,7 @@
       </section>
     </div>
 
-    <!-- 将 Loading Teleport 到 body，确保始终在视口居中且不受父层影响 -->
-    <Teleport to="body">
-      <FullscreenSpin v-if="loading" :loading="true" tip="AI 生成中，请耐心等待…" />
-    </Teleport>
+    
   </div>
 </template>
 
@@ -90,7 +87,7 @@ const router = useRouter()
 const mainStore = useMainStore()
 const slideStore = useSlidesStore()
 const { templates } = storeToRefs(slideStore)
-const { AIPPT, presetImgPool } = useAIPPT()
+const { AIPPTGenerator, presetImgPool } = useAIPPT()
 
 const outline = ref(route.query.outline as string)
 const language = ref(route.query.language as string)
@@ -102,7 +99,11 @@ const loading = ref(false)
 
 const createPPT = async () => {
   if (!selectedTemplate.value) return
+  mainStore.setGenerating(true)
   loading.value = true
+
+  router.push('/editor')
+
   try {
     const stream = await api.AIPPT({
       content: outline.value,
@@ -119,6 +120,7 @@ const createPPT = async () => {
     const templateData = await api.getFileData(selectedTemplate.value)
     const templateSlides: Slide[] = templateData.slides
     const templateTheme: SlideTheme = templateData.theme
+    slideStore.setTheme(templateTheme)
 
     const reader: ReadableStreamDefaultReader = stream.body.getReader()
     const decoder = new TextDecoder('utf-8')
@@ -128,8 +130,7 @@ const createPPT = async () => {
         if (done) {
           loading.value = false
           mainStore.setAIPPTDialogState(false)
-          slideStore.setTheme(templateTheme)
-          router.push('/editor')
+          mainStore.setGenerating(false)
           return
         }
 
@@ -138,7 +139,10 @@ const createPPT = async () => {
           const text = chunk.replace(/```json|```/g, '').trim()
           if (text) {
             const slide: AIPPTSlide = JSON.parse(text)
-            AIPPT(templateSlides, [slide])
+            const slideGenerator = AIPPTGenerator(templateSlides, [slide])
+            for (const generatedSlide of slideGenerator) {
+              slideStore.addSlide(generatedSlide)
+            }
           }
         } catch (err) {
           // eslint-disable-next-line no-console
@@ -151,6 +155,7 @@ const createPPT = async () => {
     readStream()
   } catch (e) {
     loading.value = false
+    mainStore.setGenerating(false)
     // eslint-disable-next-line no-console
     console.error(e)
   }

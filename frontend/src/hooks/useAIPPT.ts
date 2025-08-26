@@ -231,9 +231,7 @@ export default () => {
     imgPool.value = imgs
   }
 
-  const AIPPT = (templateSlides: Slide[], _AISlides: AIPPTSlide[], imgs?: ImgPoolItem[]) => {
-    slidesStore.updateSlideIndex(slidesStore.slides.length - 1)
-
+  function* AIPPTGenerator(templateSlides: Slide[], _AISlides: AIPPTSlide[], imgs?: ImgPoolItem[]) {
     if (imgs) imgPool.value = imgs
 
     const AISlides: AIPPTSlide[] = []
@@ -303,8 +301,6 @@ export default () => {
       const _transitionTemplate = transitionTemplates[Math.floor(Math.random() * transitionTemplates.length)]
       transitionTemplate.value = _transitionTemplate
     }
-
-    const slides = []
     
     for (const item of AISlides) {
       if (item.type === 'cover') {
@@ -320,11 +316,11 @@ export default () => {
           }
           return el
         })
-        slides.push({
+        yield {
           ...coverTemplate,
           id: nanoid(10),
           elements,
-        })
+        }
       }
       else if (item.type === 'contents') {
         const _contentsTemplates = getUseableTemplates(contentsTemplates, item.data.items.length, 'item')
@@ -402,11 +398,11 @@ export default () => {
           }
           return el
         }).filter(el => !unusedElIds.includes(el.id) && !(el.groupId && unusedGroupIds.includes(el.groupId)))
-        slides.push({
+        yield {
           ...contentsTemplate,
           id: nanoid(10),
           elements,
-        })
+        }
       }
       else if (item.type === 'transition') {
         transitionIndex.value = transitionIndex.value + 1
@@ -424,11 +420,11 @@ export default () => {
           }
           return el
         })
-        slides.push({
+        yield {
           ...transitionTemplate.value,
           id: nanoid(10),
           elements,
-        })
+        }
       }
       else if (item.type === 'content') {
         const _contentTemplates = getUseableTemplates(contentTemplates, item.data.items.length, 'item')
@@ -497,11 +493,11 @@ export default () => {
           }
           return el
         })
-        slides.push({
+        yield {
           ...contentTemplate,
           id: nanoid(10),
           elements,
-        })
+        }
       }
       else if (item.type === 'end') {
         const endTemplate = endTemplates[Math.floor(Math.random() * endTemplates.length)]
@@ -509,13 +505,18 @@ export default () => {
           if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
           return el
         })
-        slides.push({
+        yield {
           ...endTemplate,
           id: nanoid(10),
           elements,
-        })
+        }
       }
     }
+  }
+
+  const AIPPT = (templateSlides: Slide[], _AISlides: AIPPTSlide[], imgs?: ImgPoolItem[]) => {
+    slidesStore.updateSlideIndex(slidesStore.slides.length - 1)
+    const slides = [...AIPPTGenerator(templateSlides, _AISlides, imgs)]
     if (isEmptySlide.value) slidesStore.setSlides(slides)
     else addSlidesFromData(slides)
   }
@@ -525,5 +526,6 @@ export default () => {
     AIPPT,
     getMdContent,
     getJSONContent,
+    AIPPTGenerator,
   }
 }
