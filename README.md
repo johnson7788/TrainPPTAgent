@@ -18,6 +18,15 @@ PPT的Agent采用强化学习GRPO进行训练，更符合自己的目标。
 ## Todo
 开源强化学习训练Agent计划
 
+## 界面示意图
+大纲生成
+![PPT.png](doc/PPT.png)
+![outline.png](doc/outline.png)
+模版选择
+![select_template.png](doc/select_template.png)
+PPT开始逐页生成
+![start_ppt_generate.png](doc/start_ppt_generate.png)
+
 ## 项目结构
 
 ```
