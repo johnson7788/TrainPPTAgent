@@ -16,7 +16,7 @@ PUBLIC_AGENT_CARD_PATH = '/.well-known/agent.json'
 EXTENDED_AGENT_CARD_PATH = '/agent/authenticatedExtendedCard'
 
 
-class A2AOutlineClientWrapper:
+class A2AContentClientWrapper:
     def __init__(self, session_id: str, agent_url: str):
         self.session_id = session_id
         self.agent_url = agent_url
@@ -147,7 +147,7 @@ class A2AOutlineClientWrapper:
 if __name__ == '__main__':
     async def main():
         session_id = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        wrapper = A2AOutlineClientWrapper(session_id=session_id, agent_url="http://localhost:10001")
+        wrapper = A2AContentClientWrapper(session_id=session_id, agent_url="http://localhost:10011")
         async for chunk_data in wrapper.generate("电动汽车发展"):
             print(chunk_data)
     asyncio.run(main())
