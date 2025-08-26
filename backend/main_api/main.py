@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 import os
 import dotenv
 from fastapi import FastAPI
@@ -93,11 +94,18 @@ async def aippt_outline(request: AipptRequest):
 class AipptContentRequest(BaseModel):
     content: str
 
-async def stream_content_response(prompt: str):
-    """A generator that yields parts of the agent response."""
-    # PPT的正文内容
+async def stream_content_response(markdown_content: str):
+    """  # PPT的正文内容生成"""
+    # 用正则找到第一个一级标题及之后的内容
+    match = re.search(r"(# .*)", markdown_content, flags=re.DOTALL)
+
+    if match:
+        result = markdown_content[match.start():]
+    else:
+        result = markdown_content
+    print(f"用户输入的markdown大纲是：{result}")
     content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
-    async for chunk_data in content_wrapper.generate(prompt):
+    async for chunk_data in content_wrapper.generate(result):
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 @app.post("/tools/aippt")
