@@ -103,6 +103,10 @@ class PPTWriterSubAgent(LlmAgent):
             yield event
         if current_slide_index == slides_plan_num - 1:
             print(f"生成第{current_slide_index}页幻灯片完成...")
+            # 退出循环
+            yield Event(author=self.name, actions=EventActions(escalate=True))
+        # 给current_slide_index加1
+        ctx.session.state["current_slide_index"] = current_slide_index + 1
 
     def _get_dynamic_instruction(self, ctx: InvocationContext) -> str:
         """动态整合所有研究发现并生成指令"""
