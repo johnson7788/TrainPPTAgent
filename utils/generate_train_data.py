@@ -10,6 +10,7 @@
 # 解析大纲为json格式，保存到outline_data.jsonl
 
 import json
+import httpx
 import requests
 import re
 import os
@@ -19,7 +20,13 @@ def parse_markdown_to_json(markdown_text):
     Parses a markdown outline into a nested JSON structure.
     Handles headings (#, ##, ...) and list items (- or *).
     """
-    lines = markdown_text.strip().split('\n')
+    match = re.search(r"(# .*)", markdown_text, flags=re.DOTALL)
+
+    if match:
+        result = markdown_text[match.start():]
+    else:
+        result = markdown_text
+    lines = result.strip().split('\n')
     # The root of the entire presentation.
     # It might not have a title in the markdown, so we create a placeholder.
     root = {'children': []} 
@@ -118,14 +125,14 @@ def generate_data():
                     "content": task,
                     "language": "Chinese",  # Topics are in Chinese
                     "model": "default",
-                    "stream": False
+                    "stream": True
                 }
                 # Set a generous timeout as the model can be slow
-                response = requests.post(api_url, json=request_payload, timeout=600)
-                response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-
-                response_data = response.json()
-                markdown_outline = response_data.get("text")
+                headers = {'content-type': 'application/json'}
+                with httpx.stream("POST", api_url, json=request_payload, headers=headers, timeout=None) as response:
+                    markdown_outline = ""
+                    for chunk in response.iter_text():
+                        markdown_outline += chunk
                 print(f"Outline for task '{task}':\n{markdown_outline}")
 
                 if not markdown_outline or not markdown_outline.strip():

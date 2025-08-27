@@ -42,54 +42,15 @@ async def stream_agent_response(prompt: str):
     """A generator that yields parts of the agent response."""
     outline_wrapper = A2AOutlineClientWrapper(session_id=uuid.uuid4().hex, agent_url=OUTLINE_API)
     async for chunk_data in outline_wrapper.generate(prompt):
+        print(f"生成大纲输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
-
-async def get_agent_response(prompt: str):
-    """Gets a complete response from the agent."""
-    timeout = httpx.Timeout(300.0)
-    async with httpx.AsyncClient(timeout=timeout) as httpx_client:
-        try:
-            client = await A2AClient.get_client_from_agent_card_url(
-                httpx_client, 'http://localhost:10001'
-            )
-        except Exception as e:
-            print(f"Error connecting to agent: {e}")
-            return f"Error connecting to agent: {e}"
-
-        request_id = uuid.uuid4().hex
-        send_message_payload = {
-            'message': {
-                'role': 'user',
-                'parts': [{'type': 'text', 'text': prompt}],
-                'messageId': request_id,
-            }
-        }
-
-        request = SendMessageRequest(
-            id=request_id,
-            params=MessageSendParams(**send_message_payload)
-        )
-
-        try:
-            response = await client.send_message(request)
-            if response.message and response.message.parts:
-                text_part = response.message.parts[0]
-                if hasattr(text_part, 'text'):
-                    return text_part.text
-            return ""
-        except Exception as e:
-            print(f"Error getting response: {e}")
-            return f"Error getting response: {e}"
 
 
 @app.post("/tools/aippt_outline")
 async def aippt_outline(request: AipptRequest):
-    if request.stream:
-        return StreamingResponse(stream_agent_response(request.content), media_type="text/plain")
-    else:
-        response_text = await get_agent_response(request.content)
-        return {"text": response_text}
+    assert request.stream, "只支持流式的返回大纲"
+    return StreamingResponse(stream_agent_response(request.content), media_type="text/plain")
 
 class AipptContentRequest(BaseModel):
     content: str
