@@ -74,6 +74,13 @@ async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content
     return StreamingResponse(stream_content_response(markdown_content), media_type="text/plain")
 
+from fastapi.responses import FileResponse
+
+@app.get("/data/{filename}")
+async def get_data(filename: str):
+    file_path = os.path.join("./template", filename)
+    return FileResponse(file_path)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=6800)

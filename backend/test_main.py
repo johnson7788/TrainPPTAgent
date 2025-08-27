@@ -73,5 +73,18 @@ class PPTBaseTestCase(unittest.IsolatedAsyncioTestCase):
         print(f"Outline no-stream test took: {time.time() - start_time}s")
         print(f"Server called: {self.host}")
 
+    async def test_get_template(self):
+        """
+        Test getting a template file
+        """
+        filename = "template_1.json"
+        url = f"{self.base_url}/data/{filename}"
+        async with AsyncClient() as client:
+            response = await client.get(url)
+            self.assertEqual(response.status_code, 200, f"Failed to get template {filename}")
+            response_json = response.json()
+            print(f"Template {filename}: {response_json}")
+            self.assertIn("slides", response_json)
+            self.assertIn("theme", response_json)
 if __name__ == "__main__":
     unittest.main()
