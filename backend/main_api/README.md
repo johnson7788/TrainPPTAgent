@@ -4,4 +4,4 @@
 [content_client.py](content_client.py)  #生成PPT正文
 
 ## 模版文件
-template目录下是模版文件
+template目录下是模版文件，可以自己克隆和修改
