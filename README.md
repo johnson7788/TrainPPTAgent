@@ -109,6 +109,9 @@ TrainPPTAgent/
 3.  **生成内容**: 用户确认大纲后，前端调用 `/api/tools/aippt` 接口，后端根据大纲，结合模板结构，逐页生成详细的PPT内容。
 4.  **渲染展示**: 前端接收到生成的页面数据后，实时渲染并展示PPT。
 
+## 自定义模版
+[Template.md](doc/Template.md)
+
 ## 前端引用项目(注意前端版权)
 https://github.com/pipipi-pikachu/PPTist
 
