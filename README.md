@@ -112,7 +112,7 @@ TrainPPTAgent/
 ## 自定义模版
 [Template.md](doc/Template.md)
 
-## 前端引用项目(注意前端版权)
+## 前端引用项目(本项目免版权，但注意前端版权)
 https://github.com/pipipi-pikachu/PPTist
 
 ## 有任何问题联系我
