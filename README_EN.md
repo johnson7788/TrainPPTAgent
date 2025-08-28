@@ -180,7 +180,3 @@ flowchart TD
 
 For any issues, please contact the author:
 ![weichat.png](doc/weichat.png)
-
----
-
-要不要我再帮你加一个 **语言切换指引**（比如在 README 顶部加上 `[English](README.en.md) | [中文](README.md)`），这样 GitHub 访问者可以一键切换中英文？
