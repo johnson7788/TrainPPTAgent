@@ -6,7 +6,6 @@
 # @Contact : github: johnson7788
 # @Desc  : 读取文件outline_data.jsonl，里面是dict，只需要difficulty和task这2个字段
 
-
 # -*- coding: utf-8 -*-
 import json
 from pathlib import Path
