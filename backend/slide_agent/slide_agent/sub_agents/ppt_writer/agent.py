@@ -8,7 +8,7 @@ from google.adk.events import Event, EventActions
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models import LlmRequest, LlmResponse
-from .tools import SearchImage
+from .tools import SearchImage, DocumentSearch
 from ...config import PPT_WRITER_AGENT_CONFIG,PPT_CHECKER_AGENT_CONFIG
 from ...create_model import create_model
 from . import prompt
@@ -86,7 +86,7 @@ class PPTWriterSubAgent(LlmAgent):
             after_agent_callback=my_after_agent_callback,
             before_model_callback=my_before_model_callback,
             after_model_callback=my_after_model_callback,
-            tools=[SearchImage],  # 注册SearchImage工具
+            tools=[SearchImage, DocumentSearch],  # 注册SearchImage工具
             **kwargs
         )
 
