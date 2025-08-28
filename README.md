@@ -61,6 +61,24 @@ TrainPPTAgent/
 
 ### 后端服务
 
+#### 方法一：一键启动（推荐）
+
+使用我们提供的启动脚本，可以一键启动所有后端服务：
+
+```bash
+cd backend
+python start_backend.py
+```
+
+**功能特性：**
+- ✅ 自动检查Python版本和依赖
+- ✅ 自动安装所需包
+- ✅ 端口占用检测和清理（需要用户确认）
+- ✅ 自动设置环境文件
+- ✅ 多进程管理和监控
+
+#### 方法二：手动启动
+
 1. 进入后端目录：
 
    ```bash
@@ -92,6 +110,8 @@ TrainPPTAgent/
    cp env_template .env
    python main_api.py
    ```
+
+> **详细说明：** 请参考 [backend/启动说明.md](backend/启动说明.md)
 
 ### 前端服务
 
