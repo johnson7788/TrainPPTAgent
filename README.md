@@ -179,5 +179,3 @@ flowchart TD
 ![weichat.png](doc/weichat.png)
 
 ---
-
-要不要我帮你顺便加一个 **英文版 README**（README.en.md），方便国际开发者参与？
