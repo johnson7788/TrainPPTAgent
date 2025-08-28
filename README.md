@@ -24,6 +24,32 @@ https://github.com/johnson7788/RLTrainPPT
 ## 更新日志
 [CHANGES.md](doc/CHANGES.md)
 
+## 流程图
+```mermaid
+flowchart TD
+  U((用户)) --> FE[前端界面]
+
+  FE -->|输入主题| API[后端 API]
+
+  %% 生成大纲
+  API -->|调用大纲服务| Outline[大纲服务]
+  Outline -->|调用 Web搜索工具| WebSearch1[Web 搜索]
+  WebSearch1 --> Outline
+  Outline --> API --> FE
+
+  %% 生成PPT
+  FE -->|确认大纲后生成PPT内容| API
+  API -->|调用内容服务| PPTGen[PPT生成服务]
+  PPTGen -->|调用 Web搜索工具| WebSearch2[Web 搜索]
+  PPTGen -->|调用 配图搜索工具| ImgSearch[配图搜索]
+  WebSearch2 --> PPTGen
+  ImgSearch --> PPTGen
+  PPTGen --> API --> FE
+
+  FE -->|渲染展示 PPT| U
+```
+
+
 ## 界面示意图
 大纲生成
 ![PPT.png](doc/PPT.png)
