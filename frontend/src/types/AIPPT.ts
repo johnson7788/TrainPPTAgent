@@ -50,8 +50,22 @@ export interface AIPPTContent extends AIPPTBaseSlide {
   offset?: number
 }
 
+export interface AIPPTReference {  
+  type: 'reference'  
+  data: {  
+    title: string  
+    references: {
+      number?: string|number
+      pmid?: string
+      url?: string
+      doi?: string  
+    }[]  
+  },
+  offset?: number 
+} 
+
 export interface AIPPTEnd extends AIPPTBaseSlide {
   type: 'end'
 }
 
-export type AIPPTSlide = AIPPTCover | AIPPTContents | AIPPTTransition | AIPPTContent | AIPPTEnd
+export type AIPPTSlide = AIPPTCover | AIPPTContents | AIPPTTransition | AIPPTContent | AIPPTReference | AIPPTEnd

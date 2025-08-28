@@ -61,6 +61,7 @@ const slideTypeOptions = ref<{ label: string; value: SlideType | '' }[]>([
   { label: '目录页', value: 'contents' },
   { label: '过渡页', value: 'transition' },
   { label: '内容页', value: 'content' },
+  { label: '引用页', value: 'reference' },
   { label: '结束页', value: 'end' },
 ])
 
@@ -76,6 +77,10 @@ const textTypeOptions = ref<{ label: string; value: TextType | '' }[]>([
   { label: '页脚', value: 'footer' },
   { label: '节编号', value: 'partNumber' },
   { label: '项目编号', value: 'itemNumber' },
+  { label: '引用编号', value: 'referenceNumber' },
+  { label: 'PMID', value: 'pmid' },
+  { label: 'url', value: 'url' },
+  { label: 'DOI', value: 'doi' },
 ])
 
 const imageTypeOptions = ref<{ label: string; value: ImageType | '' }[]>([

@@ -139,7 +139,7 @@ interface PPTBaseElement {
 }
 
 
-export type TextType = 'title' | 'subtitle' | 'content' | 'item' | 'itemTitle' | 'notes' | 'header' | 'footer' | 'partNumber' | 'itemNumber'
+export type TextType = 'title' | 'subtitle' | 'content' | 'item' | 'itemTitle' | 'notes' | 'header' | 'footer' | 'partNumber' | 'itemNumber'| 'referenceNumber' | 'doi' | 'pmid' | 'url'
 
 /**
  * 文本元素
@@ -714,7 +714,7 @@ export interface SectionTag {
   title?: string
 }
 
-export type SlideType = 'cover' | 'contents' | 'transition' | 'content' | 'end'
+export type SlideType = 'cover' | 'contents' | 'transition' | 'content' | 'reference' | 'end'
 
 /**
  * 幻灯片页面

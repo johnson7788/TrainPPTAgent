@@ -111,6 +111,13 @@ export interface AIPPTEnd extends AIPPTBaseSlide {
 export type AIPPTSlide = AIPPTCover | AIPPTContents | AIPPTTransition | AIPPTContent | AIPPTEnd
 ```
 
+## 添加参考引用类型，即当前的PPT的内容有依据，依据来自哪里，网页或者文章等
+userAIPPT.ts # 添加reference引用类型的页面type处理
+index.ts 
+store/slides.ts
+types/AIPPT.ts  #AIPPTReference类型约束
+MarkupPanel.vue  # 添加前端显示引用类型
+
 # 后端
 
 ## 添加mock api方便测试
