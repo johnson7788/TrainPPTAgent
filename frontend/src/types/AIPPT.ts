@@ -1,4 +1,20 @@
-export interface AIPPTCover {
+// 图片信息接口
+export interface AIPPTImage {
+  id: string
+  src: string
+  width: number
+  height: number
+  alt?: string
+  photographer?: string
+  url?: string
+}
+
+// 基础幻灯片接口，包含图片字段
+export interface AIPPTBaseSlide {
+  images?: AIPPTImage[]
+}
+
+export interface AIPPTCover extends AIPPTBaseSlide {
   type: 'cover'
   data: {
     title: string
@@ -6,7 +22,7 @@ export interface AIPPTCover {
   }
 }
 
-export interface AIPPTContents {
+export interface AIPPTContents extends AIPPTBaseSlide {
   type: 'contents'
   data: {
     items: string[]
@@ -14,7 +30,7 @@ export interface AIPPTContents {
   offset?: number
 }
 
-export interface AIPPTTransition {
+export interface AIPPTTransition extends AIPPTBaseSlide {
   type: 'transition'
   data: {
     title: string
@@ -22,7 +38,7 @@ export interface AIPPTTransition {
   }
 }
 
-export interface AIPPTContent {
+export interface AIPPTContent extends AIPPTBaseSlide {
   type: 'content'
   data: {
     title: string
@@ -34,7 +50,7 @@ export interface AIPPTContent {
   offset?: number
 }
 
-export interface AIPPTEnd {
+export interface AIPPTEnd extends AIPPTBaseSlide {
   type: 'end'
 }
 
