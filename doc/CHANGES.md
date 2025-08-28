@@ -50,6 +50,67 @@ src/store/slides.ts
  │    164 + }                                                                                           │
  │    165 +
 
+## 前端图片Interface扩充, AIPPT.ts
+```
+// 图片信息接口
+export interface AIPPTImage {
+  id: string
+  src: string
+  width: number
+  height: number
+  alt?: string
+  photographer?: string
+  url?: string
+}
+
+// 基础幻灯片接口，包含图片字段
+export interface AIPPTBaseSlide {
+  images?: AIPPTImage[]
+}
+
+export interface AIPPTCover extends AIPPTBaseSlide {
+  type: 'cover'
+  data: {
+    title: string
+    text: string
+  }
+}
+
+export interface AIPPTContents extends AIPPTBaseSlide {
+  type: 'contents'
+  data: {
+    items: string[]
+  }
+  offset?: number
+}
+
+export interface AIPPTTransition extends AIPPTBaseSlide {
+  type: 'transition'
+  data: {
+    title: string
+    text: string
+  }
+}
+
+export interface AIPPTContent extends AIPPTBaseSlide {
+  type: 'content'
+  data: {
+    title: string
+    items: {
+      title: string
+      text: string
+    }[]
+  },
+  offset?: number
+}
+
+export interface AIPPTEnd extends AIPPTBaseSlide {
+  type: 'end'
+}
+
+export type AIPPTSlide = AIPPTCover | AIPPTContents | AIPPTTransition | AIPPTContent | AIPPTEnd
+```
+
 # 后端
 
 ## 添加mock api方便测试
@@ -67,3 +128,6 @@ src/store/slides.ts
 ## 生成大纲内容的后端主程序
 [slide_agent](../backend/slide_agent)
 main_api.py
+
+## 新增搜索PEXELS图片工具，如果未设置PEXELS_API_KEY则会模拟搜索配图
+backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py

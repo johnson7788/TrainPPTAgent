@@ -19,6 +19,9 @@ PPT的Agent采用强化学习GRPO进行训练，更符合自己的目标。
 - 开源强化学习训练Agent计划
 - 上传ppt模板，完成自动标注
 
+## 更新日志
+[CHANGES.md](doc/CHANGES.md)
+
 ## 界面示意图
 大纲生成
 ![PPT.png](doc/PPT.png)

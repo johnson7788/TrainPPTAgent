@@ -1,4 +1,5 @@
 # 获取所有可用图片地址
+```
 curl 'http://127.0.0.1:5173/mocks/imgs.json' \
   -H 'Accept: application/json, text/plain, */*' \
   -H 'Accept-Language: en,zh-CN;q=0.9,zh;q=0.8' \
@@ -495,3 +496,7 @@ curl 'http://127.0.0.1:5173/mocks/imgs.json' \
       "src": "https://images.pexels.com/photos/32474034/pexels-photo-32474034.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
   }
 ]
+
+```
+
+#
