@@ -15,8 +15,10 @@ PPT的Agent采用强化学习GRPO进行训练，更符合自己的目标。
 - **后端**: Python, Flask/FastAPI, A2A, ADK, MCP搜索
 - **AI模型**: 集成了能够生成PPT大纲和内容的语言模型
 
+## PPT模型训练代码
+https://github.com/johnson7788/RLTrainPPT
+
 ## Todo
-- 开源强化学习训练Agent计划
 - 上传ppt模板，完成自动标注
 
 ## 更新日志
