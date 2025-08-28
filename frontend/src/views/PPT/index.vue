@@ -115,10 +115,9 @@ const createPPT = async () => {
       model: model.value,
     })
 
-    if (img.value === 'test') {
-      const imgs = await api.getMockData('imgs')
-      presetImgPool(imgs)
-    }
+    // 初始化图片池，使用mock数据作为备用
+    const mockImgs = await api.getMockData('imgs')
+    presetImgPool(mockImgs)
 
     const templateData = await api.getFileData(selectedTemplate.value)
     const templateSlides: Slide[] = templateData.slides
@@ -142,6 +141,19 @@ const createPPT = async () => {
           const text = chunk.replace(/```json|```/g, '').trim()
           if (text) {
             const slide: AIPPTSlide = JSON.parse(text)
+            
+            // 处理从后端返回的图片数据
+            if (slide.images && slide.images.length > 0) {
+              // 将后端返回的图片添加到图片池
+              const backendImages = slide.images.map((img: any) => ({
+                id: img.id || Math.random().toString(),
+                src: img.src,
+                width: img.width || 1920,
+                height: img.height || 1080
+              }))
+              presetImgPool(backendImages)
+            }
+            
             const slideGenerator = AIPPTGenerator(templateSlides, [slide])
             for (const generatedSlide of slideGenerator) {
               slideStore.addSlide(generatedSlide)
