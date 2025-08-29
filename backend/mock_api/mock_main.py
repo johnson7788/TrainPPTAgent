@@ -71,7 +71,7 @@ markdown_response = """# 2025科技前沿动态
 - 金融风险分析模型计算效率提升1000倍
 - 材料科学发现新型超导材料与催化剂
 """
-
+#图片的幻灯片的响应格式
 image_data = {
     "type": "content",
     "data": {
@@ -79,7 +79,7 @@ image_data = {
         "items": [
             {
                 "title": "谋杀心理特征",
-                "text": "探讨谋杀者的心理动机…",
+                "text": "探讨谋杀者的心理动机",
                 "images": [
                     {
                         "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg",
