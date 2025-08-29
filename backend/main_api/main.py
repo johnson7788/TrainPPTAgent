@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 import uuid
 import httpx
 from a2a.client import A2AClient
@@ -73,8 +74,6 @@ async def stream_content_response(markdown_content: str):
 async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content
     return StreamingResponse(stream_content_response(markdown_content), media_type="text/plain")
-
-from fastapi.responses import FileResponse
 
 @app.get("/data/{filename}")
 async def get_data(filename: str):
