@@ -15,3 +15,10 @@
       { name: '莫兰迪配色', id: 'template_4', cover: '/api/data/template_4.jpg' },
     ], // 模板
 ```
+
+
+# 模版中的类型
+image
+text
+shape
+line

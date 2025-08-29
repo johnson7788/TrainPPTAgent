@@ -138,6 +138,7 @@ const createPPT = async () => {
 
         const chunk = decoder.decode(value, { stream: true })
         try {
+          console.log('模型返回的 chunk:', chunk)
           const text = chunk.replace(/```json|```/g, '').trim()
           if (text) {
             const slide: AIPPTSlide = JSON.parse(text)

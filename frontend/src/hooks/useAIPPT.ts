@@ -615,6 +615,38 @@ export default () => {
 
         const elements = contentTemplate.elements.map(el => {
           if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+          
+          if (el.type === 'chart') {
+            const chartItem = item.data.items.find((item: any) => item.charts && item.charts.length > 0);
+            if (chartItem) {
+                const chartData = chartItem.charts[0];
+                return {
+                    ...el,
+                    chartType: chartData.chartType,
+                    data: chartData.data,
+                    options: chartData.options,
+                    themeColors: chartData.themeColors,
+                    textColor: chartData.textColor,
+                    lineColor: chartData.lineColor,
+                };
+            }
+          }
+      
+          if (el.type === 'table') {
+            const tableItem = item.data.items.find((item: any) => item.tables && item.tables.length > 0);
+            if (tableItem) {
+                const tableData = tableItem.tables[0];
+                const data = tableData.data.map((row: any) => row.map((cell: any) => ({...cell, id: nanoid(10)})));
+                return {
+                    ...el,
+                    colWidths: tableData.colWidths,
+                    theme: tableData.theme,
+                    outline: tableData.outline,
+                    data: data,
+                };
+            }
+          }
+
           if (el.type !== 'text' && el.type !== 'shape') return el
           
           // 特殊处理：只有1个项目时，使用正文样式
