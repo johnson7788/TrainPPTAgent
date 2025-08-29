@@ -1,8 +1,6 @@
 import os
 import asyncio
 import json
-
-from PIL.ImageOps import cover
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
