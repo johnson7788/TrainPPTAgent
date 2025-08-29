@@ -18,9 +18,7 @@ import requests
 from urllib.parse import quote
 import json
 from typing import List, Dict, Any
-from weixin_search import sogou_weixin_search,get_real_url,get_article_content
-
-
+from .weixin_search import sogou_weixin_search,get_real_url,get_article_content
 
 async def SearchImage(query: str, count: int = 1, tool_context: ToolContext = None) -> List[Dict[str, Any]]:
     """

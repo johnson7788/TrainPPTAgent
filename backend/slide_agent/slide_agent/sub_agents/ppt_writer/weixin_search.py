@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 import requests
 from lxml import html
 from urllib.parse import quote
-from cache_utils import cache_decorator
+from .cache_utils import cache_decorator
 import time
 
 @cache_decorator
