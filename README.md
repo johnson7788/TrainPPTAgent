@@ -108,6 +108,8 @@ python start_backend.py
    ```bash
    cd backend/slide_agent
    cp env_template .env
+   修改每个Agent的模型
+   backend/slide_agent/slide_agent/config.py
    python main_api.py
    ```
 
