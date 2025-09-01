@@ -89,6 +89,13 @@ def create_model(model:str, provider: str):
             # 表示兼容openai的模型请求
             model = "openai/" + model
         return LiteLlm(model=model, api_key=os.environ.get("VLLM_API_KEY"), api_base=os.environ.get("VLLM_API_URL"))
+    elif provider == "silicon":
+        # huggingface的模型需要使用LiteLlm
+        assert os.environ.get("SILICON_API_KEY"), "SILICON_API_KEY is not set"
+        if not model.startswith("openai/"):
+            # 表示兼容openai的模型请求
+            model = "openai/" + model
+        return LiteLlm(model=model, api_key=os.environ.get("SILICON_API_KEY"), api_base="https://api.siliconflow.cn/v1")
     elif provider == "ollama":
         # huggingface的模型需要使用LiteLlm
         assert os.environ.get("OLLAMA_API_KEY"), "OLLAMA_API_KEY is not set"
