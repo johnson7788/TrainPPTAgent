@@ -1,3 +1,4 @@
+# 根据slide/agentconfig.py下的config使用哪个模型，就配置哪个key
 GOOGLE_API_KEY=xx
 DEEPSEEK_API_KEY=xx
 OPENAI_API_KEY=xx
