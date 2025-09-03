@@ -3,6 +3,9 @@
 **TrainPPTAgent** 是一款基于 AI 的智能演示文稿生成工具。用户只需输入主题，系统即可自动生成结构完整、内容丰富的 PPT 大纲与逐页内容。项目采用 **前后端分离架构**：前端负责交互、大纲编辑与模板选择，后端则借助大语言模型（LLM）与强化学习（GRPO）完成内容生成与优化，使生成的 PPT 更贴合用户目标。
 
 English：[README_EN.md](README_EN.md)
+强化学习训练代码请参见另外项目：
+👉 [PPT 模型训练代码](https://github.com/johnson7788/RLTrainPPT)
+
 
 ---
 
@@ -30,9 +33,6 @@ English：[README_EN.md](README_EN.md)
 * **前端**: Vue.js, Vite, TypeScript
 * **后端**: Python, Flask/FastAPI, A2A, ADK, MCP 搜索
 * **AI 模型**: 大语言模型（用于大纲与内容生成）
-
-相关训练代码请参见：
-👉 [PPT 模型训练代码](https://github.com/johnson7788/RLTrainPPT)
 
 ---
 
