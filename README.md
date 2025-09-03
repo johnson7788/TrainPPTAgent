@@ -67,6 +67,7 @@ TrainPPTAgent/
 
 ```bash
 cd backend
+pip install -r requirements.txt
 python start_backend.py
 ```
 
