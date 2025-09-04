@@ -62,6 +62,14 @@ def create_model(model:str, provider: str):
             # 表示兼容openai的模型请求
             model = "openai/" + model
         return LiteLlm(model=model, api_key=os.environ.get("SILICON_API_KEY"), api_base="https://api.siliconflow.cn/v1")
+    elif provider == "modelscope":
+        # modelscope的模型需要使用LiteLlm
+        assert os.environ.get("MODELSCOPE_API_KEY"), "MODEL_SCOPE_API_KEY is not set"
+        if not model.startswith("openai/"):
+            # 表示兼容openai的模型请求
+            model = "openai/" + model
+        return LiteLlm(model=model, api_key=os.environ.get("MODELSCOPE_API_KEY"),
+                       api_base="https://api-inference.modelscope.cn/v1")
     elif provider == "doubao":
         # huggingface的模型需要使用LiteLlm
         assert os.environ.get("DOUBAO_API_KEY"), "DOUBAO_API_KEY is not set"
