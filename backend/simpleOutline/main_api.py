@@ -33,7 +33,8 @@ logger = logging.getLogger(__name__)
 @click.command()
 @click.option("--host", "host", default="localhost", help="服务器绑定的主机名（默认为 localhost,可以指定具体本机ip）")
 @click.option("--port", "port", default=10001, help="服务器监听的端口号（默认为 10001）")
-def main(host: str, port: int):
+@click.option("--agent_url", "agent_url", default="",help="Agent Card中对外展示和访问的地址")
+def main(host: str, port: int, agent_url: str=""):
     """
     启动 Outline Agent 服务，支持流式和非流式两种模式。
     """
@@ -55,11 +56,13 @@ def main(host: str, port: int):
         examples=["outline"],
     )
 
+    if not agent_url:
+        agent_url = f"http://{host}:{port}/"
     # 构建 agent 卡片信息
     agent_card = AgentCard(
         name=agent_card_name,
         description=agent_description,
-        url=f"http://{host}:{port}/",
+        url=agent_url,
         version="1.0.0",
         defaultInputModes=["text"],
         defaultOutputModes=["text"],

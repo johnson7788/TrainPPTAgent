@@ -108,3 +108,7 @@ flowchart TD
 /Users/admin/miniforge3/envs/multiagent/bin/python3.12 /Users/admin/git/MultiAgentPPT/backend/slide_agent/a2a_client.py 
 
 ```
+
+## 注意：
+main_api.py服务器部署时的agent_url，是对外提供服务的url，有时可能和监听地址不同，尤其是内外网环境时。
+

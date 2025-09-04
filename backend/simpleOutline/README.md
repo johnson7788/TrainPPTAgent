@@ -39,6 +39,10 @@ python main_api.py
 ```
 
 
+## 注意：
+main_api.py服务器部署时的agent_url，是对外提供服务的url，有时可能和监听地址不同，尤其是内外网环境时。
+
+
 a2a_client.py 输出结果示例:
 ```
 /Users/admin/miniforge3/envs/a2a/bin/python a2a_client.py 

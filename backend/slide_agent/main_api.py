@@ -54,10 +54,12 @@ def main(host, port, agent_url=""):
         examples=["writter ppt agent"],
     )
     # 注意⚠️：这里Agent使用流式的输出，但是LLM模型不使用流式的输出，因为LLM使用流式的输出，在split topic时Json解析出问题
+    if not agent_url:
+        agent_url = f"http://{host}:{port}/"
     agent_card = AgentCard(
         name=agent_card_name,
         description=agent_description,
-        url=f"http://{host}:{port}/",
+        url=agent_url,
         version="1.0.0",
         defaultInputModes=["text"],
         defaultOutputModes=["text"],
