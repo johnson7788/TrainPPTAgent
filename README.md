@@ -101,14 +101,14 @@ python start_backend.py
 
    ```bash
    cd backend/simpleOutline
-   cp env_template .env
+   cp env_template .env   #复制完成后，修改.env文件
    python main_api.py
    ```
 5. 启动 PPT 内容生成服务（默认运行在 `http://127.0.0.1:10011`）：
 
    ```bash
    cd backend/slide_agent
-   cp env_template .env
+   cp env_template .env  #复制完成后，修改.env文件
    修改每个Agent的模型
    backend/slide_agent/slide_agent/config.py
    python main_api.py
