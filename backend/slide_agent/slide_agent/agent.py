@@ -60,7 +60,6 @@ def before_agent_callback(callback_context: CallbackContext):
             role="model",
             parts=[types.Part(text="markdown不合法：请提供包含 # / ## / ### 标题与条目的大纲")]
         )
-
     try:
         slides = parse_markdown_to_slides(md_content)
     except Exception:
