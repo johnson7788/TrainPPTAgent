@@ -136,6 +136,9 @@ python start_backend.py
 
 > **提示**: 前端通过 Vite 代理与后端 API 通信，具体配置请查看 `frontend/vite.config.ts`。
 
+#### 方法三：docker compose一键部署(确保能连接docker hub网络)
+docker compose up 
+
 ---
 
 ## 🤖 AI 生成流程

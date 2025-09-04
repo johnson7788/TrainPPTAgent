@@ -12,7 +12,7 @@ STREAMING=false
 # HTTP_PROXY=http://127.0.0.1:7890
 # HTTPS_PROXY=http://127.0.0.1:7890
 
-# Pexels API配置
+# Pexels API配置，不是必须的，测试时会使用模拟的图片返回，线上时建议配置自己的图片库或者生成图片的模型
 PEXELS_API_KEY=xx
 
 # 获取Pexels API密钥的步骤：

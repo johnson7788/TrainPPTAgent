@@ -1,0 +1,35 @@
+services:
+  main_api:
+    container_name: main_api_app
+    build:
+      context: ./backend/main_api
+      dockerfile: Dockerfile
+    ports:
+      - "6800:6800"
+    network_mode: bridge
+    restart: unless-stopped
+  outline_api:
+    container_name: outline_api_app
+    build:
+      context: ./backend/simpleOutline
+      dockerfile: Dockerfile
+    ports:
+      - "10001:10001"
+    network_mode: bridge
+    restart: unless-stopped
+  content_api:
+    container_name: content_api_app
+    build:
+      context: ./backend/slide_agent
+      dockerfile: Dockerfile
+    ports:
+      - "10011:10011"
+    network_mode: bridge
+    restart: unless-stopped
+  frontend:
+    container_name: ppt_frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
