@@ -194,6 +194,7 @@ flowchart TD
 * 前端引用项目（本项目免版权，但前端部分需注意版权）：
   [https://github.com/pipipi-pikachu/PPTist](https://github.com/pipipi-pikachu/PPTist)
 * [模版制作](doc/Template.md)
+* [不同的模型配置](doc/custom_model.md)
 ---
 
 ## 📬 联系方式
