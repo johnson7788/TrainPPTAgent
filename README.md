@@ -193,7 +193,7 @@ flowchart TD
 * [自定义模板说明](doc/Template.md)
 * 前端引用项目（本项目免版权，但前端部分需注意版权）：
   [https://github.com/pipipi-pikachu/PPTist](https://github.com/pipipi-pikachu/PPTist)
-
+* [模版制作](doc/Template.md)
 ---
 
 ## 📬 联系方式
