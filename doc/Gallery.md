@@ -68,3 +68,7 @@
 
    5. 返回并展示结果 (前端)
        * 过程: 后端将生成好的大纲数据返回给前端。AIPPTDialog.vue 组件接收到这些数据后，将其渲染并展示在界面上，供用户确认或修改。
+
+
+# 如果使用了不支持tool的模型，会报错如下
+openai.BadRequestError: Error code: 400 - {'error': {'code': 'invalid_parameter_error', 'message': '<400> InternalError.Algo.InvalidParameter: The tool call is not supported', 'param': None, 'type': 'invalid_request_error'}, 'request_id': '63368fc0-5917-41fa-ba7a-cdfde1c84805'}

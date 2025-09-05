@@ -46,9 +46,9 @@
             />
             <div class="input-actions">
               <span class="character-count">{{ keyword.length }}/50</span>
-              <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim()">
+              <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim() || showProcessingModal">
                 <span class="btn-icon">✨</span>
-                AI 生成
+                {{ showProcessingModal ? '生成中...' : 'AI 生成' }}
               </button>
             </div>
           </div>
@@ -129,6 +129,16 @@
         </div>
       </div>
     </div>
+
+    <!-- Processing Modal -->
+    <div v-if="showProcessingModal" class="processing-modal-overlay">
+      <div class="processing-modal">
+        <div class="processing-content">
+          <div class="processing-spinner"></div>
+          <div class="processing-text">正在处理中，请稍候...</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -153,6 +163,7 @@ const step = ref<'setup' | 'outline'>('setup')
 const model = ref('GLM-4.5-Air')
 const outlineRef = ref<HTMLElement>()
 const inputRef = ref<HTMLInputElement>()
+const showProcessingModal = ref(false)
 
 const recommends = ref([
   '2025科技前沿动态',
@@ -194,6 +205,7 @@ const createOutline = async () => {
 
   loading.value = true
   outlineCreating.value = true
+  showProcessingModal.value = true
 
   try {
     const stream = await api.AIPPT_Outline({
@@ -214,6 +226,7 @@ const createOutline = async () => {
           outline.value = getMdContent(outline.value)
           outline.value = outline.value.replace(/<!--[\s\S]*?-->/g, '').replace(/<think>[\s\S]*?<\/think>/g, '')
           outlineCreating.value = false
+          showProcessingModal.value = false
           return
         }
 
@@ -231,6 +244,7 @@ const createOutline = async () => {
   } catch (error) {
     loading.value = false
     outlineCreating.value = false
+    showProcessingModal.value = false
     message.error('生成失败，请重试')
   }
 }
@@ -772,5 +786,54 @@ const goPPT = () => {
   .outline-section {
     padding: 1rem;
   }
+}
+
+/* Processing Modal Styles */
+.processing-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.processing-modal {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  max-width: 300px;
+  width: 90%;
+  text-align: center;
+}
+
+.processing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.processing-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.processing-text {
+  color: #475569;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
