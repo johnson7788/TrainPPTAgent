@@ -10,11 +10,11 @@ import sys
 import time
 import signal
 import subprocess
-import psutil
 import shutil
 from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime
+from dotenv import dotenv_values
 
 class BackendStarter:
     def __init__(self):
@@ -100,11 +100,79 @@ class BackendStarter:
         """安装依赖包"""
         print("📦 安装依赖包...")
         requirements_file = self.base_dir / 'requirements.txt'
+
+        # 定义可用的镜像源
+        mirrors = {
+            '0': {
+                'name': '官方PyPI源',
+                'url': None,
+                'description': '官方源，全球通用但可能较慢'
+            },
+            '1': {
+                'name': '清华大学镜像源',
+                'url': 'https://pypi.tuna.tsinghua.edu.cn/simple/',
+                'description': '清华大学开源软件镜像站，国内访问速度快'
+            },
+            '2': {
+                'name': '阿里云镜像源',
+                'url': 'https://mirrors.aliyun.com/pypi/simple/',
+                'description': '阿里云提供的PyPI镜像，稳定可靠'
+            },
+            '3': {
+                'name': '中科大镜像源',
+                'url': 'https://pypi.mirrors.ustc.edu.cn/simple/',
+                'description': '中科大开源软件镜像，教育网用户推荐'
+            },
+            '4': {
+                'name': '豆瓣镜像源',
+                'url': 'https://pypi.douban.com/simple/',
+                'description': '豆瓣提供的PyPI镜像，老牌稳定'
+            },
+            '5': {
+                'name': '华为云镜像源',
+                'url': 'https://mirrors.huaweicloud.com/repository/pypi/simple/',
+                'description': '华为云镜像，企业级稳定性'
+            },
+            '6': {
+                'name': '腾讯云镜像源',
+                'url': 'https://mirrors.cloud.tencent.com/pypi/simple/',
+                'description': '腾讯云镜像，国内访问优化'
+            }
+        }
+
+        print("🚀 请选择PyPI镜像源:")
+        print("   - 在国内使用镜像源可以显著提升下载速度")
+        print("   - 建议根据网络环境选择合适的镜像源")
+        print()
+        
+        for key, mirror in mirrors.items():
+            print(f"   {key}. {mirror['name']}")
+            print(f"      {mirror['description']}")
+            if mirror['url']:
+                print(f"      地址: {mirror['url']}")
+            print()
+        
+        while True:
+            choice = input("请选择镜像源 (0-6, 默认0): ").strip()
+            if not choice:
+                choice = '0'  # 默认选择清华大学镜像源
+            
+            if choice in mirrors:
+                selected_mirror = mirrors[choice]
+                break
+            else:
+                print("❌ 无效选择，请输入 0-6 之间的数字")
+        
+        pip_cmd = [sys.executable, '-m', 'pip', 'install', '-r', str(requirements_file)]
+        
+        if selected_mirror['url']:
+            pip_cmd.extend(['-i', selected_mirror['url']])
+            print(f"✅ 使用 {selected_mirror['name']}")
+        else:
+            print(f"✅ 使用 {selected_mirror['name']}")
         
         try:
-            result = subprocess.run([
-                sys.executable, '-m', 'pip', 'install', '-r', str(requirements_file)
-            ], capture_output=True, text=True)
+            result = subprocess.run(pip_cmd, capture_output=False, text=True)
             
             if result.returncode == 0:
                 print("✅ 依赖安装成功")
@@ -146,6 +214,7 @@ class BackendStarter:
         killed_count = 0
         for port in ports:
             try:
+                import psutil
                 # 查找占用端口的进程
                 for proc in psutil.process_iter(['pid', 'name', 'connections']):
                     try:
@@ -214,15 +283,20 @@ class BackendStarter:
                 log_f.write("=" * 50 + "\n\n")
                 log_f.flush()
                 
-                # 启动进程，将输出重定向到日志文件
-                process = subprocess.Popen([
-                    sys.executable, script
-                ], 
-                stdout=log_f,
-                stderr=subprocess.STDOUT,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
+                # 读取 .env 并合入当前环境
+                env = os.environ.copy()
+                env_file_path = service_dir / config['env_file']
+                if env_file_path.exists():
+                    env.update(dotenv_values(str(env_file_path)))
+                
+                process = subprocess.Popen(
+                    [sys.executable, script],
+                    stdout=log_f,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
+                    universal_newlines=True,
+                    env=env  
                 )
                 
                 # 等待一段时间检查进程是否正常启动
