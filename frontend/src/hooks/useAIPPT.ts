@@ -1,10 +1,48 @@
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
-import type { ImageClipDataRange, PPTElement, PPTImageElement, PPTShapeElement, PPTTextElement, Slide, TextType } from '@/types/slides'
+import type {
+  ImageClipDataRange,
+  PPTElement,
+  PPTImageElement,
+  PPTShapeElement,
+  PPTTextElement,
+  PPTChartElement,
+  Slide,
+  TextType
+} from '@/types/slides'
 import type { AIPPTSlide } from '@/types/AIPPT'
 import { useSlidesStore } from '@/store'
 import useAddSlidesOrElements from './useAddSlidesOrElements'
 import useSlideHandler from './useSlideHandler'
+
+type ChartType = 'line' | 'bar' | 'pie'
+interface AIPPTContentChartItem {
+  kind: 'chart'
+  title?: string
+  chartType: ChartType
+  labels: string[]
+  series: { name?: string; data: number[] }[]
+  options?: Record<string, any>
+  themeColors?: string[]
+  textColor?: string
+}
+interface AIPPTContentTextItem {
+  kind: 'text'
+  title: string
+  text: string
+}
+interface AIPPTLegacyTextItem {
+  title: string
+  text: string
+}
+type AnyContentItem = AIPPTContentChartItem | AIPPTContentTextItem | AIPPTLegacyTextItem
+
+const isChartItem = (x: any): x is AIPPTContentChartItem =>
+  x && x.kind === 'chart' && Array.isArray(x.labels) && Array.isArray(x.series)
+const isTextItem = (x: any): x is AIPPTContentTextItem =>
+  x && x.kind === 'text' && typeof x.title === 'string' && typeof x.text === 'string'
+const isLegacyTextItem = (x: any): x is AIPPTLegacyTextItem =>
+  x && x.kind === undefined && typeof x.title === 'string' && typeof x.text === 'string'
 
 interface ImgPoolItem {
   id: string
@@ -25,14 +63,13 @@ export default () => {
   // 过渡页模板，确保同一演示文稿中过渡页风格一致
   const transitionTemplate = ref<Slide | null>(null)
 
-  /**
-   * 检查元素是否为指定的文本类型
-   * @param el PPT元素
-   * @param type 文本类型
-   * @returns 是否匹配
-   */
   const checkTextType = (el: PPTElement, type: TextType) => {
-    return (el.type === 'text' && el.textType === type) || (el.type === 'shape' && el.text && el.text.type === type)
+    return (el.type === 'text' && (el as PPTTextElement).textType === type)
+      || (el.type === 'shape' && (el as PPTShapeElement).text && (el as PPTShapeElement).text!.type === type)
+  }
+
+  const checkChartItemMark = (el: PPTElement) => {
+    return el.type === 'chart' && (el as any).chartMark === 'chartItem'
   }
   
   /**
@@ -90,12 +127,41 @@ export default () => {
       return len === targetLen
     })
   }
-  
-  /**
-   * 根据文本内容和容器宽度自适应计算字体大小
-   * @param params 包含文本、字体、宽度等参数
-   * @returns 适应的字体大小
-   */
+
+  const countChartSlots = (slide: Slide) => {
+    const marked = slide.elements.filter(el => el.type === 'chart' && (el as any).chartMark === 'chartItem').length
+    if (marked > 0) return marked
+    return slide.elements.filter(el => el.type === 'chart').length
+  }
+
+  const countTextItemSlots = (slide: Slide) =>
+    slide.elements.filter(el => (el.type === 'text' && (el as any).textType === 'item') || (el.type === 'shape' && (el as any).text?.type === 'item')).length
+
+  const getUseableContentTemplates = (templates: Slide[], items: AnyContentItem[]) => {
+    const needChart = items.filter(isChartItem).length
+    const needText = items.filter(it => isTextItem(it) || isLegacyTextItem(it)).length
+
+    let candidates = templates.filter(slide => countChartSlots(slide) >= needChart && countTextItemSlots(slide) >= needText)
+
+    if (candidates.length === 0) {
+      if (needChart > 0) {
+        candidates = templates
+          .filter(slide => countChartSlots(slide) > 0)
+          .sort((a, b) => (countChartSlots(b) - countChartSlots(a)) || (countTextItemSlots(b) - countTextItemSlots(a)))
+      } else {
+        return getUseableTemplates(templates, needText, 'item')
+      }
+    }
+
+    const score = (slide: Slide) => {
+      const cOverflow = Math.max(0, countChartSlots(slide) - needChart)
+      const tOverflow = Math.max(0, countTextItemSlots(slide) - needText)
+      return cOverflow * 100 + tOverflow
+    }
+    const bestScore = Math.min(...candidates.map(score))
+    return candidates.filter(s => score(s) === bestScore)
+  }
+
   const getAdaptedFontsize = ({
     text,
     fontSize,
@@ -111,7 +177,7 @@ export default () => {
   }) => {
     const canvas = document.createElement('canvas')
     const context = canvas.getContext('2d')!
-  
+
     let newFontSize = fontSize
     const minFontSize = 10
   
@@ -126,7 +192,7 @@ export default () => {
       const step = newFontSize <= 22 ? 1 : 2
       newFontSize = newFontSize - step
     }
-  
+
     return minFontSize
   }
   
@@ -138,15 +204,15 @@ export default () => {
   const getFontInfo = (htmlString: string) => {
     const fontSizeRegex = /font-size:\s*(\d+(?:\.\d+)?)\s*px/i
     const fontFamilyRegex = /font-family:\s*['"]?([^'";]+)['"]?\s*(?=;|>|$)/i
-  
+
     const defaultInfo = {
       fontSize: 16,
       fontFamily: 'Microsoft Yahei',
     }
-  
+
     const fontSizeMatch = htmlString.match(fontSizeRegex)
     const fontFamilyMatch = htmlString.match(fontFamilyRegex)
-  
+
     return {
       fontSize: fontSizeMatch ? (+fontSizeMatch[1].trim()) : defaultInfo.fontSize,
       fontFamily: fontFamilyMatch ? fontFamilyMatch[1].trim() : defaultInfo.fontFamily,
@@ -173,7 +239,7 @@ export default () => {
   }): PPTTextElement | PPTShapeElement => {
     const padding = 10
     const width = el.width - padding * 2 - 2
-  
+
     let content = el.type === 'text' ? el.content : el.text!.content
   
     // 获取原始字体信息
@@ -211,15 +277,29 @@ export default () => {
   
     // 更新所有字体大小
     content = doc.body.innerHTML.replace(/font-size:(.+?)px/g, `font-size: ${size}px`)
-  
-    return el.type === 'text' ? { ...el, content, lineHeight: size < 15 ? 1.2 : el.lineHeight } : { ...el, text: { ...el.text!, content } }
+
+    return el.type === 'text'
+      ? { ...el, content, lineHeight: size < 15 ? 1.2 : el.lineHeight }
+      : { ...el, text: { ...el.text!, content } }
   }
 
-  /**
-   * 从图片池中获取合适的图片
-   * @param el 图片元素
-   * @returns 匹配的图片或null
-   */
+  const getNewChartElement = (el: PPTChartElement, item: AIPPTContentChartItem): PPTChartElement => {
+    const legends = item.series.map(s => s.name ?? '')
+    const series = item.series.map(s => s.data)
+    return {
+      ...el,
+      chartType: item.chartType,
+      data: {
+        labels: item.labels,
+        series,
+        legends,
+      },
+      options: { ...(el.options || {}), ...(item.options || {}) },
+      themeColors: item.themeColors || el.themeColors,
+      textColor: item.textColor || el.textColor,
+    }
+  }
+
   const getUseableImage = (el: PPTImageElement): ImgPoolItem | null => {
     let img: ImgPoolItem | null = null
   
@@ -253,7 +333,7 @@ export default () => {
     let h = el.height
     let range: ImageClipDataRange = [[0, 0], [0, 0]]
     const radio = el.width / el.height
-    
+
     if (img.width / img.height >= radio) {
       // 图片更宽，左右裁剪
       scale = img.height / el.height
@@ -322,8 +402,7 @@ export default () => {
     // 预处理：根据内容数量进行分页
     for (const template of _AISlides) {
       if (template.type === 'content') {
-        // 内容页分页逻辑：每页最多4个项目
-        const items = template.data.items
+        const items = (template.data.items as AnyContentItem[])
         if (items.length === 5 || items.length === 6) {
           // 5-6个项目：分成2页（3+剩余）
           const items1 = items.slice(0, 3)
@@ -412,10 +491,10 @@ export default () => {
           let offset = 0
           while (offset < totalCount) {
             const pageRefs = references.slice(offset, offset + 10)
-            AISlides.push({ 
-              ...template, 
-              data: { ...template.data, references: pageRefs }, 
-              offset: offset 
+            AISlides.push({
+              ...template,
+              data: { ...template.data, references: pageRefs },
+              offset: offset
             })
             offset += 10
           }
@@ -429,7 +508,7 @@ export default () => {
     const contentsTemplates = templateSlides.filter(slide => slide.type === 'contents')
     const transitionTemplates = templateSlides.filter(slide => slide.type === 'transition')
     const contentTemplates = templateSlides.filter(slide => slide.type === 'content')
-    const referenceTemplates = templateSlides.filter(slide => slide.type === 'reference')  
+    const referenceTemplates = templateSlides.filter(slide => slide.type === 'reference')
     const endTemplates = templateSlides.filter(slide => slide.type === 'end')
     
     // 初始化过渡页模板（确保风格一致）
@@ -444,21 +523,17 @@ export default () => {
       if (item.type === 'cover') {
         const coverTemplate = coverTemplates[Math.floor(Math.random() * coverTemplates.length)]
         const elements = coverTemplate.elements.map(el => {
-          if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
           if (el.type !== 'text' && el.type !== 'shape') return el
           if (checkTextType(el, 'title') && item.data.title) {
-            return getNewTextElement({ el, text: item.data.title, maxLine: 1 })
+            return getNewTextElement({ el: el as any, text: item.data.title, maxLine: 1 })
           }
           if (checkTextType(el, 'content') && item.data.text) {
-            return getNewTextElement({ el, text: item.data.text, maxLine: 3 })
+            return getNewTextElement({ el: el as any, text: item.data.text, maxLine: 3 })
           }
           return el
         })
-        yield {
-          ...coverTemplate,
-          id: nanoid(10),
-          elements,
-        }
+        yield { ...coverTemplate, id: nanoid(10), elements }
       }
       // 目录页处理
       else if (item.type === 'contents') {
@@ -470,13 +545,11 @@ export default () => {
         const sortedNumberItemIds = sortedNumberItems.sort((a, b) => {
           // 如果元素较多，尝试从内容中提取编号进行排序
           if (sortedNumberItems.length > 6) {
-            let aContent = ''
-            let bContent = ''
-            if (a.type === 'text') aContent = a.content
-            if (a.type === 'shape') aContent = a.text!.content
-            if (b.type === 'text') bContent = b.content
-            if (b.type === 'shape') bContent = b.text!.content
-
+            let aContent = '', bContent = ''
+            if (a.type === 'text') aContent = (a as PPTTextElement).content
+            if (a.type === 'shape') aContent = (a as PPTShapeElement).text!.content
+            if (b.type === 'text') bContent = (b as PPTTextElement).content
+            if (b.type === 'shape') bContent = (b as PPTShapeElement).text!.content
             if (aContent && bContent) {
               const aIndex = parseInt(aContent)
               const bIndex = parseInt(bContent)
@@ -499,13 +572,11 @@ export default () => {
             const bItemNumber = sortedNumberItems.find(item => item.groupId === b.groupId)
 
             if (aItemNumber && bItemNumber) {
-              let aContent = ''
-              let bContent = ''
-              if (aItemNumber.type === 'text') aContent = aItemNumber.content
-              if (aItemNumber.type === 'shape') aContent = aItemNumber.text!.content
-              if (bItemNumber.type === 'text') bContent = bItemNumber.content
-              if (bItemNumber.type === 'shape') bContent = bItemNumber.text!.content
-  
+              let aContent = '', bContent = ''
+              if (aItemNumber.type === 'text') aContent = (aItemNumber as PPTTextElement).content
+              if (aItemNumber.type === 'shape') aContent = (aItemNumber as PPTShapeElement).text!.content
+              if (bItemNumber.type === 'text') bContent = (bItemNumber as PPTTextElement).content
+              if (bItemNumber.type === 'shape') bContent = (bItemNumber as PPTShapeElement).text!.content
               if (aContent && bContent) {
                 const aIndex = parseInt(aContent)
                 const bIndex = parseInt(bContent)
@@ -525,147 +596,162 @@ export default () => {
 
         const unusedElIds: string[] = []
         const unusedGroupIds: string[] = []
-        
+
         const elements = contentsTemplate.elements.map(el => {
-          if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
           if (el.type !== 'text' && el.type !== 'shape') return el
-          
-          // 处理项目文本
+
           if (checkTextType(el, 'item')) {
             const index = sortedItemIds.findIndex(id => id === el.id)
             const itemTitle = item.data.items[index]
-            if (itemTitle) return getNewTextElement({ el, text: itemTitle, maxLine: 1, longestText })
+            if (itemTitle) return getNewTextElement({ el: el as any, text: itemTitle, maxLine: 1, longestText })
 
             // 标记未使用的元素
             unusedElIds.push(el.id)
-            if (el.groupId) unusedGroupIds.push(el.groupId)
+            if (el.groupId) unusedGroupIds.push(el.groupId!)
           }
-          
-          // 处理项目编号
+
           if (checkTextType(el, 'itemNumber')) {
             const index = sortedNumberItemIds.findIndex(id => id === el.id)
             const offset = item.offset || 0
-            return getNewTextElement({ el, text: index + offset + 1 + '', maxLine: 1, digitPadding: true })
+            return getNewTextElement({ el: el as any, text: index + offset + 1 + '', maxLine: 1, digitPadding: true })
           }
           return el
         }).filter(el => !unusedElIds.includes(el.id) && !(el.groupId && unusedGroupIds.includes(el.groupId)))
-        yield {
-          ...contentsTemplate,
-          id: nanoid(10),
-          elements,
-        }
+
+        yield { ...contentsTemplate, id: nanoid(10), elements }
       }
       // 过渡页处理
       else if (item.type === 'transition') {
         transitionIndex.value = transitionIndex.value + 1
-        const elements = transitionTemplate.value.elements.map(el => {
-          if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+        const elements = transitionTemplate.value!.elements.map(el => {
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
           if (el.type !== 'text' && el.type !== 'shape') return el
           if (checkTextType(el, 'title') && item.data.title) {
-            return getNewTextElement({ el, text: item.data.title, maxLine: 1 })
+            return getNewTextElement({ el: el as any, text: item.data.title, maxLine: 1 })
           }
           if (checkTextType(el, 'content') && item.data.text) {
-            return getNewTextElement({ el, text: item.data.text, maxLine: 3 })
+            return getNewTextElement({ el: el as any, text: item.data.text, maxLine: 3 })
           }
           if (checkTextType(el, 'partNumber')) {
-            return getNewTextElement({ el, text: transitionIndex.value + '', maxLine: 1, digitPadding: true })
+            return getNewTextElement({ el: el as any, text: transitionIndex.value + '', maxLine: 1, digitPadding: true })
           }
           return el
         })
-        yield {
-          ...transitionTemplate.value,
-          id: nanoid(10),
-          elements,
-        }
+        yield { ...transitionTemplate.value!, id: nanoid(10), elements }
       }
-      // 内容页处理
       else if (item.type === 'content') {
-        const _contentTemplates = getUseableTemplates(contentTemplates, item.data.items.length, 'item')
+        const items = item.data.items as AnyContentItem[]
+        const _contentTemplates = getUseableContentTemplates(contentTemplates, items)
         const contentTemplate = _contentTemplates[Math.floor(Math.random() * _contentTemplates.length)]
 
-        // 对各种元素进行排序
-        const sortedTitleItemIds = contentTemplate.elements.filter(el => checkTextType(el, 'itemTitle')).sort((a, b) => {
-          const aIndex = a.left + a.top * 2
-          const bIndex = b.left + b.top * 2
-          return aIndex - bIndex
-        }).map(el => el.id)
+        const sortedTitleItemIds = contentTemplate.elements
+          .filter(el => checkTextType(el, 'itemTitle'))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
 
-        const sortedTextItemIds = contentTemplate.elements.filter(el => checkTextType(el, 'item')).sort((a, b) => {
-          const aIndex = a.left + a.top * 2
-          const bIndex = b.left + b.top * 2
-          return aIndex - bIndex
-        }).map(el => el.id)
+        const sortedTextItemIds = contentTemplate.elements
+          .filter(el => checkTextType(el, 'item'))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
 
-        const sortedNumberItemIds = contentTemplate.elements.filter(el => checkTextType(el, 'itemNumber')).sort((a, b) => {
-          const aIndex = a.left + a.top * 2
-          const bIndex = b.left + b.top * 2
-          return aIndex - bIndex
-        }).map(el => el.id)
-
-        // 收集所有标题和文本，找出最长的
-        const itemTitles = []
-        const itemTexts = []
-
-        for (const _item of item.data.items) {
-          if (_item.title) itemTitles.push(_item.title)
-          if (_item.text) itemTexts.push(_item.text)
+        let sortedChartItemIds = contentTemplate.elements
+          .filter(el => checkChartItemMark(el))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
+        if (sortedChartItemIds.length === 0) {
+          sortedChartItemIds = contentTemplate.elements
+            .filter(el => el.type === 'chart')
+            .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+            .map(el => el.id)
         }
-        const longestTitle = itemTitles.reduce((longest, current) => current.length > longest.length ? current : longest, '')
-        const longestText = itemTexts.reduce((longest, current) => current.length > longest.length ? current : longest, '')
+
+        const sortedNumberItemIds = contentTemplate.elements
+          .filter(el => checkTextType(el, 'itemNumber'))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
+
+        const textTitleList: string[] = []
+        const textBodyList: string[] = []
+        items.forEach(_it => {
+          if (isTextItem(_it) || isLegacyTextItem(_it)) {
+            if (_it.title) textTitleList.push(_it.title)
+            if (_it.text) textBodyList.push(_it.text)
+          }
+        })
+        const longestTitle = textTitleList.reduce((longest, current) => current.length > longest.length ? current : longest, '')
+        const longestText  = textBodyList.reduce((longest, current) => current.length > longest.length ? current : longest, '')
+
+        const chartItems = items.filter(isChartItem) as AIPPTContentChartItem[]
 
         const elements = contentTemplate.elements.map(el => {
-          if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
+
+          if (el.type === 'chart') {
+            const idx = sortedChartItemIds.findIndex(id => id === el.id)
+            const chartItem = chartItems[idx]
+            if (chartItem) return getNewChartElement(el as PPTChartElement, chartItem)
+            return el
+          }
+
           if (el.type !== 'text' && el.type !== 'shape') return el
-          
-          // 特殊处理：只有1个项目时，使用正文样式
-          if (item.data.items.length === 1) {
-            const contentItem = item.data.items[0]
-            if (checkTextType(el, 'content') && contentItem.text) {
-              return getNewTextElement({ el, text: contentItem.text, maxLine: 6 })
+
+          if (items.length === 1) {
+            const only = items[0]
+            if ((isTextItem(only) || isLegacyTextItem(only)) && checkTextType(el, 'content') && only.text) {
+              return getNewTextElement({ el: el as any, text: only.text, maxLine: 6 })
             }
           }
           else {
             // 处理项目标题
             if (checkTextType(el, 'itemTitle')) {
               const index = sortedTitleItemIds.findIndex(id => id === el.id)
-              const contentItem = item.data.items[index]
-              if (contentItem && contentItem.title) {
-                return getNewTextElement({ el, text: contentItem.title, longestText: longestTitle, maxLine: 1 })
+              const contentItem = items[index]
+              if (contentItem) {
+                if (isTextItem(contentItem) && contentItem.title) {
+                  return getNewTextElement({ el: el as any, text: contentItem.title, longestText: longestTitle, maxLine: 1 })
+                }
+                if (isLegacyTextItem(contentItem) && contentItem.title) {
+                  return getNewTextElement({ el: el as any, text: contentItem.title, longestText: longestTitle, maxLine: 1 })
+                }
+                if (isChartItem(contentItem) && contentItem.title) {
+                  return getNewTextElement({ el: el as any, text: contentItem.title, longestText: longestTitle || contentItem.title, maxLine: 1 })
+                }
               }
             }
-            // 处理项目文本
+
             if (checkTextType(el, 'item')) {
               const index = sortedTextItemIds.findIndex(id => id === el.id)
-              const contentItem = item.data.items[index]
-              if (contentItem && contentItem.text) {
-                return getNewTextElement({ el, text: contentItem.text, longestText, maxLine: 4 })
+              const contentItem = items[index]
+              if (contentItem) {
+                if (isTextItem(contentItem) && contentItem.text) {
+                  return getNewTextElement({ el: el as any, text: contentItem.text, longestText, maxLine: 4 })
+                }
+                if (isLegacyTextItem(contentItem) && contentItem.text) {
+                  return getNewTextElement({ el: el as any, text: contentItem.text, longestText, maxLine: 4 })
+                }
               }
             }
-            // 处理项目编号
+
             if (checkTextType(el, 'itemNumber')) {
               const index = sortedNumberItemIds.findIndex(id => id === el.id)
               const offset = item.offset || 0
-              return getNewTextElement({ el, text: index + offset + 1 + '', maxLine: 1, digitPadding: true })
+              return getNewTextElement({ el: el as any, text: index + offset + 1 + '', maxLine: 1, digitPadding: true })
             }
           }
           // 处理页面标题
           if (checkTextType(el, 'title') && item.data.title) {
-            return getNewTextElement({ el, text: item.data.title, maxLine: 1 })
+            return getNewTextElement({ el: el as any, text: item.data.title, maxLine: 1 })
           }
           return el
         })
-        yield {
-          ...contentTemplate,
-          id: nanoid(10),
-          elements,
-        }
+
+        yield { ...contentTemplate, id: nanoid(10), elements }
       }
-      // 引用页处理
-      else if (item.type === 'reference') { 
+      else if (item.type === 'reference') {
         const referenceCount = item.data.references.length
-        let _referenceTemplates = []
-        
-        // 智能选择模板：优先选择能完全容纳的模板
+        let _referenceTemplates: Slide[] = []
+
         _referenceTemplates = referenceTemplates.filter(slide => {
           const refNumberCount = slide.elements.filter(el => checkTextType(el, 'referenceNumber')).length
           // 选择引用位置数量在需求数量到10个之间的模板
@@ -708,12 +794,11 @@ export default () => {
         const unusedGroupIds: string[] = []
 
         const elements = referenceTemplate.elements.map(el => {
-          if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
           if (el.type !== 'text' && el.type !== 'shape') return el
 
-          // 处理页面标题
           if (checkTextType(el, 'title') && item.data.title) {
-            return getNewTextElement({ el, text: item.data.title, maxLine: 1 })
+            return getNewTextElement({ el: el as any, text: item.data.title, maxLine: 1 })
           }
 
           // 处理引用编号
@@ -725,8 +810,8 @@ export default () => {
               if (reference.number !== undefined) {
                 // 使用自定义编号
                 const offset = item.offset || 0
-                number = typeof reference.number === 'number' 
-                  ? (reference.number + offset).toString() 
+                number = typeof reference.number === 'number'
+                  ? (reference.number + offset).toString()
                   : reference.number
               }
               else {
@@ -734,7 +819,7 @@ export default () => {
                 const offset = item.offset || 0
                 number = (index + offset + 1).toString()
               }
-              return getNewTextElement({ el, text: `[${number}]`, maxLine: 1 })
+              return getNewTextElement({ el: el as any, text: `[${number}]`, maxLine: 1 })
             }
             else {
               // 没有对应的引用数据，标记为未使用
@@ -748,7 +833,7 @@ export default () => {
             const index = sortedPmidIds.findIndex(id => id === el.id)
             const reference = item.data.references[index]
             if (reference && reference.pmid) {
-              return getNewTextElement({ el, text: `PMID: ${reference.pmid}`, maxLine: 1 })
+              return getNewTextElement({ el: el as any, text: `PMID: ${reference.pmid}`, maxLine: 1 })
             }
             else {
               unusedElIds.push(el.id)
@@ -761,7 +846,7 @@ export default () => {
             const index = sortedUrlIds.findIndex(id => id === el.id)
             const reference = item.data.references[index]
             if (reference && reference.url) {
-              return getNewTextElement({ el, text: reference.url, maxLine: 2 })
+              return getNewTextElement({ el: el as any, text: reference.url, maxLine: 2 })
             }
             else {
               unusedElIds.push(el.id)
@@ -774,7 +859,7 @@ export default () => {
             const index = sortedDoiIds.findIndex(id => id === el.id)
             const reference = item.data.references[index]
             if (reference && reference.doi) {
-              return getNewTextElement({ el, text: `DOI: ${reference.doi}`, maxLine: 1 })
+              return getNewTextElement({ el: el as any, text: `DOI: ${reference.doi}`, maxLine: 1 })
             }
             else {
               unusedElIds.push(el.id)
@@ -785,24 +870,16 @@ export default () => {
           return el
         }).filter(el => !unusedElIds.includes(el.id) && !(el.groupId && unusedGroupIds.includes(el.groupId)))
 
-        yield {
-          ...referenceTemplate,
-          id: nanoid(10),
-          elements,
-        }
+        yield { ...referenceTemplate, id: nanoid(10), elements }
       }
       // 结束页处理
       else if (item.type === 'end') {
         const endTemplate = endTemplates[Math.floor(Math.random() * endTemplates.length)]
         const elements = endTemplate.elements.map(el => {
-          if (el.type === 'image' && el.imageType && imgPool.value.length) return getNewImgElement(el)
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
           return el
         })
-        yield {
-          ...endTemplate,
-          id: nanoid(10),
-          elements,
-        }
+        yield { ...endTemplate, id: nanoid(10), elements }
       }
     }
   }

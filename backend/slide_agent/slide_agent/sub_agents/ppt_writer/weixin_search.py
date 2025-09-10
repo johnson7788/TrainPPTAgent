@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Date  : 2025/6/25 09:09
-# @File  : weixin_search.py.py
+# @File  : weixin_search.py
 # @Author: johnson
 # @Contact : github: johnson7788
 # @Desc  : 使用搜索搜索微信公众号文章，先关机关键词搜索搜狗，获取链接，然后使用get_real_url获取真实链接，最后使用真实链接获取公众号内容。
