@@ -216,6 +216,7 @@ const createOutline = async () => {
 
     loading.value = false
     step.value = 'outline'
+    showProcessingModal.value = false
 
     const reader: ReadableStreamDefaultReader = stream.body.getReader()
     const decoder = new TextDecoder('utf-8')
@@ -226,7 +227,6 @@ const createOutline = async () => {
           outline.value = getMdContent(outline.value)
           outline.value = outline.value.replace(/<!--[\s\S]*?-->/g, '').replace(/<think>[\s\S]*?<\/think>/g, '')
           outlineCreating.value = false
-          showProcessingModal.value = false
           return
         }
 
