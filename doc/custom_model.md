@@ -130,7 +130,7 @@
   OLLAMA_API_KEY=ollama
 
   # 2. 提供服务地址
-  OLLAMA_API_URL=http://localhost:11434
+  OLLAMA_API_URL=http://localhost:11434/v1
 
   # 3. 指定提供商和模型
   MODEL_PROVIDER=ollama
