@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 10011
 
 # Command to run the application
-CMD ["python", "main.py", "--host", "0.0.0.0", "--port", "10011"]
+CMD ["python", "main_api.py", "--host", "0.0.0.0", "--port", "10011"]
