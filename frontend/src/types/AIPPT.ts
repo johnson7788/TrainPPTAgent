@@ -38,31 +38,50 @@ export interface AIPPTTransition extends AIPPTBaseSlide {
   }
 }
 
+export type ChartType = 'line' | 'bar' | 'pie'
+export interface AIPPTContentChartItem {
+  kind: 'chart'
+  title?: string
+  chartType: ChartType
+  labels: string[]
+  series: { name?: string; data: number[] }[]
+  options?: Record<string, any>
+  themeColors?: string[]
+  textColor?: string
+}
+export interface AIPPTContentTextItem {
+  kind: 'text'
+  title: string
+  text: string
+}
+export interface AIPPTLegacyTextItem {
+  title: string
+  text: string
+}
+export type AnyContentItem = AIPPTContentChartItem | AIPPTContentTextItem | AIPPTLegacyTextItem
+
 export interface AIPPTContent extends AIPPTBaseSlide {
   type: 'content'
   data: {
     title: string
-    items: {
-      title: string
-      text: string
-    }[]
+    items: AnyContentItem[]
   },
   offset?: number
 }
 
-export interface AIPPTReference {  
-  type: 'reference'  
-  data: {  
-    title: string  
+export interface AIPPTReference extends AIPPTBaseSlide {
+  type: 'reference'
+  data: {
+    title: string
     references: {
       number?: string|number
       pmid?: string
       url?: string
-      doi?: string  
-    }[]  
+      doi?: string
+    }[]
   },
-  offset?: number 
-} 
+  offset?: number
+}
 
 export interface AIPPTEnd extends AIPPTBaseSlide {
   type: 'end'
