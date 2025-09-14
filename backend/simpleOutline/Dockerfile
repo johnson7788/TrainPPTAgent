@@ -16,5 +16,5 @@ COPY . .
 # Expose port 10001 to the outside world
 EXPOSE 10001
 
-# Command to run the application
+# Command to run the application， 可能需要设置--agent_url，如果main_api中的.env使用的不是docker的同一个网络
 CMD ["python", "main_api.py", "--host", "0.0.0.0", "--port", "10001"]
