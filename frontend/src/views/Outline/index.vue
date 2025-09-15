@@ -41,7 +41,7 @@
               v-model="keyword"
               :maxlength="50"
               class="main-input"
-              placeholder="请输入PPT主题，如：大学生职业生涯规划"
+              placeholder="请输入PPT主题或者已有大纲，如：大学生职业生涯规划"
               @keyup.enter="createOutline"
             />
             <div class="input-actions">
