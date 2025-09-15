@@ -2,8 +2,9 @@ import asyncio
 import json
 import re
 import os
+import docx
 import dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,6 +53,12 @@ async def stream_agent_response(prompt: str):
 async def aippt_outline(request: AipptRequest):
     assert request.stream, "只支持流式的返回大纲"
     return StreamingResponse(stream_agent_response(request.content), media_type="text/plain")
+
+@app.post("/tools/aippt_outline_from_word")
+async def aippt_outline_from_word(file: UploadFile = File(...)):
+    document = docx.Document(file.file)
+    content = "".join([para.text for para in document.paragraphs])
+    return StreamingResponse(stream_agent_response(content), media_type="text/plain")
 
 class AipptContentRequest(BaseModel):
     content: str

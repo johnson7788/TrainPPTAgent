@@ -46,10 +46,23 @@
             />
             <div class="input-actions">
               <span class="character-count">{{ keyword.length }}/50</span>
-              <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim() || showProcessingModal">
-                <span class="btn-icon">✨</span>
-                {{ showProcessingModal ? '生成中...' : 'AI 生成' }}
-              </button>
+              <div class="buttons-wrapper">
+                <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim() || showProcessingModal">
+                  <span class="btn-icon">✨</span>
+                  {{ showProcessingModal ? '生成中...' : 'AI 生成' }}
+                </button>
+                <input
+                  type="file"
+                  ref="fileInputRef"
+                  style="display: none"
+                  accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  @change="handleFileChange"
+                />
+                <button class="generate-btn" @click="triggerFileUpload" :disabled="showProcessingModal">
+                  <span class="btn-icon">📄</span>
+                  上传 Word
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -163,6 +176,7 @@ const step = ref<'setup' | 'outline'>('setup')
 const model = ref('GLM-4.5-Air')
 const outlineRef = ref<HTMLElement>()
 const inputRef = ref<HTMLInputElement>()
+const fileInputRef = ref<HTMLInputElement>()
 const showProcessingModal = ref(false)
 
 const recommends = ref([
@@ -258,6 +272,61 @@ const goPPT = () => {
       model: model.value,
     }
   })
+}
+
+const triggerFileUpload = () => {
+  fileInputRef.value?.click()
+}
+
+const handleFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    const file = input.files[0]
+    uploadWordAndCreateOutline(file)
+  }
+}
+
+const uploadWordAndCreateOutline = async (file: File) => {
+  loading.value = true
+  outlineCreating.value = true
+  showProcessingModal.value = true
+
+  try {
+    const stream = await api.AIPPT_Outline_From_Word(file)
+
+    loading.value = false
+    step.value = 'outline'
+    showProcessingModal.value = false
+
+    const reader: ReadableStreamDefaultReader = stream.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+
+    const readStream = () => {
+      reader.read().then(({ done, value }) => {
+        if (done) {
+          outline.value = getMdContent(outline.value)
+          outline.value = outline.value.replace(/<!--[\s\S]*?-->/g, '').replace(/<think>[\s\S]*?<\/think>/g, '')
+          outlineCreating.value = false
+          return
+        }
+
+        const chunk = decoder.decode(value, { stream: true })
+        outline.value += chunk
+
+        if (outlineRef.value) {
+          outlineRef.value.scrollTop = outlineRef.value.scrollHeight + 20
+        }
+
+        readStream()
+      })
+    }
+    readStream()
+  } catch (error) {
+    loading.value = false
+    outlineCreating.value = false
+    showProcessingModal.value = false
+    message.error('生成失败，请重试')
+  }
 }
 </script>
 
@@ -454,6 +523,11 @@ const goPPT = () => {
       .character-count {
         font-size: 0.875rem;
         color: #64748b;
+      }
+
+      .buttons-wrapper {
+        display: flex;
+        gap: 1rem;
       }
 
       .generate-btn {

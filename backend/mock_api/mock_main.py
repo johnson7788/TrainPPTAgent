@@ -1,6 +1,7 @@
 import os
 import asyncio
 import json
+from fastapi import FastAPI, UploadFile, File
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
@@ -223,6 +224,12 @@ async def aippt_content(request: AipptContentRequest):
 async def get_data(filename: str):
     file_path = os.path.join("./template", filename)
     return FileResponse(file_path)
+
+@app.post("/tools/aippt_outline_from_word")
+async def aippt_outline_from_word(file: UploadFile = File(...)):
+    print(f"上传的文件是: {file.filename}")
+    return StreamingResponse(stream_generator(), media_type="text/plain")
+
 
 if __name__ == "__main__":
     import uvicorn
