@@ -75,6 +75,7 @@ async def stream_content_response(markdown_content: str):
     print(f"用户输入的markdown大纲是：{result}")
     content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
     async for chunk_data in content_wrapper.generate(result):
+        print(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 @app.post("/tools/aippt")

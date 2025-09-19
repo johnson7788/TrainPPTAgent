@@ -42,7 +42,7 @@ from slide_agent.agent import root_agent
 def main(host, port, agent_url=""):
     # 每个小的Agent都流式的输出结果
     streaming = False
-    show_agent = ["PPTWriterSubAgent"]  #哪个Agent会作为最后的ppt的Agent的输出（对应前端显示）
+    show_agent = ["ControllerAgent"]  #哪个Agent会作为最后的ppt的Agent的输出（对应前端显示）
     agent_card_name = "Writter PPT Agent"
     agent_name = "writter_agent"
     agent_description = "An agent that can help writer ppt"

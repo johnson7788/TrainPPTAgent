@@ -96,12 +96,12 @@ class A2AContentClientWrapper:
             stream_response = self.client.send_message_streaming(streaming_request)
             # 表示工具完成了调用，可以返回metada信息了
             async for chunk in stream_response:
-                self.logger.info(f"输出的chunk内容: {chunk}")
+                # self.logger.info(f"输出的chunk内容: {chunk}")
                 chunk_data = chunk.model_dump(mode='json', exclude_none=True)
                 if "error" in chunk_data:
                     self.logger.error(f"错误信息: {chunk_data['error']}")
                     print(f"错误信息: {chunk_data['error']}")
-                    yield {"type": "final", "text": "对话结束"}
+                    yield {"type": "final", "text": chunk_data['error'], "author": "system"}
                     break
                 result = chunk_data["result"]
                 # 判断 chunk 类型
@@ -119,30 +119,41 @@ class A2AContentClientWrapper:
                     # 尝试提取内容
                     message = chunk_status.get("message", {})
                     parts = message.get("parts", [])
+                    metadata = message.get("metadata", {})
+                    references = metadata.get("references", [])
+                    author = metadata.get("author", "unknown")
+                    if references:
+                        # 返回最后的元数据给前端进行解析，主要是参考信息
+                        yield {"type": "metadata", "metadata": metadata, "author": author}
                     if parts:
                         for part in parts:
                             part_kind = part["kind"]
                             print(f"status, {part}")
                             if part_kind == "data":
-                                print(f"收到的是data内容:")
-                                print(part)
+                                # print(f"收到的是data内容:")
+                                yield {"type": "data", "data": part["data"], "author":author}
                             else:
                                 # text文本
-                                yield {"type": "text", "text": part["text"]}
+                                yield {"type": "text", "text": part["text"], "author": author}
                 elif result.get("kind") == "artifact-update":
                     artifact = result.get("artifact", {})
                     parts = artifact.get("parts", [])
+                    metadata = artifact.get("metadata", {})
+                    author = metadata.get("author", "unknown")
                     if parts:
                         for part in parts:
-                            print(f"artifact, {part}")
-                            yield {"type": "artifact", "text": part.get("text", "")}
+                            # print(f"artifact, {part}")
+                            yield {"type": "artifact", "text": part.get("text", ""), "author": author}
+                    if metadata:
+                        # 返回最后的元数据给前端进行解析，主要是参考信息
+                        yield {"type": "metadata", "metadata": metadata, "author":author}
                 elif result.get("kind") == "task":
                     chunk_status = result["status"]
                     print(f"任务的状态是: {chunk_status}")
                 else:
                     self.logger.warning(f"未识别的chunk类型: {result.get('kind')}")
             print(f"Agent正常处理完成，对话结束。")
-            yield {"type": "final", "text": "对话结束"}
+            yield {"type": "final", "text": "对话结束", "author": "system"}
 
 if __name__ == '__main__':
     async def main():
