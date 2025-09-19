@@ -156,6 +156,7 @@ docker compose up
 
 ## 📑 流程图
 
+PPTGen：可以扩展为更多功能的Agent，例如检查质量（图表等)
 ```mermaid
 flowchart TD
   U((用户)) --> FE[前端界面]
@@ -165,7 +166,7 @@ flowchart TD
   Outline -->|调用 Web搜索| WebSearch1[Web 搜索]
   Outline --> API --> FE
 
-  FE -->|确认大纲| API --> PPTGen[PPT生成服务]
+  FE -->|确认大纲| API --> PPTGen[PPT生成服务：内部循环和检查Json格式]
   PPTGen -->|调用 Web搜索| WebSearch2[Web 搜索]
   PPTGen -->|调用 配图搜索| ImgSearch[配图搜索]
   PPTGen --> API --> FE
