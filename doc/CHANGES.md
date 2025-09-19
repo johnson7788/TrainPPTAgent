@@ -141,3 +141,5 @@ main_api.py
 
 ## 新增搜索PEXELS图片工具，如果未设置PEXELS_API_KEY则会模拟搜索配图
 backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py
+
+## 对Agent进行改造，添加了循环检查，检查输出Json的key字段必须不能少，但是可以多，因为可能添加图片等。
