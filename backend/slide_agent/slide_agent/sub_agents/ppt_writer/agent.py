@@ -84,8 +84,28 @@ class PPTWriterSubAgent(LlmAgent):
         slides_plan_num: int = ctx.session.state.get("slides_plan_num")
         current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
 
-        # 每次生成前清空会话 events 避免历史干扰
-        ctx.session.events = []
+        # 根据上一次Checker校验结果决定是否清空 / 追加内消息 == =
+        st = ctx.session.state
+        last_passed = st.get("last_validation_passed")  # 可能为 None / True / False
+        feedback_text = st.get("last_validation_feedback")
+
+        # 首轮（index==0 且还未校验）视为需要清空；若上次通过，也清空；若上次失败，则不清空并注入反馈。
+        should_clear = (current_slide_index == 0 and last_passed is None) or (last_passed is True)
+
+        if should_clear:
+            # 只有在“通过校验”或“首轮未校验”时才清空
+            ctx.session.events = []
+            # 使用一次后复位，避免“旧的通过”状态影响后续判断
+            st["last_validation_passed"] = None
+        else:
+            # 上次未通过：不清空，并把错误反馈加入上下文，帮助模型修正
+            if feedback_text:
+                ctx.session.events.append(
+                    Event(
+                        author="CheckerAgent",
+                        content=types.Content(parts=[types.Part(text=feedback_text)])
+                    )
+                )
         if current_slide_index == 0:
             print(f"正在生成第{current_slide_index}页幻灯片...")
 
@@ -140,18 +160,25 @@ class CheckerAgent(BaseAgent):
         if data is None:
             ctx.session.state["is_valid_json"] = False
             ctx.session.state["last_slide_json"] = None
+            fail_msg = "校验结果：❌ 非 JSON。将触发重试或跳过策略。"
+            ctx.session.state["last_validation_passed"] = False
+            ctx.session.state["last_validation_feedback"] = fail_msg
             yield Event(
                 author=self.name,
                 content=types.Content(parts=[types.Part(text="校验结果：❌ 非 JSON。将触发重试或跳过策略。")])
             )
             return
-        current_slide_index: int = ctx.state.get("current_slide_index", 0)
-        outline_json: list = ctx.state.get("outline_json")
+        current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
+        outline_json: list = ctx.session.state.get("outline_json")
         current_slide_schema = outline_json[current_slide_index]
         is_valid, error_messages = validate_slide(data, current_slide_schema)
         if not is_valid:
             ctx.session.state["is_valid_json"] = False
             ctx.session.state["last_slide_json"] = None
+            # === ：记录“未通过校验”的状态与错误信息 ===
+            fail_msg = f"校验结果：❌ JSON。将触发重试或跳过策略。缺少了部分字段: {error_messages}"
+            ctx.session.state["last_validation_passed"] = False
+            ctx.session.state["last_validation_feedback"] = fail_msg
             yield Event(
                 author=self.name,
                 content=types.Content(parts=[types.Part(text=f"校验结果：❌ JSON。将触发重试或跳过策略。缺少了部分字段: {error_messages}")])
@@ -159,6 +186,9 @@ class CheckerAgent(BaseAgent):
             return
         ctx.session.state["is_valid_json"] = True
         ctx.session.state["last_slide_json"] = data
+        # === 记录“通过校验”的状态，并清空反馈文本 ===
+        ctx.session.state["last_validation_passed"] = True
+        ctx.session.state["last_validation_feedback"] = None
         yield Event(
             author=self.name,
             content=types.Content(parts=[types.Part(text="校验结果：✅ 有效 JSON。")])
