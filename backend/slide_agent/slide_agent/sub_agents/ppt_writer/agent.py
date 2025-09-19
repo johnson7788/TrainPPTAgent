@@ -12,6 +12,7 @@ from .tools import SearchImage, DocumentSearch
 from ...config import PPT_WRITER_AGENT_CONFIG  # 保留导入，检查器不需要模型
 from ...create_model import create_model
 from . import prompt
+from .utils import validate_slide
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class PPTWriterSubAgent(LlmAgent):
         slides_plan_num: int = ctx.session.state.get("slides_plan_num")
         current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
 
-        # 每次生成前清空会话 events 避免历史干扰（参考原实现）
+        # 每次生成前清空会话 events 避免历史干扰
         ctx.session.events = []
         if current_slide_index == 0:
             print(f"正在生成第{current_slide_index}页幻灯片...")
@@ -142,6 +143,18 @@ class CheckerAgent(BaseAgent):
             yield Event(
                 author=self.name,
                 content=types.Content(parts=[types.Part(text="校验结果：❌ 非 JSON。将触发重试或跳过策略。")])
+            )
+            return
+        current_slide_index: int = ctx.state.get("current_slide_index", 0)
+        outline_json: list = ctx.state.get("outline_json")
+        current_slide_schema = outline_json[current_slide_index]
+        is_valid, error_messages = validate_slide(data, current_slide_schema)
+        if not is_valid:
+            ctx.session.state["is_valid_json"] = False
+            ctx.session.state["last_slide_json"] = None
+            yield Event(
+                author=self.name,
+                content=types.Content(parts=[types.Part(text=f"校验结果：❌ JSON。将触发重试或跳过策略。缺少了部分字段: {error_messages}")])
             )
             return
         ctx.session.state["is_valid_json"] = True
@@ -221,11 +234,17 @@ class ControllerAgent(BaseAgent):
                 # 超过重试阈值，选择跳过此页，推进
                 print(f"第 {current_slide_index} 页重试超过 {max_retries} 次，跳过并进入下一页。")
                 st["current_slide_index"] = current_slide_index + 1
+                last_written_raw = st.get("last_written_raw")
                 # 清理中间态
                 st["last_written_raw"] = None
                 st["last_slide_json"] = None
                 st["is_valid_json"] = False
                 retry_map[current_slide_index] = 0
+                # 即使失败，也返回last_written_raw
+                yield Event(
+                    author=self.name,
+                    content=types.Content(parts=[types.Part(text=last_written_raw)])
+                )
 
         # 终止判断：到达最后一页后输出汇总并 escalate
         new_index = int(st.get("current_slide_index", 0))

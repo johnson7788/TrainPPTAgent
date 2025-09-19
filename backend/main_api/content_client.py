@@ -128,7 +128,7 @@ class A2AContentClientWrapper:
                     if parts:
                         for part in parts:
                             part_kind = part["kind"]
-                            print(f"status, {part}")
+                            # print(f"status, {part}")
                             if part_kind == "data":
                                 # print(f"收到的是data内容:")
                                 yield {"type": "data", "data": part["data"], "author":author}
