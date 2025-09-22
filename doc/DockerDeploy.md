@@ -7,3 +7,6 @@
 同时修改main_api/.env中的为宿主机的ip
 OUTLINE_API=http://xxx:10001
 CONTENT_API=http://xxxx:10011
+
+## 前端的访问后端的配置，vite.config.ts需要修改访问ip, http://127.0.0.1:6800
+[vite.config.ts](../frontend/vite.config.ts)
