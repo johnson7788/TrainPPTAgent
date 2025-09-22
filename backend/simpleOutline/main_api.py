@@ -1,11 +1,20 @@
 import logging
 import os
+from pathlib import Path
 
 import click
 import uvicorn
 
 from adk_agent_executor import ADKAgentExecutor
 from dotenv import load_dotenv
+
+# 加载统一环境配置
+project_root = Path(__file__).parent.parent.parent
+env_file = project_root / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
+else:
+    load_dotenv()
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
 from google.adk.runners import Runner
@@ -31,15 +40,22 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 @click.command()
-@click.option("--host", "host", default="localhost", help="服务器绑定的主机名（默认为 localhost,可以指定具体本机ip）")
-@click.option("--port", "port", default=10001, help="服务器监听的端口号（默认为 10001）")
+@click.option("--host", "host", default=None, help="服务器绑定的主机名（默认从环境变量读取）")
+@click.option("--port", "port", default=None, help="服务器监听的端口号（默认从环境变量读取）")
 @click.option("--agent_url", "agent_url", default="",help="Agent Card中对外展示和访问的地址")
 def main(host: str, port: int, agent_url: str=""):
     """
     启动 Outline Agent 服务，支持流式和非流式两种模式。
     """
     logger.info("启动 Outline Agent 服务")
-    streaming = os.environ.get("STREAMING") == "true"
+
+    # 从环境变量读取配置，命令行参数优先
+    if host is None:
+        host = os.environ.get("HOST", "0.0.0.0")
+    if port is None:
+        port = int(os.environ.get("OUTLINE_API_PORT", "10001"))
+
+    streaming = os.environ.get("OUTLINE_STREAMING", "true").lower() == "true"
     logger.info(f"流式模式: {streaming}")
 
     agent_card_name = "outline Agent"
