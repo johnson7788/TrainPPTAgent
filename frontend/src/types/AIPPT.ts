@@ -73,6 +73,8 @@ export interface AIPPTContentChartItem {
   kind: 'chart'
   /** 可选：图表主标题 */
   title?: string
+  /** 图表描述文本 */
+  text?: string
   /** 折线图/柱状图/饼图 */
   chartType: AIPPTChartType
   /** 类目轴或饼图扇区标签 */

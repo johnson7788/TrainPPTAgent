@@ -602,8 +602,9 @@ export default () => {
       }
       // 过渡页处理
       else if (item.type === 'transition') {
+        if (!transitionTemplate.value) continue
         transitionIndex.value = transitionIndex.value + 1
-        const elements = transitionTemplate.value!.elements.map(el => {
+        const elements = transitionTemplate.value.elements.map(el => {
           if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
           if (el.type !== 'text' && el.type !== 'shape') return el
           if (checkTextType(el, 'title') && item.data.title) {
@@ -617,7 +618,7 @@ export default () => {
           }
           return el
         })
-        yield { ...transitionTemplate.value!, id: nanoid(10), elements }
+        yield { ...transitionTemplate.value, id: nanoid(10), elements }
       }
       else if (item.type === 'content') {
         const items = item.data.items as AnyContentItem[]
@@ -654,6 +655,9 @@ export default () => {
         const textBodyList: string[] = []
         items.forEach(_it => {
           if (isTextItem(_it) || isLegacyTextItem(_it)) {
+            if (_it.title) textTitleList.push(_it.title)
+            if (_it.text) textBodyList.push(_it.text)
+          } else if (isChartItem(_it)) {
             if (_it.title) textTitleList.push(_it.title)
             if (_it.text) textBodyList.push(_it.text)
           }

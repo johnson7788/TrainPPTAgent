@@ -42,8 +42,9 @@ def my_after_model_callback(callback_context: CallbackContext, llm_response: Llm
 # ========== 生成前/后回调 ==========
 def my_writer_before_agent_callback(callback_context: CallbackContext) -> None:
     # 这里可根据需要读取 state 做前置处理
-    _ = callback_context.state.get("current_slide_index", 0)
-    _ = callback_context.state.get("slides_plan_num")
+    current_slide_index: int = callback_context.state.get("current_slide_index", 0)  # Default to 0
+    slides_plan_num = callback_context.state.get("slides_plan_num")
+    # 返回 None，继续调用 LLM
     return None
 
 def my_after_agent_callback(callback_context: CallbackContext) -> None:
@@ -115,11 +116,17 @@ class PPTWriterSubAgent(LlmAgent):
             yield event
 
     def _get_dynamic_instruction(self, ctx: InvocationContext) -> str:
+        """动态整合所有研究发现并生成指令"""
+        # 当前正在生成第几页的ppt
         current_slide_index: int = ctx.state.get("current_slide_index", 0)
+        # 获取大纲
         outline_json: list = ctx.state.get("outline_json")
+        # 获取要生成的ppt的这一页的schema大纲
         current_slide_schema = outline_json[current_slide_index]
+        # 这页ppt的类型
         current_slide_type = current_slide_schema.get("type")
         print(f"当前要生成第{current_slide_index}页的ppt， 类型为：{current_slide_type}， 具体内容为：{current_slide_schema}")
+        # 根据不同的类型，形成不同的prompt
         slide_prompt = prompt.prompt_mapper[current_slide_type]
         current_slide_schema_json = json.dumps(current_slide_schema, ensure_ascii=False)
         prompt_instruction = prompt.PREFIX_PAGE_PROMPT + slide_prompt.format(input_slide_data=current_slide_schema_json)
@@ -305,6 +312,7 @@ def my_super_before_agent_callback(callback_context: CallbackContext):
     # attempts 不是必须，这里不做。
     return None
 
+# --- 4. PPTGeneratorLoopAgent ---
 ppt_generator_loop_agent = LoopAgent(
     name="PPTGeneratorLoopAgent",
     max_iterations=200,  # 给足够大，依赖 Controller 决定终止

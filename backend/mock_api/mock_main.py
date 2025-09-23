@@ -95,7 +95,7 @@ image_data = {
 
 data_response_content = [
     {"type": "cover", "data": {"title": "2025科技前沿动态", "text": "探索人工智能、量子计算、生物技术等领域的最新突破与未来发展方向"}},
-    {"type": "contents", "data": {"items": ["人工智能新突破", "量子计算商业化进程", "生物技术与医疗革新", "新能源与可持续发展", "通信技术与连接未来", "先进制造与机器人技术"]}},
+    {"type": "contents", "data": {"items": ["人工智能新突破", "量子计算商业化进程", "生物技术与医疗革新", "新能源与可持续发展"]}},
     {"type": "transition", "data": {"title": "人工智能新突破", "text": "人工智能技术实现多模态融合、参数效率优化与个性化服务，推动各行业创新应用"}},
     {"type": "content", "data": {"title": "大语言模型的进化", "items": [
         {"title": "多模态融合", "text": "大语言模型已实现文本、图像、音频等多模态信息的深度融合理解，使AI系统能够更接近人类感知世界的方式，处理复杂场景下的信息整合与推理任务。"},
@@ -137,7 +137,8 @@ data_response_content = [
               "xAxis": { "boundaryGap": False },
               "yAxis": { "name": "万" }
             }
-          }
+          },
+          {"title": "品类占比","text": "脑机接口技术取得重大突破，实现了更高精度的思维解码，使大脑信号能够更准确地转化为控制指令，为医疗康复和人机交互开辟了新途径。", }
         ]
       }
     },
@@ -170,9 +171,7 @@ data_response_content = [
         "items": [
           {
             "kind": "chart",
-            "title": "品类占比",
-            "text": "脑机接口技术取得重大突破，实现了更高精度的思维解码，使大脑信号能够更准确地转化为控制指令，为医疗康复和人机交互开辟了新途径。",
-            "chartType": "pie",
+              "chartType": "pie",
             "labels": ["A 类", "B 类", "C 类", "D 类"],
             "series": [
               { "name": "占比", "data": [35, 25, 20, 20] }
@@ -181,7 +180,7 @@ data_response_content = [
               "legend": { "bottom": 8 },
               "tooltip": { "trigger": "item", "formatter": "{b}: {d}%" }
             }
-          },
+          }
         ]
       }
     },
