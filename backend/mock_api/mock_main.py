@@ -92,67 +92,6 @@ image_data = {
         }
     ]
 }
-charts_data = {
-    "type": "content",
-    "data": {
-        "title": "绘图信息",
-        "items": [
-            {
-                "title": "绘图图表",
-                "text": "图表…",
-                "charts": [
-                    {
-                        "chartType": "column",
-                        "data": {
-                            "labels": ["2019","2020","2021","2022"],
-                            "legends": ["案件数"],
-                            "series": [[82, 96, 110, 104]]
-                        },
-                        "options": {"stack": False},
-                        "themeColors": ["#4e79a7"],
-                        "textColor": "#333",
-                        "lineColor": "#ddd"
-                    }
-                ]
-            }
-        ]
-    }
-}
-
-table_data = {
-    "type": "content",
-    "data": {
-        "title": "Sales Data",
-        "items": [
-            {
-                "title": "Q1 Sales",
-                "text": "Here is a summary of sales for the first quarter.",
-                "tables": [
-                    {
-                        "colWidths": [33, 33, 34],
-                        "data": [
-                            [
-                                {"text": "Product", "style": {"bold": True}},
-                                {"text": "Region", "style": {"bold": True}},
-                                {"text": "Sales", "style": {"bold": True}}
-                            ],
-                            [
-                                {"text": "Widget A"},
-                                {"text": "North"},
-                                {"text": "1,000"}
-                            ],
-                            [
-                                {"text": "Widget B"},
-                                {"text": "South"},
-                                {"text": "2,500"}
-                            ]
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
-}
 
 data_response_content = [
     {"type": "cover", "data": {"title": "2025科技前沿动态", "text": "探索人工智能、量子计算、生物技术等领域的最新突破与未来发展方向"}},
@@ -179,9 +118,73 @@ data_response_content = [
         {"title": "意识上传探索", "text": "意识上传与数字永生概念已从理论走向初步实验阶段，通过脑部扫描与神经网络建模，科学家们正在探索保存人类认知特征的可能性，为未来脑机融合奠定基础。"},
         {"title": "认知科学启发", "text": "认知科学研究为AI提供了新的理论框架与算法启发，而AI的发展也反过来促进了脑科学研究，形成双向促进的良性循环，推动了两个领域的共同进步。"}
     ]}},
+    {
+      "type": "content",
+      "data": {
+        "title": "月度活跃趋势（折线图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "2025 上半年活跃用户",
+            "chartType": "line",
+            "labels": ["1月", "2月", "3月", "4月", "5月", "6月"],
+            "series": [
+              { "name": "iOS", "data": [12, 15, 18, 22, 24, 27] },
+              { "name": "Android", "data": [10, 13, 17, 20, 23, 25] }
+            ],
+            "options": {
+              "legend": { "top": 8 },
+              "xAxis": { "boundaryGap": False },
+              "yAxis": { "name": "万" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "地区销售（条形图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "各地区销量",
+            "chartType": "bar",
+            "labels": ["华北", "华东", "华南", "西南", "华中"],
+            "series": [
+              { "name": "销量", "data": [320, 480, 450, 260, 390] }
+            ],
+            "options": {
+              "legend": { "show": False },
+              "xAxis": { "type": "value", "name": "台" },
+              "yAxis": { "type": "category" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "品类占比（饼图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "品类占比",
+            "chartType": "pie",
+            "labels": ["A 类", "B 类", "C 类", "D 类"],
+            "series": [
+              { "name": "占比", "data": [35, 25, 20, 20] }
+            ],
+            "options": {
+              "legend": { "bottom": 8 },
+              "tooltip": { "trigger": "item", "formatter": "{b}: {d}%" }
+            }
+          }
+        ]
+      }
+    },
     image_data,
-    charts_data,
-    table_data,
     {"type": "end"}
 ]
 
@@ -239,7 +242,7 @@ async def get_templates():
         { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
         { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
         { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
-        { "name": "图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+        { "name": "图片和表格", "id": "template_6", "cover": "/api/data/template_6.jpg" },
     ]
 
     return {"data": templates}

@@ -15,6 +15,28 @@ import { useSlidesStore } from '@/store'
 import useAddSlidesOrElements from './useAddSlidesOrElements'
 import useSlideHandler from './useSlideHandler'
 
+type ChartType = 'line' | 'bar' | 'pie'
+interface AIPPTContentChartItem {
+  kind: 'chart'
+  title?: string
+  chartType: ChartType
+  labels: string[]
+  series: { name?: string; data: number[] }[]
+  options?: Record<string, any>
+  themeColors?: string[]
+  textColor?: string
+}
+interface AIPPTContentTextItem {
+  kind: 'text'
+  title: string
+  text: string
+}
+interface AIPPTLegacyTextItem {
+  title: string
+  text: string
+}
+type AnyContentItem = AIPPTContentChartItem | AIPPTContentTextItem | AIPPTLegacyTextItem
+
 const isChartItem = (x: any): x is AIPPTContentChartItem =>
   x && x.kind === 'chart' && Array.isArray(x.labels) && Array.isArray(x.series)
 const isTextItem = (x: any): x is AIPPTContentTextItem =>

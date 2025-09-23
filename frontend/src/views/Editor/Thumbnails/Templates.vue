@@ -67,6 +67,7 @@ const types = ref<{
   { label: '目录', value: 'contents' },
   { label: '过渡', value: 'transition' },
   { label: '内容', value: 'content' },
+  { label: '引用', value: 'reference' },
   { label: '结束', value: 'end' },
 ])
 const activeType = ref('all')

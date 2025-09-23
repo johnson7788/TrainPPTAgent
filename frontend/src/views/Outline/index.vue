@@ -2,46 +2,50 @@
   <div class="aippt-page">
     <!-- 全局背景：渐变 + 网格 -->
     <div class="page-bg" aria-hidden="true">
-      <div class="bg-blob b1"></div>
-      <div class="bg-blob b2"></div>
-      <div class="grid"></div>
+      <div class="tech-grid"></div>
+      <div class="float-sphere s1"></div>
+      <div class="float-sphere s2"></div>
+      <div class="float-sphere s3"></div>
     </div>
 
     <div class="aippt-dialog">
-      <!-- Header Section -->
       <div class="header-section">
+        <button class="template-btn" @click="goToEditor">
+          <span class="btn-inner">制作模板</span>
+        </button>
+        
         <div class="brand">
           <h1 class="title">
-            <span class="title-icon">🤖</span>
-            PPTAgent
+            <span class="title-main">PPTAgent</span>
+            <span class="title-badge">AI</span>
           </h1>
           <div class="subtitle">
-            {{ step === 'outline' ? '确认下方内容大纲，开始选择模板' : '输入您的PPT主题，AI将为您生成专业大纲' }}
+            {{ step === 'outline' ? '智能大纲已生成 · 选择模板开始创作' : 'AI驱动的演示文稿生成系统' }}
           </div>
         </div>
-        <div class="progress-indicator">
-          <div class="progress-step" :class="{ active: step === 'setup' }">
-            <div class="step-circle">1</div>
-            <span>输入主题</span>
+
+        <div class="progress-flow">
+          <div class="flow-item" :class="{ active: step === 'setup' }">
+            <div class="flow-dot"></div>
+            <span class="flow-text">INPUT</span>
           </div>
-          <div class="progress-line" :class="{ completed: step === 'outline' }"></div>
-          <div class="progress-step" :class="{ active: step === 'outline' }">
-            <div class="step-circle">2</div>
-            <span>确认大纲</span>
+          <div class="flow-connector" :class="{ active: step === 'outline' }"></div>
+          <div class="flow-item" :class="{ active: step === 'outline' }">
+            <div class="flow-dot"></div>
+            <span class="flow-text">PROCESS</span>
           </div>
         </div>
       </div>
 
-      <!-- Setup Step -->
       <div v-if="step === 'setup'" class="setup-section">
-        <div class="input-section">
-          <div class="input-wrapper">
+        <div class="input-module">
+          <div class="input-field">
             <input
               ref="inputRef"
               v-model="keyword"
               :maxlength="50"
-              class="main-input"
-              placeholder="请输入PPT主题或者已有大纲，如：大学生职业生涯规划"
+              class="text-input"
+              placeholder="输入演示主题..."
               @keyup.enter="createOutline"
             />
             <div class="input-actions">
@@ -67,24 +71,30 @@
           </div>
         </div>
 
-        <!-- Recommendations -->
-        <div class="recommendations-section">
-          <h3 class="section-title">💡 推荐主题</h3>
-          <div class="recommendations-grid">
-            <button
-              v-for="(item, index) in recommends"
-              :key="index"
-              class="recommend-item"
-              @click="setKeyword(item)"
-            >
-              {{ item }}
-            </button>
+        <div class="bubble-section">
+          <div class="section-title">
+            <span class="title-text">快速选择</span>
+          </div>
+          <div class="bubble-container">
+            <div class="bubble-track">
+              <div class="bubble-list">
+                <button
+                  v-for="(item, index) in [...recommends, ...recommends]"
+                  :key="`${index}-1`"
+                  class="bubble-item"
+                  @click="setKeyword(recommends[index % recommends.length])"
+                >
+                  {{ item }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Configuration -->
-        <div class="config-section">
-          <h3 class="section-title">⚙️ 高级配置</h3>
+        <div class="config-module">
+          <div class="section-title">
+            <span class="title-text">参数配置</span>
+          </div>
           <div class="config-grid">
             <div class="config-item">
               <label class="config-label">语言</label>
@@ -107,43 +117,42 @@
         </div>
       </div>
 
-      <!-- Outline Step -->
       <div v-if="step === 'outline'" class="outline-section">
         <div class="outline-header">
-          <h3 class="section-title">📄 内容大纲</h3>
-          <div class="outline-info">
-            <span class="info-text">点击编辑内容，右键添加/删除大纲项</span>
+          <div class="section-title">
+            <span class="title-text">内容大纲</span>
           </div>
+          <div class="hint-text">可编辑内容 · 右键管理节点</div>
         </div>
 
-        <div class="outline-content">
-          <div v-if="outlineCreating" class="outline-preview">
-            <div class="typing-indicator">
-              <span class="typing-dot"></span>
-              <span class="typing-dot"></span>
-              <span class="typing-dot"></span>
+        <div class="outline-container">
+          <div v-if="outlineCreating" class="generating-view">
+            <div class="gen-indicator">
+              <div class="gen-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span class="gen-text">AI正在生成</span>
             </div>
-            <pre ref="outlineRef" class="outline-text">{{ outline }}</pre>
+            <pre ref="outlineRef" class="outline-display">{{ outline }}</pre>
           </div>
-          <div v-else class="outline-editor">
+          <div v-else class="editor-view">
             <OutlineEditor v-model:value="outline" />
           </div>
         </div>
 
-        <div v-if="!outlineCreating" class="outline-actions">
-          <button class="primary-btn" @click="goPPT">
-            <span class="btn-icon">🎨</span>
-            生成PPT
-          </button>
-          <button class="secondary-btn" @click="resetToSetup">
-            <span class="btn-icon">↩️</span>
+        <div v-if="!outlineCreating" class="action-group">
+          <button class="act-btn secondary" @click="resetToSetup">
             重新生成
+          </button>
+          <button class="act-btn primary" @click="goPPT">
+            创建PPT
           </button>
         </div>
       </div>
     </div>
-
-    <!-- Processing Modal -->
+        <!-- Processing Modal -->
     <div v-if="showProcessingModal" class="processing-modal-overlay">
       <div class="processing-modal">
         <div class="processing-content">
@@ -211,6 +220,10 @@ const resetToSetup = () => {
   }, 100)
 }
 
+const goToEditor = () => {
+  router.push('/editor')
+}
+
 const createOutline = async () => {
   if (!keyword.value.trim()) {
     message.error('请先输入PPT主题')
@@ -219,6 +232,7 @@ const createOutline = async () => {
 
   loading.value = true
   outlineCreating.value = true
+  //进度蒙版
   showProcessingModal.value = true
 
   try {
@@ -336,184 +350,225 @@ const uploadWordAndCreateOutline = async (file: File) => {
 .aippt-page {
   position: relative;
   min-height: 100dvh;
+  background: linear-gradient(135deg, #f6f9fc 0%, #ffffff 100%);
   overflow: hidden;
 }
 
-/* 背景层 */
 .page-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(102, 126, 234, 0.12), rgba(0, 0, 0, 0) 60%),
-    radial-gradient(1000px 600px at 90% 110%, rgba(118, 75, 162, 0.12), rgba(0, 0, 0, 0) 60%),
-    linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   pointer-events: none;
-}
-.page-bg .grid {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
-  background-size: 32px 32px, 32px 32px;
-  mask-image: radial-gradient(60% 50% at 50% 50%, #000 60%, transparent 100%);
-}
-.bg-blob {
-  position: absolute;
-  filter: blur(40px);
-  opacity: 0.6;
-}
-.bg-blob.b1 { width: 520px; height: 520px; left: -160px; top: -160px; background: #c7d2fe; }
-.bg-blob.b2 { width: 420px; height: 420px; right: -120px; bottom: -120px; background: #e9d5ff; }
+  
+  .tech-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 
-/* 主内容卡片 */
+  .float-sphere {
+    position: absolute;
+    border-radius: 50%;
+    
+    &.s1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.15), transparent 70%);
+      top: -100px;
+      left: -100px;
+      animation: float1 20s ease-in-out infinite;
+    }
+    
+    &.s2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle at 70% 70%, rgba(168, 85, 247, 0.12), transparent 70%);
+      bottom: -50px;
+      right: -50px;
+      animation: float2 15s ease-in-out infinite;
+    }
+    
+    &.s3 {
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.1), transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: float3 25s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -30px); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
 .aippt-dialog {
   position: relative;
   z-index: 1;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 40px 24px 32px;
-  max-width: 1160px;
-  box-sizing: border-box;
+  padding: 40px 20px;
 }
 
-/* Header Section */
 .header-section {
   text-align: center;
-  margin-bottom: 3rem;
-  color: #475569;
-}
+  margin-bottom: 50px;
+  position: relative;
 
-.brand {
-  margin-bottom: 2rem;
+  .template-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, #667eea 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+  }
 
-  .title {
-    font-size: 3rem;
-    font-weight: 800;
-    margin: 0 0 1rem 0;
+  .brand {
+    margin-bottom: 35px;
+    
+    .title {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 12px 0;
+      
+      .title-main {
+        font-size: 42px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1px;
+      }
+      
+      .title-badge {
+        background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+    }
+    
+    .subtitle {
+      color: #64748b;
+      font-size: 15px;
+    }
+  }
+
+  .progress-flow {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
-    background-size: 400% 400%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: gradientShift 3s ease infinite;
-
-    .title-icon {
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-  }
-
-  .subtitle {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto;
-    color: #475569;
-  }
-}
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.progress-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-
-  .progress-step {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-    color: #475569;
-
-    &.active {
-      opacity: 1;
-      font-weight: 600;
-    }
-
-    .step-circle {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      background: #e2e8f0;
+    gap: 0;
+    
+    .flow-item {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      border: 2px solid #cbd5e1;
-      transition: all 0.3s ease;
-    }
-
-    &.active .step-circle {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      transform: scale(1.1);
-      border-color: transparent;
-    }
-  }
-
-  .progress-line {
-    width: 4rem;
-    height: 2px;
-    background: #e2e8f0;
-    transition: background 0.3s ease;
-
-    &.completed {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-  }
-}
-
-/* Setup Section */
-.setup-section {
-  background: white;
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
-.input-section {
-  margin-bottom: 2rem;
-
-  .input-wrapper {
-    position: relative;
-    background: #f8fafc;
-    border-radius: 1rem;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
-    overflow: hidden;
-
-    &:focus-within {
-      border-color: #667eea;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
-    }
-
-    .main-input {
-      width: 100%;
-      padding: 1.25rem 1.5rem;
-      border: none;
-      background: transparent;
-      font-size: 1.1rem;
-      outline: none;
-      resize: none;
-
-      &::placeholder {
+      gap: 8px;
+      
+      .flow-dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        transition: all 0.5s;
+      }
+      
+      .flow-text {
+        font-size: 11px;
         color: #94a3b8;
+        letter-spacing: 1.5px;
+        font-weight: 500;
+      }
+      
+      &.active {
+        .flow-dot {
+          background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+        
+        .flow-text {
+          color: #6366f1;
+        }
       }
     }
+    
+    .flow-connector {
+      width: 80px;
+      height: 2px;
+      background: #e2e8f0;
+      margin: 0 -8px;
+      margin-bottom: 24px;
+      transition: all 0.5s;
+      
+      &.active {
+        background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+      }
+    }
+  }
+}
 
-    .input-actions {
+.setup-section {
+  .input-module {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    margin-bottom: 32px;
+    
+    .input-field {
+      .text-input {
+        width: 100%;
+        font-size: 18px;
+        padding: 0 0 16px 0;
+        border: none;
+        border-bottom: 2px solid #e2e8f0;
+        outline: none;
+        transition: all 0.3s;
+        background: transparent;
+        
+        &::placeholder {
+          color: #cbd5e1;
+        }
+        
+        &:focus {
+          border-bottom-color: #6366f1;
+        }
+      }
+
+      .input-actions {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -559,338 +614,373 @@ const uploadWordAndCreateOutline = async (file: File) => {
         }
       }
     }
-  }
-}
-
-/* Recommendations Section */
-.recommendations-section {
-  margin-bottom: 2rem;
-
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .recommendations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-
-    .recommend-item {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.75rem;
-      padding: 0.75rem 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-      text-align: left;
-
-      &:hover {
-        background: #667eea;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      
+      .input-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        
+        .counter {
+          color: #94a3b8;
+          font-size: 13px;
+        }
+        
+        .submit-btn {
+          background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+          color: white;
+          border: none;
+          padding: 12px 32px;
+          border-radius: 100px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s;
+          
+          &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+          }
+          
+          &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+        }
       }
     }
   }
-}
 
-/* Configuration Section */
-.config-section {
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .bubble-section {
+    margin-bottom: 32px;
+    
+    .bubble-container {
+      margin-top: 16px;
+      overflow: hidden;
+      position: relative;
+      
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        z-index: 2;
+        pointer-events: none;
+      }
+      
+      &::before {
+        left: 0;
+        background: linear-gradient(90deg, #f6f9fc, transparent);
+      }
+      
+      &::after {
+        right: 0;
+        background: linear-gradient(90deg, transparent, #f6f9fc);
+      }
+      
+      .bubble-track {
+        overflow: hidden;
+        padding: 8px 0;
+        
+        .bubble-list {
+          display: flex;
+          gap: 12px;
+          animation: scrollBubbles 30s linear infinite;
+          
+          .bubble-item {
+            flex-shrink: 0;
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 100px;
+            color: #475569;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            
+            &:hover {
+              background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+              color: white;
+              border-color: transparent;
+              transform: scale(1.05);
+            }
+          }
+        }
+      }
+    }
   }
 
-  .config-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 1.5rem;
-
-    .config-item {
-      .config-label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: #475569;
-        font-size: 0.9rem;
-      }
-
-      .config-select {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        background: white;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: border-color 0.3s ease;
-
-        &:focus {
+  .config-module {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+      margin-top: 20px;
+      
+      .config-item {
+        .config-label {
+          display: block;
+          font-size: 13px;
+          color: #64748b;
+          margin-bottom: 8px;
+          font-weight: 500;
+        }
+        
+        .config-select {
+          width: 100%;
+          padding: 10px 16px;
+          border: 2px solid #e2e8f0;
+          border-radius: 12px;
+          background: white;
           outline: none;
-          border-color: #667eea;
+          transition: all 0.3s;
+          color: #334155;
+          cursor: pointer;
+          
+          &:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+          }
         }
       }
     }
   }
 }
 
-/* Outline Section */
+.section-title {
+  margin-bottom: 16px;
+  
+  .title-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
 .outline-section {
   background: white;
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  
   .outline-header {
-    margin-bottom: 1.5rem;
-
-    .section-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #334155;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .outline-info {
-      .info-text {
-        color: #64748b;
-        font-size: 0.9rem;
-      }
+    margin-bottom: 24px;
+    
+    .hint-text {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 8px;
     }
   }
 
-  .outline-content {
-    margin-bottom: 2rem;
-
-    .outline-preview {
-      position: relative;
-
-      .typing-indicator {
+  .outline-container {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 24px;
+    min-height: 400px;
+    margin-bottom: 28px;
+    
+    .generating-view {
+      .gen-indicator {
         display: flex;
-        gap: 0.25rem;
-        margin-bottom: 1rem;
         align-items: center;
-
-        &::before {
-          content: 'AI正在生成大纲';
-          margin-right: 0.5rem;
-          color: #64748b;
-          font-size: 0.9rem;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        
+        .gen-dots {
+          display: flex;
+          gap: 6px;
+          
+          span {
+            width: 8px;
+            height: 8px;
+            background: #6366f1;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite;
+            
+            &:nth-child(2) { animation-delay: 0.2s; }
+            &:nth-child(3) { animation-delay: 0.4s; }
+          }
         }
-
-        .typing-dot {
-          width: 0.5rem;
-          height: 0.5rem;
-          background: #667eea;
-          border-radius: 50%;
-          animation: typingBounce 1.4s infinite;
-
-          &:nth-child(2) { animation-delay: 0.2s; }
-          &:nth-child(3) { animation-delay: 0.4s; }
+        
+        .gen-text {
+          color: #6366f1;
+          font-size: 14px;
+          font-weight: 500;
         }
       }
-
-      .outline-text {
-        max-height: 400px;
-        padding: 1.5rem;
-        background: #f8fafc;
-        border-radius: 1rem;
-        border: 1px solid #e2e8f0;
-        overflow-y: auto;
-        font-family: 'SF Mono', Monaco, monospace;
-        font-size: 0.9rem;
-        line-height: 1.6;
+      
+      .outline-display {
+        color: #334155;
+        line-height: 1.8;
         white-space: pre-wrap;
-        word-wrap: break-word;
+        word-break: break-word;
+        max-height: 350px;
+        overflow-y: auto;
+        font-family: system-ui, -apple-system, sans-serif;
+        
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        &::-webkit-scrollbar-track {
+          background: #e2e8f0;
+          border-radius: 3px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+          
+          &:hover {
+            background: #94a3b8;
+          }
+        }
       }
     }
-
-    .outline-editor {
+    
+    .editor-view {
       max-height: 400px;
-      padding: 1.5rem;
-      background: #f8fafc;
-      border-radius: 1rem;
-      border: 1px solid #e2e8f0;
       overflow-y: auto;
+      
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: #e2e8f0;
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+        
+        &:hover {
+          background: #94a3b8;
+        }
+      }
     }
   }
 
-  .outline-actions {
+  .action-group {
     display: flex;
-    gap: 1rem;
     justify-content: center;
-
-    .primary-btn {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      font-size: 1rem;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-icon {
-        font-size: 1.2rem;
-      }
-    }
-
-    .secondary-btn {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #d1d5db;
-      padding: 1rem 2rem;
-      border-radius: 0.75rem;
+    gap: 16px;
+    
+    .act-btn {
+      padding: 14px 36px;
+      border-radius: 100px;
       font-weight: 500;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s ease;
-      font-size: 1rem;
-
-      &:hover {
-        background: #e2e8f0;
-        transform: translateY(-2px);
+      transition: all 0.3s;
+      border: none;
+      
+      &.primary {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
       }
-
-      .btn-icon {
-        font-size: 1.2rem;
+      
+      &.secondary {
+        background: #f1f5f9;
+        color: #475569;
+        
+        &:hover {
+          background: #e2e8f0;
+        }
       }
     }
   }
 }
 
-@keyframes typingBounce {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-0.5rem); }
+@keyframes scrollBubbles {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
-/* Responsive Design */
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
 @media (max-width: 768px) {
-  .aippt-dialog {
-    padding: 1rem;
-  }
-
-  .setup-section,
-  .outline-section {
-    padding: 1.5rem;
-  }
-
-  .brand .title {
-    font-size: 2.5rem;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .progress-indicator {
-    flex-direction: column;
-    gap: 1rem;
-
-    .progress-line {
-      width: 2px;
-      height: 2rem;
+  .header-section {
+    .template-btn {
+      position: static;
+      margin-bottom: 24px;
+    }
+    
+    .brand .title {
+      .title-main {
+        font-size: 32px;
+      }
     }
   }
-
-  .recommendations-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .config-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .input-actions {
-    flex-direction: column;
-    align-items: stretch !important;
-
-    .generate-btn {
-      justify-content: center;
+  
+  .setup-section {
+    .config-module .config-grid {
+      grid-template-columns: 1fr;
     }
   }
-
-  .outline-actions {
+  
+  .action-group {
     flex-direction: column;
-
-    .primary-btn,
-    .secondary-btn {
-      justify-content: center;
+    
+    .act-btn {
+      width: 100%;
     }
   }
 }
 
-@media (max-width: 480px) {
-  .brand .title {
-    font-size: 2rem;
-  }
-
-  .brand .subtitle {
-    font-size: 1rem;
-  }
-
-  .setup-section,
-  .outline-section {
-    padding: 1rem;
-  }
-}
-
-/* Processing Modal Styles */
 .processing-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(4px);
 }
-
 .processing-modal {
-  background: white;
+  background: #fff;
   border-radius: 1rem;
   padding: 2rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,.15);
   max-width: 300px;
   width: 90%;
   text-align: center;
 }
-
 .processing-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
 }
-
 .processing-spinner {
   width: 40px;
   height: 40px;
@@ -899,13 +989,11 @@ const uploadWordAndCreateOutline = async (file: File) => {
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
-
 .processing-text {
   color: #475569;
   font-size: 1rem;
   font-weight: 500;
 }
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
