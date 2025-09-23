@@ -1,7 +1,15 @@
 import logging
 import os
+from pathlib import Path
 from dotenv import load_dotenv
-load_dotenv()
+
+# 加载统一环境配置
+project_root = Path(__file__).parent.parent.parent
+env_file = project_root / ".env"
+if env_file.exists():
+    load_dotenv(env_file)
+else:
+    load_dotenv()
 logfile = os.path.join("api.log")
 # 日志的格式
 logging.basicConfig(
@@ -36,12 +44,18 @@ from a2a.types import (
 from slide_agent.agent import root_agent
 
 @click.command()
-@click.option("--host", "host", default="localhost", help="服务器绑定的主机名（默认为 localhost,可以指定具体本机ip）")
-@click.option("--port", "port", default=10011,help="服务器监听的端口号（默认为 10011）")
+@click.option("--host", "host", default=None, help="服务器绑定的主机名（默认从环境变量读取）")
+@click.option("--port", "port", default=None,help="服务器监听的端口号（默认从环境变量读取）")
 @click.option("--agent_url", "agent_url", default="",help="Agent Card中对外展示和访问的地址")
 def main(host, port, agent_url=""):
+    # 从环境变量读取配置，命令行参数优先
+    if host is None:
+        host = os.environ.get("HOST", "0.0.0.0")
+    if port is None:
+        port = int(os.environ.get("CONTENT_API_PORT", "10011"))
+
     # 每个小的Agent都流式的输出结果
-    streaming = False
+    streaming = os.environ.get("CONTENT_STREAMING", "false").lower() == "true"
     show_agent = ["ControllerAgent"]  #哪个Agent会作为最后的ppt的Agent的输出（对应前端显示）
     agent_card_name = "Writter PPT Agent"
     agent_name = "writter_agent"

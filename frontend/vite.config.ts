@@ -10,11 +10,11 @@ export default defineConfig({
     vue(),
   ],
   server: {
-    host: '127.0.0.1',
+    host: '0.0.0.0',
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:6800',
+        target: 'http://0.0.0.0:6800',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       }
