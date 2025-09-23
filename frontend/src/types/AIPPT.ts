@@ -38,6 +38,9 @@ export interface AIPPTTransition extends AIPPTBaseSlide {
   }
 }
 
+export type AnyContentItem = AIPPTContentChartItem | AIPPTContentTextItem | AIPPTLegacyTextItem
+
+
 // ==============================
 // 👉 内容页：items 支持“文本项 + 图表项”
 //    同时兼容旧结构 { title, text }（无 kind 字段）

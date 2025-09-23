@@ -171,6 +171,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "品类占比",
+            "text": "脑机接口技术取得重大突破，实现了更高精度的思维解码，使大脑信号能够更准确地转化为控制指令，为医疗康复和人机交互开辟了新途径。",
             "chartType": "pie",
             "labels": ["A 类", "B 类", "C 类", "D 类"],
             "series": [
@@ -180,7 +181,7 @@ data_response_content = [
               "legend": { "bottom": 8 },
               "tooltip": { "trigger": "item", "formatter": "{b}: {d}%" }
             }
-          }
+          },
         ]
       }
     },
@@ -243,6 +244,7 @@ async def get_templates():
         { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
         { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
         { "name": "图片和表格", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+        { "name": "图片和表格2", "id": "template_7", "cover": "/api/data/template_7.jpg" },
     ]
 
     return {"data": templates}
