@@ -152,6 +152,12 @@ class CheckerAgent(BaseAgent):
         if not text:
             return None
         s = text.strip()
+        if s.startswith("```json"):
+            s = s[len("```json"):].strip()
+        if s.startswith("```"):
+            s = s[len("```"):].strip()
+        if s.endswith("```"):
+            s = s[: -len("```")].strip()
         try:
             start = s.find("{")
             end = s.rfind("}")
@@ -247,6 +253,11 @@ class ControllerAgent(BaseAgent):
             self._append_accumulated(st, data if data is not None else st.get("last_written_raw"))
             # 清理本页中间态
             last_written_raw = st.get("last_written_raw")
+            last_slide_json = st.get("last_slide_json")
+            if last_slide_json:
+                return_slide_json = json.dumps(last_slide_json, ensure_ascii=False)
+            else:
+                return_slide_json = last_written_raw
             st["last_written_raw"] = None
             st["last_slide_json"] = None
             st["is_valid_json"] = False
@@ -256,7 +267,7 @@ class ControllerAgent(BaseAgent):
             st["current_slide_index"] = current_slide_index + 1
             yield Event(
                 author=self.name,
-                content=types.Content(parts=[types.Part(text=last_written_raw)])
+                content=types.Content(parts=[types.Part(text=return_slide_json)])
             )
             print(f"第 {current_slide_index} 页已通过校验，进入下一页。")
         else:
@@ -272,6 +283,11 @@ class ControllerAgent(BaseAgent):
                 print(f"第 {current_slide_index} 页重试超过 {max_retries} 次，跳过并进入下一页。")
                 st["current_slide_index"] = current_slide_index + 1
                 last_written_raw = st.get("last_written_raw")
+                last_slide_json = st.get("last_slide_json")
+                if last_slide_json:
+                    return_slide_json = json.dumps(last_slide_json, ensure_ascii=False)
+                else:
+                    return_slide_json = last_written_raw
                 # 清理中间态
                 st["last_written_raw"] = None
                 st["last_slide_json"] = None
@@ -280,7 +296,7 @@ class ControllerAgent(BaseAgent):
                 # 即使失败，也返回last_written_raw
                 yield Event(
                     author=self.name,
-                    content=types.Content(parts=[types.Part(text=last_written_raw)])
+                    content=types.Content(parts=[types.Part(text=return_slide_json)])
                 )
 
         # 终止判断：到达最后一页后输出汇总并 escalate
