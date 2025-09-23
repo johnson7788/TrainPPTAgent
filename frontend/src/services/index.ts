@@ -30,6 +30,10 @@ export default {
     return axios.get(`${SERVER_URL}/data/${filename}.json`)
   },
 
+  getTemplates(): Promise<any> {
+    return axios.get(`${SERVER_URL}/templates`)
+  },
+
   AIPPT_Outline({
     content,
     language,

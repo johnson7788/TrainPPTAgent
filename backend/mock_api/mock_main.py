@@ -231,6 +231,19 @@ async def aippt_outline_from_word(file: UploadFile = File(...)):
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
 
+@app.get("/templates")
+async def get_templates():
+    templates = [
+        { "name": "红色通用", "id": "template_1", "cover": "/api/data/template_1.jpg" },
+        { "name": "蓝色通用", "id": "template_2", "cover": "/api/data/template_2.jpg" },
+        { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
+        { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
+        { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
+        { "name": "图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+    ]
+    return templates
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=6800)

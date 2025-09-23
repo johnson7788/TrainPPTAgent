@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { omit } from 'lodash'
 import { customAlphabet } from 'nanoid'
+import api from '@/services'
 import type { Slide, SlideTheme, PPTElement, PPTAnimation, SlideTemplate } from '@/types/slides'
 
 interface RemovePropData {
@@ -139,6 +140,13 @@ export const useSlidesStore = defineStore('slides', {
   
     setTemplates(templates: SlideTemplate[]) {
       this.templates = templates
+    },
+
+    async fetchTemplates() {
+      const result = await api.getTemplates()
+      if (result && result.data) {
+        this.templates = result.data
+      }
     },
 
     resetSlides() {

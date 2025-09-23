@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import api from '@/services'
@@ -95,7 +95,12 @@ const language = ref(route.query.language as string)
 const model = ref(route.query.model as string)
 const style = ref('通用')
 const img = ref('')
-const selectedTemplate = ref<string>(templates.value?.[0]?.id || 'template_1')
+const selectedTemplate = ref<string>('')
+
+onMounted(async () => {
+  await slideStore.fetchTemplates()
+  selectedTemplate.value = templates.value?.[0]?.id || ''
+})
 const loading = ref(false)
 
 const createPPT = async () => {
