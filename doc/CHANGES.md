@@ -143,3 +143,7 @@ main_api.py
 backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py
 
 ## 对Agent进行改造，添加了循环检查，检查输出Json的key字段必须不能少，但是可以多，因为可能添加图片等。
+
+## 模版数量来自后台API，fetchTemplates和@app.get("/templates")
+src/store/slides.ts
+frontend/src/views/PPT/index.vue

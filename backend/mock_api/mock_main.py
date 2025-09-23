@@ -78,19 +78,19 @@ image_data = {
     "data": {
         "title": "暴力犯罪",
         "items": [
-            {
-                "title": "谋杀心理特征",
-                "text": "探讨谋杀者的心理动机",
-                "images": [
-                    {
-                        "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg",
-                        "alt": "不同年份的谋杀率",
-                        "imageType": "itemFigure"
-                    }
-                ]
-            }
+            {"title": "暴力犯罪","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
+            {"title": "暴力犯罪","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
         ]
-    }
+    },
+    "images": [
+        {
+            "id": "图片ID",
+            "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg",
+            "width": 1920,
+            "height": 1080,
+            "alt": "不同年份的谋杀率"
+        }
+    ]
 }
 charts_data = {
     "type": "content",
@@ -241,7 +241,8 @@ async def get_templates():
         { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
         { "name": "图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
     ]
-    return templates
+
+    return {"data": templates}
 
 
 if __name__ == "__main__":
