@@ -137,7 +137,7 @@ class KnowledgeBaseTestCase(unittest.TestCase):
             "fileId": 988,
             "folderId": 544,
             "fileType": "pdf",
-            "url": "https://www.unido.org/sites/default/files/unido-publications/2024-06/IDR24-Overview-CN.pdf",
+            "url": "https://www.ecsponline.com/yz/B81895EB41C1F4FA4ACE419D96628E800000.pdf",
         }
 
         # 注意：运行前需确保 FastAPI 服务已启动，并已设置 ALI_API_KEY 环境变量

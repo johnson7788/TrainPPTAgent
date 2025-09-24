@@ -55,3 +55,4 @@ vendor/
 cache
 .env_dev
 .env_prod
+backend/personaldb/temp_download/
