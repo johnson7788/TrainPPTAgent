@@ -145,7 +145,8 @@ def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: in
         "fileType": file_type,
         "url": url,
         "folderId": folder_id,
-        "embedding_result": embedding_result
+        "embedding_result": embedding_result,
+        "markdown_content": markdown_content
     }
     logger.info(f"处理OK。。。")
     return result
