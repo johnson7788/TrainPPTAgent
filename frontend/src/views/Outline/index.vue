@@ -64,7 +64,7 @@
                 />
                 <button class="generate-btn" @click="triggerFileUpload" :disabled="showProcessingModal">
                   <span class="btn-icon">📄</span>
-                  上传 Word
+                  依据文件撰写
                 </button>
               </div>
             </div>

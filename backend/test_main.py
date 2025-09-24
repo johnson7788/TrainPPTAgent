@@ -86,5 +86,36 @@ class PPTBaseTestCase(unittest.IsolatedAsyncioTestCase):
             print(f"Template {filename}: {response_json}")
             self.assertIn("slides", response_json)
             self.assertIn("theme", response_json)
+
+    async def test_aippt_outline_from_file(self):
+        """
+        测试上传文件生成大纲
+        """
+        url = f"{self.base_url}/tools/aippt_outline_from_file"
+        file_content = "关于人工智能的的介绍。"
+        file_name = "aboutAI.txt"
+        user_id = 123
+
+        data = {"user_id": str(user_id)}
+        files = {"file": (file_name, file_content, "text/plain")}
+
+        start_time = time.time()
+        
+        response_text = ""
+        async with AsyncClient() as client:
+            # Use a longer timeout as this involves file processing and another API call.
+            async with client.stream("POST", url, data=data, files=files, timeout=120.0) as response:
+                response.raise_for_status()
+                self.assertEqual(response.status_code, 200, "aippt_outline_from_file endpoint should return 200")
+                async for chunk in response.aiter_text():
+                    response_text += chunk
+
+        print(f"Outline from file: {response_text}")
+        self.assertTrue(len(response_text) > 0, "The outline from file should not be empty.")
+        
+        print(f"Outline from file test took: {time.time() - start_time}s")
+        print(f"Server called: {self.host}")
+
+
 if __name__ == "__main__":
     unittest.main()

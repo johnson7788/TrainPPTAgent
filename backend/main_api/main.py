@@ -2,9 +2,9 @@ import asyncio
 import json
 import re
 import os
-import docx
 import dotenv
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import time
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,11 +53,43 @@ async def aippt_outline(request: AipptRequest):
     assert request.stream, "只支持流式的返回大纲"
     return StreamingResponse(stream_agent_response(request.content), media_type="text/plain")
 
-@app.post("/tools/aippt_outline_from_word")
-async def aippt_outline_from_word(file: UploadFile = File(...)):
-    document = docx.Document(file.file)
-    content = "".join([para.text for para in document.paragraphs])
-    return StreamingResponse(stream_agent_response(content), media_type="text/plain")
+
+@app.post("/tools/aippt_outline_from_file")
+async def aippt_outline_from_file(user_id: int = Form(...), file: UploadFile = File(...)):
+    personaldb_api_url = os.environ["PERSONAL_DB"]
+    url = f"{personaldb_api_url}/upload/"
+
+    file_content = await file.read()
+    
+    # fileId is required by personaldb, let's generate one from timestamp.
+    file_id = int(time.time() * 1000)
+
+    data = {
+        "userId": user_id,
+        "fileId": file_id,
+    }
+    files = {"file": (file.filename, file_content, file.content_type)}
+
+    async with httpx.AsyncClient() as client:
+        try:
+            # The timeout needs to be long enough for processing.
+            response = await client.post(url, data=data, files=files, timeout=120.0)
+            response.raise_for_status()
+            
+            result = response.json()
+            markdown_content = result.get("markdown_content")
+
+            if markdown_content is None:
+                raise HTTPException(status_code=500, detail="Failed to get markdown content from personaldb. The 'markdown_content' key was not found in the response.")
+
+            return StreamingResponse(stream_agent_response(markdown_content), media_type="text/plain")
+            
+        except httpx.TimeoutException:
+            raise HTTPException(status_code=504, detail="Request to personaldb timed out.")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=500, detail=f"Error connecting to personaldb: {exc}")
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
 class AipptContentRequest(BaseModel):
     content: str
