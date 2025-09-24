@@ -303,9 +303,10 @@ async def upload_and_vectorize_endpoint(request: Request):
         logger.error(f"上传和向量化失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if temp_file_path and os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-            logger.info(f"临时文件已删除: {temp_file_path}")
+        pass
+        # if temp_file_path and os.path.exists(temp_file_path):
+        #     os.remove(temp_file_path)
+        #     logger.info(f"临时文件已删除: {temp_file_path}")
 
 
 class TextVectorizeBody(BaseModel):

@@ -8,10 +8,12 @@
 
 import re
 import os
+import logging
 import time
 from datetime import datetime
 import random
 import hashlib
+import httpx
 from pathlib import Path
 from google.adk.tools import ToolContext
 import requests
@@ -19,6 +21,7 @@ from urllib.parse import quote
 import json
 from typing import List, Dict, Any
 from .weixin_search import sogou_weixin_search,get_real_url,get_article_content
+logger = logging.getLogger(__name__)
 
 async def SearchImage(query: str, count: int = 1, tool_context: ToolContext = None) -> List[Dict[str, Any]]:
     """
@@ -191,6 +194,51 @@ async def DocumentSearch(
     metadata["tool_document_ids"] = articles
     tool_context.state["metadata"] = metadata
     return articles
+
+def KnowledgeBaseSearch(keyword: str, tool_context: ToolContext):
+    """
+    根据关键词搜索文档库
+    :param keyword: str, 搜索的相关文档的关键词
+    :return: 返回每篇文档数据
+    """
+    topk = 5  # 搜索前5条结果
+    metadata = tool_context.state.get("metadata", {})
+    user_id = metadata.get("user_id", 999)
+    logger.info(f"❤️❤️❤️❤️😜😜😜😜😜调用知识库搜索接口, user_id: {user_id}, query: {keyword}, topk: {topk}")
+    print(f"❤️❤️❤️❤️😜😜😜😜😜调用知识库搜索接口, user_id: {user_id}, query: {keyword}, topk: {topk}")
+    PERSONENAL_DB = os.environ.get('PERSONENAL_DB', '')
+    assert PERSONENAL_DB, "PERSONENAL_DB is not set"
+    url = f"{PERSONENAL_DB}/search"
+    # 正确的请求数据格式
+    data = {
+        "userId": user_id,
+        "query": keyword,
+        "keyword": "",  # 关键词匹配，是否需要强制包含一些关键词
+        "topk": topk
+    }
+    headers = {'content-type': 'application/json'}
+    try:
+        # 发送POST请求
+        response = httpx.post(url, json=data, headers=headers, timeout=20.0, trust_env=False)
+
+        # 检查HTTP状态码
+        response.raise_for_status()
+        assert response.status_code == 200, f"{PERSONENAL_DB}搜索知识库报错"
+
+        # 解析返回的JSON数据
+        result = response.json()
+        documents = result.get("documents", [])
+        metadatas = result.get("metadatas", [])
+        data = {"documents": documents, "metadatas": metadatas}
+        print("Response status:", response.status_code)
+        print("Response body:", result)
+        logger.info(f"{PERSONENAL_DB}搜索知识库返回状态: {response.status_code}")
+        logger.info(f"{PERSONENAL_DB}搜索知识库返回结果: {result}")
+        logger.info(f"{PERSONENAL_DB}搜索知识库成功, 返回结果: {data}")
+        return True, data
+    except Exception as e:
+        print(f"{PERSONENAL_DB}搜索知识库报错: {e}")
+        return False, f"{PERSONENAL_DB}搜索知识库报错: {str(e)}"
 
 if __name__ == '__main__':
     import asyncio

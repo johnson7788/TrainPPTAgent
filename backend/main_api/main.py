@@ -48,7 +48,6 @@ async def stream_agent_response(prompt: str):
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 
-
 @app.post("/tools/aippt_outline")
 async def aippt_outline(request: AipptRequest):
     assert request.stream, "只支持流式的返回大纲"
