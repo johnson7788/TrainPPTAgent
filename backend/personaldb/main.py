@@ -85,13 +85,15 @@ def _get_markdown_content(file_path: str, file_name: str) -> str:
     if file_extension == '.pdf':
         # 使用 MinerU (MagicPDFConverter) 处理PDF
         logger.info(f"使用PDF转换器(MinerU)处理文件: {file_path}")
-        converter = MagicPDFConverter(file_path)
-        return converter.convert_to_markdown()
+        converter = MagicPDFConverter()
+        content, _ = converter.convert_pdf_file(file_path)
+        return content
     else:
         # 使用 markitdown 处理其他文件
         logger.info(f"使用Markitdown转换器处理文件: {file_path}")
-        converter = MarkItDownConverter(file_path)
-        return converter.convert_to_markdown()
+        converter = MarkItDownConverter()
+        content, _ = converter.convert_file(file_path)
+        return content
 
 
 def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: int, user_id: int, file_type: str, url: str, folder_id: int):
