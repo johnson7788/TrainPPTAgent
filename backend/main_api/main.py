@@ -4,7 +4,7 @@ import re
 import os
 import docx
 import dotenv
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -99,6 +99,26 @@ async def get_templates():
     ]
 
     return {"data": templates}
+
+
+@app.get("/files/{user_id}")
+async def list_user_files(user_id: int):
+    """
+    列出指定用户的所有文件信息
+    """
+    personaldb_api_url = os.environ["PERSONAL_DB"]
+    url = f"{personaldb_api_url}/files/{user_id}"
+    
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
+            response.raise_for_status()
+            return response.json()
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=500, detail=f"Error connecting to personaldb: {exc}")
+        except httpx.HTTPStatusError as exc:
+            # 转发下游服务的错误
+            raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
 
 
 if __name__ == "__main__":
