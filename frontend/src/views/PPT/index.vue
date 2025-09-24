@@ -48,6 +48,10 @@
           </div>
         </div>
 
+        <div v-if="isOutlineFromFile" class="generate-option">
+          <Checkbox v-model:value="generateFromUploadedFile">根据上传的文件生成PPT</Checkbox>
+        </div>
+
         <div class="actions">
           <Button class="btn btn-primary" type="primary" :disabled="loading || !selectedTemplate" @click="createPPT()">
             <span>{{ loading ? '正在生成…' : '生成PPT' }}</span>
@@ -80,6 +84,7 @@ import type { AIPPTSlide } from '@/types/AIPPT'
 import type { Slide, SlideTheme } from '@/types/slides'
 import { useMainStore, useSlidesStore } from '@/store'
 import Button from '@/components/Button.vue'
+import Checkbox from '@/components/Checkbox.vue'
 import FullscreenSpin from '@/components/FullscreenSpin.vue'
 
 const route = useRoute()
@@ -87,7 +92,7 @@ const router = useRouter()
 const mainStore = useMainStore()
 const slideStore = useSlidesStore()
 const { templates } = storeToRefs(slideStore)
-const { sessionId } = storeToRefs(mainStore)
+const { sessionId, isOutlineFromFile, generateFromUploadedFile } = storeToRefs(mainStore)
 const { AIPPTGenerator, presetImgPool } = useAIPPT()
 
 const outline = ref(route.query.outline as string)
@@ -332,6 +337,15 @@ const createPPT = async () => {
     }
 
     &:hover .template-image img { transform: scale(1.045); }
+  }
+
+  .generate-option {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 18px;
+    color: #475569;
+    font-size: 14px;
   }
 
   .actions {

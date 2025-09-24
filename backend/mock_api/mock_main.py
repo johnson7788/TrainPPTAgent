@@ -228,8 +228,8 @@ async def get_data(filename: str):
     file_path = os.path.join("./template", filename)
     return FileResponse(file_path)
 
-@app.post("/tools/aippt_outline_from_word")
-async def aippt_outline_from_word(file: UploadFile = File(...)):
+@app.post("/tools/aippt_outline_from_file")
+async def aippt_outline_from_file(file: UploadFile = File(...)):
     print(f"上传的文件是: {file.filename}")
     return StreamingResponse(stream_generator(), media_type="text/plain")
 

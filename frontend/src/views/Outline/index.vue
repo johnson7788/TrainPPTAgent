@@ -217,6 +217,7 @@ const setKeyword = (value: string) => {
 const resetToSetup = () => {
   outline.value = ''
   step.value = 'setup'
+  mainStore.setOutlineFromFile(false)
   setTimeout(() => {
     inputRef.value?.focus()
   }, 100)
@@ -231,6 +232,7 @@ const createOutline = async () => {
     message.error('请先输入PPT主题')
     return
   }
+  mainStore.setOutlineFromFile(false)
 
   loading.value = true
   outlineCreating.value = true
@@ -303,6 +305,7 @@ const handleFileChange = (event: Event) => {
 }
 
 const uploadWordAndCreateOutline = async (file: File) => {
+  mainStore.setOutlineFromFile(true)
   loading.value = true
   outlineCreating.value = true
   showProcessingModal.value = true

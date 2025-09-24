@@ -40,6 +40,8 @@ export interface MainState {
   showAIPPTDialog: boolean
   isGenerating: boolean
   sessionId: string
+  isOutlineFromFile: boolean
+  generateFromUploadedFile: boolean
 }
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
@@ -79,6 +81,8 @@ export const useMainStore = defineStore('main', {
     showAIPPTDialog: false, // 打开AIPPT创建窗口
     isGenerating: false,
     sessionId: nanoid(),
+    isOutlineFromFile: false, //是否上传了文件，上传了文件，就根据文件生成ppt的大纲
+    generateFromUploadedFile: false, // 是否是依据上传的文件生成PPT
   }),
 
   getters: {
@@ -219,6 +223,14 @@ export const useMainStore = defineStore('main', {
 
     setGenerating(isGenerating: boolean) {
       this.isGenerating = isGenerating
+    },
+    // 是否是依据文件撰写的大纲
+    setOutlineFromFile(isFromFile: boolean) {
+      this.isOutlineFromFile = isFromFile
+    },
+    // 是否是依据上传的文件生成PPT
+    setGenerateFromUploadedFile(isFromUploadedFile: boolean) {
+      this.generateFromUploadedFile = isFromUploadedFile
     },
   },
 })
