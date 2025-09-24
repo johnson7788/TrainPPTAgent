@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 from core.magic_pdf_converter import MagicPDFConverter
 from core.markitdown_converter import MarkItDownConverter
 from core.chunkers.semantic_chunker import SemanticChunker
+from core.chunkers.fast_chunker import FastChunker
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -93,7 +94,7 @@ def _get_markdown_content(file_path: str, file_name: str) -> str:
     else:
         # 使用 markitdown 处理其他文件
         logger.info(f"使用Markitdown转换器处理文件: {file_path}")
-        converter = MarkItDownConverter()
+        converter = MarkItDownConverter(use_magic_pdf=False)  #use_magic_pdf设定是否使用MinerU
         content, _ = converter.convert_file(file_path)
         return content
 
@@ -333,7 +334,7 @@ def _chunk_text(text: str, max_chars: int = 1200, overlap: int = 200) -> List[st
     text = (text or "").strip()
     if not text:
         return []
-    chunker = SemanticChunker(chunk_size=max_chars, chunk_overlap=overlap)
+    chunker = FastChunker(max_tokens=max_chars)
     chunks = chunker.chunk_text(text)
     return [chunk.content for chunk in chunks]
 
