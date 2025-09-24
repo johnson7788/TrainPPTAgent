@@ -14,8 +14,9 @@ from fastapi import FastAPI, HTTPException, File, UploadFile, Form
 from pydantic import BaseModel, ValidationError
 from typing import List, Optional
 import embedding_utils
-import read_all_files
 from urllib.parse import urlparse
+from core.magic_pdf_converter import MagicPDFConverter
+from core.markitdown_converter import MarkItDownConverter
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -72,24 +73,53 @@ def search_personal_knowledge_base(query: SearchQuery):
         logger.error(f"搜索失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"搜索失败: {str(e)}")
 
+def _get_markdown_content(file_path: str, file_name: str) -> str:
+    """
+    根据文件类型选择合适的转换器，将文件内容转换为Markdown格式。
+    PDF文件使用MagicPDFConverter（MinerU），其他文件使用MarkitdownConverter。
+    """
+    # 获取文件扩展名
+    file_extension = os.path.splitext(file_name)[1].lower() if file_name else ""
+
+    # 根据文件类型选择转换器
+    if file_extension == '.pdf':
+        # 使用 MinerU (MagicPDFConverter) 处理PDF
+        logger.info(f"使用PDF转换器(MinerU)处理文件: {file_path}")
+        converter = MagicPDFConverter(file_path)
+        return converter.convert_to_markdown()
+    else:
+        # 使用 markitdown 处理其他文件
+        logger.info(f"使用Markitdown转换器处理文件: {file_path}")
+        converter = MarkItDownConverter(file_path)
+        return converter.convert_to_markdown()
+
+
 def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: int, user_id: int, file_type: str, url: str, folder_id: int):
     """
     从本地文件路径处理文件、进行向量化并存储
     """
-    # 步骤2: 使用read_all_files读取文件内容
+    # 步骤2: 使用适当的转换器读取文件内容
     logger.info(f"开始读取文件内容: {temp_file_path}")
-    content: List[str] = read_all_files.read_file_content(temp_file_path)
-    if not content or all(not line.strip() for line in content):
+    
+    markdown_content = _get_markdown_content(temp_file_path, file_name)
+
+    if not markdown_content or not markdown_content.strip():
         logger.error(f"文件内容为空或无效: {temp_file_path}")
         raise ValueError("文件内容为空或无效")
-    logger.info(f"文件内容读取成功，长度: {len(content)}")
+    logger.info(f"文件内容读取成功，准备进行分块。")
+
+    # 对Markdown格式进行Trunk(分块)
+    documents = _chunk_text(markdown_content)
+    if not documents:
+        raise ValueError("分块后内容为空")
+    logger.info(f"内容分块成功，共 {len(documents)} 块。")
 
     # 步骤3: 检查环境变量
     if not os.getenv("ALI_API_KEY"):
         logger.error("ALI_API_KEY环境变量未设置")
         raise ValueError("ALI_API_KEY环境变量未设置")
 
-    # 步骤4: 使用embedding_utils插入向量
+    # 步骤4: 使用embedding_utils生成embedding向量并插入向量
     logger.info("初始化embedding模型")
     embedder = embedding_utils.EmbeddingModel()
     chroma = embedding_utils.ChromaDB(embedder)
@@ -101,7 +131,7 @@ def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: in
         file_type=file_type or "unknown",
         url=url or "",
         folder_id=folder_id or 0,
-        documents=content
+        documents=documents
     )
     logger.info("向量插入成功")
 
@@ -118,7 +148,7 @@ def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: in
     return result
 
 
-def process_file_sync(file_name:str, id: int, user_id: int, file_type: str, url: str, folder_id: int):
+def process_file_sync(id: int, user_id: int, file_type: str, url: str, folder_id: int):
     """
     处理文件下载、读取和生成embedding的同步版本
     """
@@ -136,8 +166,8 @@ def process_file_sync(file_name:str, id: int, user_id: int, file_type: str, url:
     temp_file_path = None
     try:
         # 步骤1: 下载文件
-        local_file_name = os.path.basename(parsed_url.path) or f"downloaded_file_{user_id}"
-        temp_file_path = os.path.join(TEMP_DIR, local_file_name)
+        file_name = os.path.basename(parsed_url.path) or f"downloaded_file_{user_id}"
+        temp_file_path = os.path.join(TEMP_DIR, file_name)
         logger.info(f"开始下载文件: {url}")
         response = requests.get(url, timeout=60, proxies=None)
         response.raise_for_status()
