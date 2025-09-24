@@ -8,7 +8,6 @@ import json
 import requests
 import uvicorn
 import logging
-import pika
 import asyncio
 import uuid
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form
@@ -43,14 +42,6 @@ if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
 
 # RabbitMQ消息处理类
-class RabbitMessage(BaseModel):
-    id: Optional[int] = None  # 允许 id 为 None，用于 removeById
-    userId: int
-    fileType: Optional[str] = None  # 允许 fileType 为 None
-    url: Optional[str] = None  # 允许 url 为 None
-    folderId: Optional[int] = None  # 允许 folderId 为 None
-    ids: Optional[List[int]] = None  # ids 字段，用于 removeById
-
 
 class SearchQuery(BaseModel):
     userId: int | str
@@ -75,7 +66,7 @@ def search_personal_knowledge_base(query: SearchQuery):
             keyword=query.keyword,
             topk=query.topk
         )
-        logger.info("搜索成功")
+        logger.info(f"搜索成功: {result}")
         return result
     except Exception as e:
         logger.error(f"搜索失败: {str(e)}", exc_info=True)
@@ -229,106 +220,134 @@ async def upload_and_vectorize_endpoint(
             os.remove(temp_file_path)
             logger.info(f"临时文件已删除: {temp_file_path}")
 
-def rabbitmq_callback(ch, method, properties, body):
+
+class TextVectorizeBody(BaseModel):
     """
-    RabbitMQ消息回调函数 - 使用同步处理
+    纯文本向量化请求体。
+    仅必需字段：content, fileId, fileName
+    其余参数均为可选，默认空/0。
+    """
+    content: str
+    fileId: int
+    fileName: str
+    userId: Optional[int] = 0
+    fileType: Optional[str] = None
+    url: Optional[str] = ""
+    folderId: Optional[int] = 0
+
+
+def _chunk_text(text: str, max_chars: int = 1200, overlap: int = 200) -> List[str]:
+    """
+    简单切分：先按段落，再对超长段落做定长切分。
+    这样可避免单块文本过长导致的向量化超限。
+    """
+    text = (text or "").strip()
+    if not text:
+        return []
+
+    # 先按空行分段
+    blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
+    if not blocks:
+        blocks = [text]
+
+    chunks: List[str] = []
+    for b in blocks:
+        if len(b) <= max_chars:
+            chunks.append(b)
+        else:
+            start = 0
+            while start < len(b):
+                end = min(start + max_chars, len(b))
+                chunks.append(b[start:end])
+                if end == len(b):
+                    break
+                start = max(0, end - overlap)  # 轻微重叠，提升召回
+    return chunks
+
+
+def process_text_content(
+    file_name: str,
+    text: str,
+    id: int,
+    user_id: int = 0,
+    file_type: Optional[str] = None,
+    folder_id: int = 0,
+    url: str = ""
+):
+    """
+    直接对纯文本进行向量化并落库（Chroma）。
+    其余参数默认空/0，以满足“无需额外参数”的需求。
+    """
+    logger.info("开始处理纯文本向量化")
+    if not text or not text.strip():
+        raise ValueError("content 不能为空")
+
+    # 与现有流程保持一致的环境变量校验
+    if not os.getenv("ALI_API_KEY"):
+        logger.error("ALI_API_KEY环境变量未设置")
+        raise ValueError("ALI_API_KEY环境变量未设置")
+
+    documents = _chunk_text(text)
+    if not documents:
+        raise ValueError("content 无有效文本")
+
+    logger.info("初始化 embedding 模型与 Chroma")
+    embedder = embedding_utils.EmbeddingModel()
+    chroma = embedding_utils.ChromaDB(embedder)
+
+    logger.info(f"插入文本向量：fileId={id}, userId={user_id}")
+    embedding_result = chroma.insert_file_vectors(
+        file_name=file_name,
+        user_id=user_id or 0,
+        file_id=id,
+        file_type=file_type or "unknown",
+        url=url or "",
+        folder_id=folder_id or 0,
+        documents=documents
+    )
+
+    result = {
+        "id": id,
+        "file_name": file_name,
+        "userId": user_id or 0,
+        "fileType": file_type or "unknown",
+        "url": url or "",
+        "folderId": folder_id or 0,
+        "embedding_result": embedding_result
+    }
+    logger.info("纯文本向量化完成")
+    return result
+
+
+# ===== 纯文本向量化接口 =====
+@app.post("/vectorize/text")
+def vectorize_text_endpoint(body: TextVectorizeBody):
+    """
+    纯文本向量化：
+    - 必填：content, fileId, fileName
+    - 可选：userId(默认0), fileType(None), url(""), folderId(0)
     """
     try:
-        logger.info(f"接收到RabbitMQ消息: {body}")
-        print(f"接收到RabbitMQ消息: {body}")
-        body_str = body.decode('utf-8')
-        if body_str.startswith('"') and body_str.endswith('"'):
-            body_str = body_str[1:-1]
-            body_str = body_str.replace('\\"', '"')
-        message = json.loads(body_str)
-        logger.info(f"解析后的消息: {message}")
-
-        msg_content = message.get("message", {})
-        msg_type = message.get("type")
-        file_type = msg_content.get('fileType')
-        file_name = msg_content.get('name', 'unknown')
-
-        if msg_type == "updateOrSave" and file_type != "image":
-            print(f"收到了updateOrSave的消息，开始进行处理")
-            try:
-                rabbit_msg = RabbitMessage(
-                    id=msg_content.get("id"),
-                    userId=msg_content.get("userId"),
-                    fileType=msg_content.get("fileType"),
-                    url=msg_content.get("url"),
-                    folderId=msg_content.get("folderId")
-                )
-                process_file_sync(
-                    file_name = file_name,
-                    id=rabbit_msg.id,
-                    user_id=rabbit_msg.userId,
-                    file_type=rabbit_msg.fileType,
-                    url=rabbit_msg.url,
-                    folder_id=rabbit_msg.folderId
-                )
-                print(f"文件进行embedding处理完成")
-            except ValidationError as e:
-                logger.error(f"消息格式不符合RabbitMessage模型: {str(e)}", exc_info=True)
-        elif msg_type == "removeById" and file_type != "image":
-            print(f"收到了removeById的消息，开始进行处理")
-            try:
-                rabbit_msg = RabbitMessage(
-                    userId=msg_content.get("userId"),
-                    fileType=msg_content.get("fileType"),
-                    url=msg_content.get("url"),
-                    folderId=msg_content.get("folderId"),
-                    ids=msg_content.get("ids")
-                )
-                if not rabbit_msg.ids:
-                    logger.error("removeById 消息中 ids 字段为空或缺失")
-                    raise ValueError("ids 字段不能为空")
-                embedder = embedding_utils.EmbeddingModel()
-                chroma = embedding_utils.ChromaDB(embedder)
-                for file_id in rabbit_msg.ids:
-                    result = chroma.delete_file_vectors(
-                        user_id=rabbit_msg.userId,
-                        file_id=file_id
-                    )
-                    if result == "success":
-                        print(f"成功删除文件 ID {file_id} 的向量")
-                        logger.info(f"成功删除文件 ID {file_id} 的向量")
-                    else:
-                        print(f"删除文件 ID {file_id} 的向量失败")
-                        logger.error(f"删除文件 ID {file_id} 的向量失败")
-            except ValidationError as e:
-                logger.error(f"消息格式不符合RabbitMessage模型: {str(e)}", exc_info=True)
-            except ValueError as e:
-                logger.error(f"处理失败: {str(e)}", exc_info=True)
-        else:
-            logger.info(f"忽略非updateOrSave或removeById类型的消息: {msg_type}  文件类型是{file_type}")
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON解析失败: {str(e)}", exc_info=True)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        logger.info(
+            f"收到文本向量化请求: fileId={body.fileId}, fileName={body.fileName}, userId={body.userId}"
+        )
+        return process_text_content(
+            file_name=body.fileName,
+            text=body.content,
+            id=body.fileId,
+            user_id=body.userId or 0,
+            file_type=body.fileType,
+            folder_id=body.folderId or 0,
+            url=body.url or ""
+        )
     except Exception as e:
-        logger.error(f"RabbitMQ消息处理失败: {str(e)}", exc_info=True)
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+        logger.error(f"文本向量化失败: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"文本向量化失败: {str(e)}")
 
-def start_rabbitmq_consumer():
-    """
-    启动RabbitMQ消费者
-    """
-    print(f"RABBITMQ_URL={os.getenv('RABBITMQ_URL')}")
-    print(f"QUEUE_NAME_QUESTION={os.getenv('QUEUE_NAME_QUESTION')}")
-    connection_params = pika.URLParameters(os.getenv("RABBITMQ_URL"))
-    connection = pika.BlockingConnection(connection_params)
-    channel = connection.channel()
-    channel.queue_declare(queue=os.getenv("QUEUE_NAME_QUESTION"), durable=True)
-    channel.basic_consume(queue=os.getenv("QUEUE_NAME_QUESTION"), on_message_callback=rabbitmq_callback)
-    print("开始监听RabbitMQ消息...")
-    channel.start_consuming()
 
 if __name__ == "__main__":
     """
-    主函数入口：启动FastAPI服务和RabbitMQ消费者
+    主函数入口：启动FastAPI服务
     """
     print("启动FastAPI服务...")
-    import threading
-    rabbit_thread = threading.Thread(target=start_rabbitmq_consumer, daemon=True)
-    rabbit_thread.start()
-    uvicorn.run(app, host="0.0.0.0", port=9900)
+    uvicorn.run(app, host="127.0.0.1", port=9900)
