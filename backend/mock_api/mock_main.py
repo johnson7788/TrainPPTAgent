@@ -241,8 +241,8 @@ async def get_templates():
         { "name": "蓝色通用", "id": "template_2", "cover": "/api/data/template_2.jpg" },
         { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
         { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
-        { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
-        { "name": "图片和表格", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+        { "name": "测试引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
+        { "name": "扩充图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
         { "name": "图片和表格2", "id": "template_7", "cover": "/api/data/template_7.jpg" },
     ]
 
