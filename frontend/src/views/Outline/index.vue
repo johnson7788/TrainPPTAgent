@@ -172,9 +172,11 @@ import useAIPPT from '@/hooks/useAIPPT'
 import message from '@/utils/message'
 import FullscreenSpin from '@/components/FullscreenSpin.vue'
 import OutlineEditor from '@/components/OutlineEditor.vue'
+import { useMainStore } from '@/store/main'
 
 const router = useRouter()
 const { getMdContent } = useAIPPT()
+const mainStore = useMainStore()
 
 const language = ref('中文')
 const keyword = ref('')
@@ -306,7 +308,7 @@ const uploadWordAndCreateOutline = async (file: File) => {
   showProcessingModal.value = true
 
   try {
-    const stream = await api.AIPPT_Outline_From_Word(file)
+    const stream = await api.AIPPT_Outline_From_File(file, mainStore.sessionId)
 
     loading.value = false
     step.value = 'outline'

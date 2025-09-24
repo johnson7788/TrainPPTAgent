@@ -91,10 +91,11 @@ export default {
     })
   },
 
-  AIPPT_Outline_From_Word(file: File): Promise<any> {
+  AIPPT_Outline_From_File(file: File, user_id: string): Promise<any> {
     const formData = new FormData()
     formData.append('file', file)
-    return fetch(`${SERVER_URL}/tools/aippt_outline_from_word`, {
+    formData.append('user_id', user_id)
+    return fetch(`${SERVER_URL}/tools/aippt_outline_from_file`, {
       method: 'POST',
       body: formData,
     })

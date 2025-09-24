@@ -56,10 +56,10 @@ async def aippt_outline(request: AipptRequest):
 
 @app.post("/tools/aippt_outline_from_file")
 async def aippt_outline_from_file(
-    user_id: int = Form(...),
+    user_id: int|str = Form(...),
     file: UploadFile = File(None),  # 允许缺省，这样我们可以决定走 file 或 url
     url: str | None = Form(None),
-    folder_id: int = Form(0),
+    folder_id: int|str = Form(0),
     file_type: str | None = Form(None),
 ):
     """

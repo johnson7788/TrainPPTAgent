@@ -216,7 +216,7 @@ class ChromaDB(object):
             logger.error(f"删除用户 {user_id} 的文件 {file_id} 向量失败: {str(e)}", exc_info=True)
             return "fail"
 
-    def insert_file_vectors(self, file_name:str, user_id: int, file_id: int, file_type: str, url: str, folder_id: int, documents: List[str]):
+    def insert_file_vectors(self, file_name:str, user_id: int|str, file_id: int, file_type: str, url: str, folder_id: int, documents: List[str]):
         """
         将文件内容插入到ChromaDB中，生成并存储embedding向量
         Args:

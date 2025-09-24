@@ -99,7 +99,7 @@ def _get_markdown_content(file_path: str, file_name: str) -> str:
         return content
 
 
-def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: int, user_id: int, file_type: str, url: str, folder_id: int):
+def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: int, user_id: int|str, file_type: str, url: str, folder_id: int):
     """
     从本地文件路径处理文件、进行向量化并存储
     """
@@ -154,7 +154,7 @@ def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: in
     return result
 
 
-def process_file_sync(file_name:str, id: int, user_id: int, file_type: str, url: str, folder_id: int):
+def process_file_sync(file_name:str, id: int, user_id: int|str, file_type: str, url: str, folder_id: int):
     """
     处理文件下载、读取和生成embedding的同步版本
     """
@@ -235,18 +235,9 @@ async def upload_and_vectorize_endpoint(request: Request):
             if possible_file:
                 upload_file = possible_file
 
-        # 提取并做类型转换（容错：空字符串/None）
-        def to_int(v, default=None):
-            if v is None or (isinstance(v, str) and v.strip() == ""):
-                return default
-            try:
-                return int(v)
-            except Exception:
-                raise HTTPException(status_code=422, detail=f"参数应为整数，实际值: {v}")
-
-        userId = to_int(data.get("userId"))
-        fileId = to_int(data.get("fileId"))
-        folderId = to_int(data.get("folderId"), 0)
+        userId = data["userId"]
+        fileId = int(data.get("fileId"))
+        folderId = int((data.get("folderId"), 0))
         fileType = data.get("fileType")
         url = data.get("url")
 
