@@ -9,11 +9,6 @@ from .json_parser import JSONParser
 from .file_cache_manager import FileCacheManager
 
 __all__ = [
-    "SlideInfo",
-    "PPTState",
-    "ChunkStrategy",
     "DocumentProcessor",
-    "LLMManager",
-    "JSONParser",
     "FileCacheManager",
 ]
