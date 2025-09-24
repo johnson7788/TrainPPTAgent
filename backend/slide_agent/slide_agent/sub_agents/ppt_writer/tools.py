@@ -206,9 +206,9 @@ def KnowledgeBaseSearch(keyword: str, tool_context: ToolContext):
     user_id = metadata.get("user_id", 999)
     logger.info(f"❤️❤️❤️❤️😜😜😜😜😜调用知识库搜索接口, user_id: {user_id}, query: {keyword}, topk: {topk}")
     print(f"❤️❤️❤️❤️😜😜😜😜😜调用知识库搜索接口, user_id: {user_id}, query: {keyword}, topk: {topk}")
-    PERSONENAL_DB = os.environ.get('PERSONENAL_DB', '')
-    assert PERSONENAL_DB, "PERSONENAL_DB is not set"
-    url = f"{PERSONENAL_DB}/search"
+    PERSONAL_DB = os.environ.get('PERSONAL_DB', '')
+    assert PERSONAL_DB, "PERSONAL_DB is not set"
+    url = f"{PERSONAL_DB}/search"
     # 正确的请求数据格式
     data = {
         "userId": user_id,
@@ -223,7 +223,7 @@ def KnowledgeBaseSearch(keyword: str, tool_context: ToolContext):
 
         # 检查HTTP状态码
         response.raise_for_status()
-        assert response.status_code == 200, f"{PERSONENAL_DB}搜索知识库报错"
+        assert response.status_code == 200, f"{PERSONAL_DB}搜索知识库报错"
 
         # 解析返回的JSON数据
         result = response.json()
@@ -232,13 +232,13 @@ def KnowledgeBaseSearch(keyword: str, tool_context: ToolContext):
         data = {"documents": documents, "metadatas": metadatas}
         print("Response status:", response.status_code)
         print("Response body:", result)
-        logger.info(f"{PERSONENAL_DB}搜索知识库返回状态: {response.status_code}")
-        logger.info(f"{PERSONENAL_DB}搜索知识库返回结果: {result}")
-        logger.info(f"{PERSONENAL_DB}搜索知识库成功, 返回结果: {data}")
+        logger.info(f"{PERSONAL_DB}搜索知识库返回状态: {response.status_code}")
+        logger.info(f"{PERSONAL_DB}搜索知识库返回结果: {result}")
+        logger.info(f"{PERSONAL_DB}搜索知识库成功, 返回结果: {data}")
         return True, data
     except Exception as e:
-        print(f"{PERSONENAL_DB}搜索知识库报错: {e}")
-        return False, f"{PERSONENAL_DB}搜索知识库报错: {str(e)}"
+        print(f"{PERSONAL_DB}搜索知识库报错: {e}")
+        return False, f"{PERSONAL_DB}搜索知识库报错: {str(e)}"
 
 if __name__ == '__main__':
     import asyncio

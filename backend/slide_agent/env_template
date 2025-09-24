@@ -20,4 +20,4 @@ PEXELS_API_KEY=xx
 # 2. 注册账号并申请API密钥
 # 3. 将获得的API密钥填入此处
 
-PERSONENAL_DB=http://127.0.0.1:9200
+PERSONAL_DB=http://127.0.0.1:9200
