@@ -128,3 +128,44 @@ class KnowledgeBaseTestCase(unittest.TestCase):
         except httpx.HTTPStatusError as exc:
             self.fail(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url!r}: {exc.response.text}")
+
+    def test_upload_url_and_vectorize(self) -> None:
+        """通过 URL 上传文件并向量化的端到端测试。"""
+        url = f"{self.base_url}/upload/"
+        payload = {
+            "userId": 123457,
+            "fileId": 988,
+            "folderId": 544,
+            "fileType": "pdf",
+            "url": "https://www.unido.org/sites/default/files/unido-publications/2024-06/IDR24-Overview-CN.pdf",
+        }
+
+        # 注意：运行前需确保 FastAPI 服务已启动，并已设置 ALI_API_KEY 环境变量
+        start = time.perf_counter()
+
+        try:
+            with httpx.Client(timeout=httpx.Timeout(120.0)) as client:
+                response = client.post(url, json=payload)  # 建议以 JSON 传参
+            elapsed = time.perf_counter() - start
+            print(f"test_upload_url_and_vectorize 请求耗时: {elapsed:.2f} 秒")
+
+            # 4xx/5xx 将抛出 HTTPStatusError
+            response.raise_for_status()
+
+            self.assertEqual(response.status_code, 200)
+            result = response.json()
+
+            # 关键字段校验
+            self.assertEqual(result.get("id"), 988)
+            self.assertEqual(result.get("userId"), 123457)
+            self.assertIn("embedding_result", result)
+
+            print("Response status:", response.status_code)
+            print("Response body:", result)
+
+        except httpx.RequestError as exc:
+            self.fail(f"请求异常（可能是网络/连接问题）: {exc.request.url!r}: {exc}")
+        except httpx.HTTPStatusError as exc:
+            self.fail(
+                f"服务返回错误 {exc.response.status_code}，请求 {exc.request.url!r}：{exc.response.text}"
+            )
