@@ -1,6 +1,7 @@
 # 个人知识库处理逻辑
-1使用mineru处理pdf，其它文件使用markitdown处理
-2使用[embedding_utils.py](embedding_utils.py)生成embedding向量
+1. 使用mineru处理pdf，其它文件使用markitdown处理。
+2. 输出的Markdown格式进行Trunk，然后对Trunk进行进行向量化。
+3. 使用[embedding_utils.py](embedding_utils.py)生成embedding向量
 
 # 运行
 python main.py
