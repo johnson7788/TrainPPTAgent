@@ -80,10 +80,11 @@ def _get_markdown_content(file_path: str, file_name: str) -> str:
     PDF文件使用MagicPDFConverter（MinerU），其他文件使用MarkitdownConverter。
     """
     # 获取文件扩展名
+    CAN_USE_MINERU = False # 是否可以使用MinerU，速度太慢
     file_extension = os.path.splitext(file_name)[1].lower() if file_name else ""
 
     # 根据文件类型选择转换器
-    if file_extension == '.pdf':
+    if CAN_USE_MINERU and file_extension == '.pdf':
         # 使用 MinerU (MagicPDFConverter) 处理PDF
         logger.info(f"使用PDF转换器(MinerU)处理文件: {file_path}")
         converter = MagicPDFConverter()
