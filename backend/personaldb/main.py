@@ -17,6 +17,7 @@ import embedding_utils
 from urllib.parse import urlparse
 from core.magic_pdf_converter import MagicPDFConverter
 from core.markitdown_converter import MarkItDownConverter
+from core.chunkers.semantic_chunker import SemanticChunker
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -270,31 +271,14 @@ class TextVectorizeBody(BaseModel):
 
 def _chunk_text(text: str, max_chars: int = 1200, overlap: int = 200) -> List[str]:
     """
-    简单切分：先按段落，再对超长段落做定长切分。
-    这样可避免单块文本过长导致的向量化超限。
+    使用 SemanticChunker 进行分块。
     """
     text = (text or "").strip()
     if not text:
         return []
-
-    # 先按空行分段
-    blocks = [b.strip() for b in text.split("\n\n") if b.strip()]
-    if not blocks:
-        blocks = [text]
-
-    chunks: List[str] = []
-    for b in blocks:
-        if len(b) <= max_chars:
-            chunks.append(b)
-        else:
-            start = 0
-            while start < len(b):
-                end = min(start + max_chars, len(b))
-                chunks.append(b[start:end])
-                if end == len(b):
-                    break
-                start = max(0, end - overlap)  # 轻微重叠，提升召回
-    return chunks
+    chunker = SemanticChunker(chunk_size=max_chars, chunk_overlap=overlap)
+    chunks = chunker.chunk_text(text)
+    return [chunk.content for chunk in chunks]
 
 
 def process_text_content(
@@ -382,4 +366,4 @@ if __name__ == "__main__":
     主函数入口：启动FastAPI服务
     """
     print("启动FastAPI服务...")
-    uvicorn.run(app, host="127.0.0.1", port=9900)
+    uvicorn.run(app, host="127.0.0.1", port=9200)

@@ -14,7 +14,7 @@ class KnowledgeBaseTestCase(unittest.TestCase):
     测试 FastAPI 接口
     """
     host = 'http://127.0.0.1'
-    port = 9900
+    port = 9200
     env_host = os.environ.get('host')
     if env_host:
         host = env_host
