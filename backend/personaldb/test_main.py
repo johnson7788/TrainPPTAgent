@@ -37,8 +37,8 @@ class KnowledgeBaseTestCase(unittest.TestCase):
         #     "topk": 3
         # }
         data = {
-            "userId": 23456,
-            "query": "疾病",
+            "userId": 123456,
+            "query": "Robotaxi",
             "keyword": "",
             "topk": 3
         }

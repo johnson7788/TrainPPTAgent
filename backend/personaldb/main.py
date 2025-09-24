@@ -10,7 +10,7 @@ import uvicorn
 import logging
 import asyncio
 import uuid
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Request
 from pydantic import BaseModel, ValidationError
 from typing import List, Optional
 import embedding_utils
@@ -151,7 +151,7 @@ def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: in
     return result
 
 
-def process_file_sync(id: int, user_id: int, file_type: str, url: str, folder_id: int):
+def process_file_sync(file_name:str, id: int, user_id: int, file_type: str, url: str, folder_id: int):
     """
     处理文件下载、读取和生成embedding的同步版本
     """
@@ -169,7 +169,7 @@ def process_file_sync(id: int, user_id: int, file_type: str, url: str, folder_id
     temp_file_path = None
     try:
         # 步骤1: 下载文件
-        file_name = os.path.basename(parsed_url.path) or f"downloaded_file_{user_id}"
+        # file_name = os.path.basename(parsed_url.path) or f"downloaded_file_{user_id}"
         temp_file_path = os.path.join(TEMP_DIR, file_name)
         logger.info(f"开始下载文件: {url}")
         response = requests.get(url, timeout=60, proxies=None)
@@ -199,52 +199,106 @@ def process_file_sync(id: int, user_id: int, file_type: str, url: str, folder_id
 
 
 @app.post("/upload/")
-async def upload_and_vectorize_endpoint(
-    userId: int = Form(...),
-    fileId: int = Form(...),
-    folderId: int = Form(0),
-    fileType: Optional[str] = Form(None),
-    url: Optional[str] = Form(None),
-    file: Optional[UploadFile] = File(None),
-):
+async def upload_and_vectorize_endpoint(request: Request):
     """
-    上传文件或通过URL进行向量化
-    """
-    if not url and not file:
-        raise HTTPException(status_code=400, detail="必须提供 'url' 或 'file'")
-    if url and file:
-        raise HTTPException(status_code=400, detail="只能提供 'url' 或 'file' 中的一个")
+    支持三种内容类型：
+    - multipart/form-data（带或不带文件）
+    - application/x-www-form-urlencoded
+    - application/json
 
+    字段：
+    - userId: int
+    - fileId: int
+    - folderId: int (可选，默认0)
+    - fileType: str (可选)
+    - url: str (可选，与 file 互斥)
+    - file: UploadFile (可选，与 url 互斥)
+    """
     temp_file_path = None
     try:
-        if file:
-            if not fileType:
-                fileType = file.filename.split('.')[-1] if '.' in file.filename else 'unknown'
-            
-            temp_file_name = f"{uuid.uuid4()}_{file.filename}"
+        # 统一解析 body
+        content_type = request.headers.get("content-type", "")
+        data = {}
+        upload_file: UploadFile | None = None
+
+        if "application/json" in content_type:
+            data = await request.json()
+        else:
+            # 对 multipart/form-data 与 x-www-form-urlencoded 都适用
+            form = await request.form()
+            # 注意：form 是 MultiDict，里面的 'file'（如果是 multipart 且携带文件）会是 UploadFile
+            data = dict(form)
+            possible_file = form.get("file")
+            if isinstance(possible_file, UploadFile):
+                upload_file = possible_file
+
+        # 提取并做类型转换（容错：空字符串/None）
+        def to_int(v, default=None):
+            if v is None or (isinstance(v, str) and v.strip() == ""):
+                return default
+            try:
+                return int(v)
+            except Exception:
+                raise HTTPException(status_code=422, detail=f"参数应为整数，实际值: {v}")
+
+        userId = to_int(data.get("userId"))
+        fileId = to_int(data.get("fileId"))
+        folderId = to_int(data.get("folderId"), 0)
+        fileType = data.get("fileType")
+        url = data.get("url")
+
+        # 基本必填校验
+        if userId is None:
+            raise HTTPException(status_code=422, detail="缺少或非法参数: userId")
+        if fileId is None:
+            raise HTTPException(status_code=422, detail="缺少或非法参数: fileId")
+
+        # 互斥校验
+        has_url = bool(url and str(url).strip())
+        has_file = upload_file is not None
+        if not has_url and not has_file:
+            raise HTTPException(status_code=400, detail="必须提供 'url' 或 'file'")
+        if has_url and has_file:
+            raise HTTPException(status_code=400, detail="只能提供 'url' 或 'file' 中的一个")
+
+        # 分支：文件上传
+        if has_file:
+            # 推断 fileType
+            if not fileType and upload_file and upload_file.filename:
+                fileType = upload_file.filename.split(".")[-1] if "." in upload_file.filename else "unknown"
+
+            temp_file_name = f"{uuid.uuid4()}_{upload_file.filename or 'uploaded_file'}"
             temp_file_path = os.path.join(TEMP_DIR, temp_file_name)
-            
+            # 保存上传内容
+            content_bytes = await upload_file.read()
             with open(temp_file_path, "wb") as buffer:
-                buffer.write(await file.read())
+                buffer.write(content_bytes)
             logger.info(f"文件上传成功: {temp_file_path}")
-            
+
             return process_and_vectorize_local_file(
-                file_name=file.filename,
+                file_name=upload_file.filename or "uploaded_file",
                 temp_file_path=temp_file_path,
                 id=fileId,
                 user_id=userId,
                 file_type=fileType,
-                url="",  # 直接上传的文件没有URL
+                url="",  # 直接上传无 URL
                 folder_id=folderId
             )
-        elif url:
+
+        # 分支：URL 下载处理
+        else:
+            file_name = os.path.basename(urlparse(url).path) or f"downloaded_file_{userId}"
             return process_file_sync(
+                file_name=file_name,
                 id=fileId,
                 user_id=userId,
                 file_type=fileType,
                 url=url,
                 folder_id=folderId
             )
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"上传和向量化失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
