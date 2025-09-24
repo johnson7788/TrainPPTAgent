@@ -1,4 +1,3 @@
-
 import os
 import unittest
 import time
@@ -133,7 +132,7 @@ class KnowledgeBaseTestCase(unittest.TestCase):
         """通过 URL 上传文件并向量化的端到端测试。"""
         url = f"{self.base_url}/upload/"
         payload = {
-            "userId": 123457,
+            "userId": 123456,
             "fileId": 988,
             "folderId": 544,
             "fileType": "pdf",
@@ -169,3 +168,28 @@ class KnowledgeBaseTestCase(unittest.TestCase):
             self.fail(
                 f"服务返回错误 {exc.response.status_code}，请求 {exc.request.url!r}：{exc.response.text}"
             )
+
+    def test_list_user_files(self):
+        """
+        测试列出用户文件接口
+        """
+        user_id = 123456
+        # 测试有文件的用户
+        list_url_with_files = f"{self.base_url}/files/{user_id}"
+        try:
+            response = httpx.get(list_url_with_files, timeout=20.0)
+            response.raise_for_status()
+            
+            self.assertEqual(response.status_code, 200)
+            result = response.json()
+            
+            self.assertIsInstance(result, list, "返回结果应为列表")
+            self.assertGreater(len(result), 0, "应至少返回一个文件")
+            
+            # 验证上传的文件是否在返回的列表中
+
+            print(f"用户 {user_id} 的文件列表: {result}")
+
+        except (httpx.RequestError, httpx.HTTPStatusError) as exc:
+            self.fail(f"测试有文件的用户失败: {exc}")
+

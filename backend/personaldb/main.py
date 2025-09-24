@@ -416,6 +416,29 @@ def vectorize_text_endpoint(body: TextVectorizeBody):
         raise HTTPException(status_code=500, detail=f"文本向量化失败: {str(e)}")
 
 
+@app.get("/files/{user_id}")
+def list_user_files(user_id: int):
+    """
+    列出指定用户的所有文件信息
+    """
+    try:
+        logger.info(f"收到列出用户 {user_id} 文件的请求")
+        embedder = embedding_utils.EmbeddingModel()
+        chroma = embedding_utils.ChromaDB(embedder)
+        
+        files = chroma.list_files_by_user(user_id=user_id)
+        
+        if not files:
+            logger.info(f"用户 {user_id} 没有任何文件。")
+            return []
+            
+        logger.info(f"成功为用户 {user_id} 找到 {len(files)} 个文件。")
+        return files
+    except Exception as e:
+        logger.error(f"列出用户 {user_id} 的文件失败: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"列出文件失败: {str(e)}")
+
+
 if __name__ == "__main__":
     """
     主函数入口：启动FastAPI服务

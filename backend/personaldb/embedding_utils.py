@@ -267,6 +267,59 @@ class ChromaDB(object):
         }
         return result
 
+    def list_files_by_user(self, user_id: int) -> List[Dict[str, Any]]:
+        """
+        根据用户ID列出该用户的所有文件信息
+        Args:
+            user_id (int): 用户ID
+        Returns:
+            List[Dict[str, Any]]: 文件信息列表
+        """
+        try:
+            collection_name = f"user_{user_id}"
+            # 确认集合存在
+            collections = self.list_exist_collections()
+            if collection_name not in collections:
+                logger.warning(f"集合 {collection_name} 不存在，用户 {user_id} 没有任何文件。")
+                return []
+
+            col = self.client.get_collection(collection_name)
+            
+            # 获取所有与该用户ID相关的文档元数据
+            # 注意：get()方法在没有where条件时返回所有文档，数据量可能很大
+            # 但由于我们是按用户集合来操作的，所以这里获取的是该用户的所有数据
+            results = col.get() 
+            
+            metadatas = results.get('metadatas', [])
+            
+            # 文件信息可能重复，需要去重
+            unique_files = {}
+            for meta in metadatas:
+                # 确保meta是字典且包含file_id
+                if isinstance(meta, dict) and 'file_id' in meta:
+                    file_id = meta.get('file_id')
+                    # 过滤掉无效的file_id
+                    if file_id is None:
+                        continue
+                    
+                    # 检查用户ID是否匹配
+                    if meta.get('user_id') == user_id:
+                        if file_id not in unique_files:
+                            unique_files[file_id] = {
+                                "file_id": file_id,
+                                "file_name": meta.get('file_name'),
+                                "file_type": meta.get('file_type'),
+                                "url": meta.get('url'),
+                                "folder_id": meta.get('folder_id'),
+                                "user_id": meta.get('user_id')
+                            }
+            
+            return list(unique_files.values())
+        except Exception as e:
+            # 如果collection不存在或其他异常
+            logger.error(f"为用户 {user_id} 列出文件失败: {str(e)}", exc_info=True)
+            return []
+
     def list_exist_collections(self):
         """
         列出所有已有的collections
