@@ -55,41 +55,104 @@ async def aippt_outline(request: AipptRequest):
 
 
 @app.post("/tools/aippt_outline_from_file")
-async def aippt_outline_from_file(user_id: int = Form(...), file: UploadFile = File(...)):
-    personaldb_api_url = os.environ["PERSONAL_DB"]
-    url = f"{personaldb_api_url}/upload/"
+async def aippt_outline_from_file(
+    user_id: int = Form(...),
+    file: UploadFile = File(None),  # 允许缺省，这样我们可以决定走 file 或 url
+    url: str | None = Form(None),
+    folder_id: int = Form(0),
+    file_type: str | None = Form(None),
+):
+    """
+    对齐 personaldb 的 /upload/：
+    - 必填: userId, fileId
+    - 可选: folderId (默认0), fileType
+    - file 与 url 互斥，至少一个
+    """
+    personaldb_api_url = os.getenv("PERSONAL_DB")
+    if not personaldb_api_url:
+        raise HTTPException(status_code=500, detail="PERSONAL_DB 未配置")
 
-    file_content = await file.read()
-    
-    # fileId is required by personaldb, let's generate one from timestamp.
-    file_id = int(time.time() * 1000)
+    # 互斥校验（与 personaldb 完全一致）
+    has_file = file is not None
+    has_url = bool(url and url.strip())
 
+    if not has_file and not has_url:
+        raise HTTPException(status_code=400, detail="必须提供 'url' 或 'file'")
+    if has_file and has_url:
+        raise HTTPException(status_code=400, detail="只能提供 'url' 或 'file' 中的一个")
+
+    # 生成 fileId（字符串更稳；personaldb 会 int()）
+    file_id = str(int(time.time() * 1000))
+
+    # 推断 fileType（当上传文件时且未显式传入）
+    if has_file and not file_type:
+        if file.filename and "." in file.filename:
+            file_type = file.filename.rsplit(".", 1)[-1]
+        else:
+            file_type = "unknown"
+
+    # 组装 multipart/form-data
+    # 注意：即使是 url 分支，也仍用 multipart，personaldb 也能解析 form
     data = {
-        "userId": user_id,
+        "userId": str(user_id),
         "fileId": file_id,
+        "folderId": str(folder_id),
     }
-    files = {"file": (file.filename, file_content, file.content_type)}
+    if file_type:
+        data["fileType"] = file_type
+    if has_url:
+        data["url"] = url.strip()
+
+    files_payload = None
+    if has_file:
+        # 读取一次到内存，httpx 需要 (filename, bytes/obj, content_type)
+        file_bytes = await file.read()
+        if not file_bytes:
+            raise HTTPException(status_code=400, detail="文件内容为空")
+        files_payload = {
+            "file": (
+                file.filename or "uploaded_file",
+                file_bytes,
+                file.content_type or "application/octet-stream",
+            )
+        }
+
+    upload_url = f"{personaldb_api_url.rstrip('/')}/upload/"
 
     async with httpx.AsyncClient() as client:
         try:
-            # The timeout needs to be long enough for processing.
-            response = await client.post(url, data=data, files=files, timeout=120.0)
-            response.raise_for_status()
-            
-            result = response.json()
-            markdown_content = result.get("markdown_content")
+            resp = await client.post(
+                upload_url,
+                data=data,
+                files=files_payload,
+                timeout=120.0,
+            )
+            # 不直接 raise，先打日志方便定位
+            if resp.status_code >= 400:
+                # 打印下游返回体，personaldb 对错误信息写得很清楚
+                print(f"[personaldb {resp.status_code}] {resp.text}")
+                resp.raise_for_status()
 
+            # personaldb 的处理函数最终会返回一个 JSON（你上游期望里要有 markdown_content）
+            try:
+                result = resp.json()
+            except ValueError:
+                raise HTTPException(status_code=502, detail=f"personaldb 返回的不是 JSON：{resp.text}")
+
+            markdown_content = result.get("markdown_content")
             if markdown_content is None:
-                raise HTTPException(status_code=500, detail="Failed to get markdown content from personaldb. The 'markdown_content' key was not found in the response.")
+                raise HTTPException(status_code=500, detail="personaldb 响应缺少 'markdown_content'")
 
             return StreamingResponse(stream_agent_response(markdown_content), media_type="text/plain")
-            
+
         except httpx.TimeoutException:
             raise HTTPException(status_code=504, detail="Request to personaldb timed out.")
+        except httpx.HTTPStatusError as exc:
+            # 透传 personaldb 的错误详情，便于你在日志里看到具体字段问题
+            raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
         except httpx.RequestError as exc:
             raise HTTPException(status_code=500, detail=f"Error connecting to personaldb: {exc}")
-        except httpx.HTTPStatusError as exc:
-            raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
 
 class AipptContentRequest(BaseModel):
     content: str
