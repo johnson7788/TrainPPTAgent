@@ -237,7 +237,7 @@ async def upload_and_vectorize_endpoint(request: Request):
 
         userId = data["userId"]
         fileId = int(data.get("fileId"))
-        folderId = int((data.get("folderId"), 0))
+        folderId = int(data.get("folderId",0))
         fileType = data.get("fileType")
         url = data.get("url")
 
