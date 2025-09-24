@@ -76,11 +76,6 @@ async def aippt_outline_from_file(
     has_file = file is not None
     has_url = bool(url and url.strip())
 
-    if not has_file and not has_url:
-        raise HTTPException(status_code=400, detail="必须提供 'url' 或 'file'")
-    if has_file and has_url:
-        raise HTTPException(status_code=400, detail="只能提供 'url' 或 'file' 中的一个")
-
     # 生成 fileId（字符串更稳；personaldb 会 int()）
     file_id = str(int(time.time() * 1000))
 
@@ -125,7 +120,7 @@ async def aippt_outline_from_file(
                 upload_url,
                 data=data,
                 files=files_payload,
-                timeout=120.0,
+                timeout=360.0,
             )
             # 不直接 raise，先打日志方便定位
             if resp.status_code >= 400:

@@ -230,7 +230,7 @@ async def upload_and_vectorize_endpoint(request: Request):
             # 注意：form 是 MultiDict，里面的 'file'（如果是 multipart 且携带文件）会是 UploadFile
             data = dict(form)
             possible_file = form.get("file")
-            if isinstance(possible_file, UploadFile):
+            if possible_file:
                 upload_file = possible_file
 
         # 提取并做类型转换（容错：空字符串/None）
