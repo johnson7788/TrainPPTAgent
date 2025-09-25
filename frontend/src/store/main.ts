@@ -42,6 +42,7 @@ export interface MainState {
   sessionId: string
   isOutlineFromFile: boolean
   generateFromUploadedFile: boolean
+  generateFromWebSearch: boolean
 }
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
@@ -83,6 +84,7 @@ export const useMainStore = defineStore('main', {
     sessionId: nanoid(),
     isOutlineFromFile: false, //是否上传了文件，上传了文件，就根据文件生成ppt的大纲
     generateFromUploadedFile: false, // 是否是依据上传的文件生成PPT
+    generateFromWebSearch: false, // 是否是依据网络搜索生成PPT
   }),
 
   getters: {
@@ -231,6 +233,10 @@ export const useMainStore = defineStore('main', {
     // 是否是依据上传的文件生成PPT
     setGenerateFromUploadedFile(isFromUploadedFile: boolean) {
       this.generateFromUploadedFile = isFromUploadedFile
+    },
+    // 是否是依据网络搜索生成PPT
+    setGenerateFromWebSearch(isFromWebSearch: boolean) {
+      this.generateFromWebSearch = isFromWebSearch
     },
   },
 })

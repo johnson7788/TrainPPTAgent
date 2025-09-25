@@ -22,6 +22,11 @@
       </header>
 
       <section class="select-template" aria-label="模板选择">
+        <div v-if="isOutlineFromFile" class="generate-option">
+          <Checkbox v-model:value="generateFromUploadedFile">根据上传的文件生成PPT</Checkbox>
+          <Checkbox v-model:value="generateFromWebSearch">使用网络搜索生成PPT</Checkbox>
+        </div>
+
         <div class="templates-container">
           <div class="templates">
             <div
@@ -48,10 +53,6 @@
           </div>
         </div>
 
-        <div v-if="isOutlineFromFile" class="generate-option">
-          <Checkbox v-model:value="generateFromUploadedFile">根据上传的文件生成PPT</Checkbox>
-        </div>
-
         <div class="actions">
           <Button class="btn btn-primary" type="primary" :disabled="loading || !selectedTemplate" @click="createPPT()">
             <span>{{ loading ? '正在生成…' : '生成PPT' }}</span>
@@ -75,7 +76,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import api from '@/services'
@@ -92,7 +93,9 @@ const router = useRouter()
 const mainStore = useMainStore()
 const slideStore = useSlidesStore()
 const { templates } = storeToRefs(slideStore)
-const { sessionId, isOutlineFromFile, generateFromUploadedFile } = storeToRefs(mainStore)
+const { sessionId, isOutlineFromFile, generateFromUploadedFile, generateFromWebSearch } =
+  storeToRefs(mainStore)
+
 const { AIPPTGenerator, presetImgPool } = useAIPPT()
 
 const outline = ref(route.query.outline as string)
@@ -340,10 +343,16 @@ const createPPT = async () => {
   }
 
   .generate-option {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: saturate(120%) blur(2px);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
     display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
     color: #475569;
     font-size: 14px;
   }
