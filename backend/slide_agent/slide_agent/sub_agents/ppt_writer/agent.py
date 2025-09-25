@@ -123,7 +123,7 @@ class PPTWriterSubAgent(LlmAgent):
         outline_json: list = ctx.state.get("outline_json")
         # 获取要生成的ppt的这一页的schema大纲
         current_slide_schema = outline_json[current_slide_index]
-        metadata = ctx.state.get("metadata")
+        metadata = ctx.state.get("metadata", {})
         # 默认支持所有的搜索工具
         search_engine = metadata.get("search_engine", ["KnowledgeBaseSearch","DocumentSearch","SearchImage"])
         user_id = metadata.get("user_id", "")

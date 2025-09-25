@@ -21,8 +21,8 @@ async def httpx_client():
                 'role': 'user',
                 'parts': [{'type': 'text', 'text': prompt}],
                 'messageId': request_id,
-                # 如果使用KnowledgeBaseSearch，需要传入user_id，搜索哪个人的数据库。DocumentSearch代表网络搜索，可以不用user_id
-                'metadata': {"user_id": "123456", "search_engine": ["KnowledgeBaseSearch","DocumentSearch","SearchImage"]}
+                # 如果使用KnowledgeBaseSearch，需要传入user_id，搜索哪个人的数据库。DocumentSearch代表网络搜索，可以不用user_id. SearchImage代表图片搜索，可以不用user_id
+                'metadata': {"user_id": "123456", "search_engine": ["KnowledgeBaseSearch","SearchImage"]}
             }
         }
         print(f"发送message信息: {send_message_payload}")
