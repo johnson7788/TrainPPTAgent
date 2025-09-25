@@ -12,8 +12,11 @@ interface AIPPTOutlinePayload {
 interface AIPPTPayload {
   content: string
   language: string
-  style: string
-  model: string
+  style?: string
+  model?: string
+  generateFromUploadedFile?: boolean
+  generateFromWebSearch?: boolean
+  sessionId?: string
 }
 
 interface AIWritingPayload {
@@ -53,11 +56,14 @@ export default {
     })
   },
 
-  AIPPT({
+  AIPPT_Content({
     content,
     language,
     style,
     model,
+    generateFromUploadedFile,
+    generateFromWebSearch,
+    sessionId,
   }: AIPPTPayload): Promise<any> {
     return fetch(`${SERVER_URL}/tools/aippt`, {
       method: 'POST',
@@ -70,6 +76,9 @@ export default {
         model,
         style,
         stream: true,
+        generateFromUploadedFile,
+        generateFromWebSearch,
+        sessionId,
       }),
     })
   },

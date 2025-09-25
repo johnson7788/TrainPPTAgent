@@ -121,11 +121,14 @@ const createPPT = async () => {
   router.push(`/editor?session_id=${sessionId.value}`)
 
   try {
-    const stream = await api.AIPPT({
+    const stream = await api.AIPPT_Content({
       content: outline.value,
       language: language.value,
       style: style.value,
       model: model.value,
+      generateFromUploadedFile: generateFromUploadedFile.value,
+      generateFromWebSearch: generateFromWebSearch.value,
+      sessionId: sessionId.value
     })
 
     // 初始化图片池，使用mock数据作为备用

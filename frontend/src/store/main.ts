@@ -83,7 +83,7 @@ export const useMainStore = defineStore('main', {
     isGenerating: false,
     sessionId: nanoid(),
     isOutlineFromFile: false, //是否上传了文件，上传了文件，就根据文件生成ppt的大纲
-    generateFromUploadedFile: false, // 是否是依据上传的文件生成PPT
+    generateFromUploadedFile: true, // 是否是依据上传的文件生成PPT
     generateFromWebSearch: false, // 是否是依据网络搜索生成PPT
   }),
 

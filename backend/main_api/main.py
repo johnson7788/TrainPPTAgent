@@ -151,9 +151,18 @@ async def aippt_outline_from_file(
 
 class AipptContentRequest(BaseModel):
     content: str
+    language: str = "zh"  #默认中文
+    user_id: str = ""  # 当使用知识库时，需要根据用户的user_id查询对应的知识库
+    generateFromUploadedFile: bool = False  # 是否从上传的文件中生成PPT内容
+    generateFromWebSearch: bool = True  # 是否从网络搜索中生成PPT内容
 
-async def stream_content_response(markdown_content: str):
-    """  # PPT的正文内容生成"""
+async def stream_content_response(markdown_content: str, language, generateFromUploadedFile, generateFromWebSearch, user_id):
+    """  # PPT的正文内容生成
+    markdown_content: 代表大纲
+    language:代表语言
+    generateFromUploadedFile: 代表是从上传的文件中生成
+    generateFromWebSearch： 代表是从网络搜索中生成
+    """
     # 用正则找到第一个一级标题及之后的内容
     match = re.search(r"(# .*)", markdown_content, flags=re.DOTALL)
 
@@ -163,14 +172,22 @@ async def stream_content_response(markdown_content: str):
         result = markdown_content
     print(f"用户输入的markdown大纲是：{result}")
     content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
-    async for chunk_data in content_wrapper.generate(result):
+    # 传入不同的参数，使用不同的搜索,可以同时使用多个搜索
+    search_engine = []
+    if generateFromUploadedFile:
+        search_engine.append("KnowledgeBaseSearch")
+    if generateFromWebSearch:
+        search_engine.append("DocumentSearch")
+    # 先写死123456，方便测试，这个已经在知识库中插入了对应的数据
+    metadata = {"user_id": "123456", "search_engine": search_engine, "language": language}
+    async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
         print(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content
-    return StreamingResponse(stream_content_response(markdown_content), media_type="text/plain")
+    return StreamingResponse(stream_content_response(markdown_content, language=request.language, generateFromUploadedFile=request.generateFromUploadedFile, generateFromWebSearch=request.generateFromWebSearch, user_id=request.user_id), media_type="text/plain")
 
 @app.get("/data/{filename}")
 async def get_data(filename: str):
