@@ -128,6 +128,45 @@ class KnowledgeBaseTestCase(unittest.TestCase):
         except httpx.HTTPStatusError as exc:
             self.fail(
                 f"Error response {exc.response.status_code} while requesting {exc.request.url!r}: {exc.response.text}")
+    def test_upload_file_and_vectorize_local(self):
+        """
+        测试上传文件并向量化
+        """
+        url = f"{self.base_url}/upload/"
+        file_name = "nurse_and_LLM.txt"
+        with open(file_name, 'rb') as f:
+            file_content = f.read()
+        data = {
+            "userId": 123456,
+            "fileId": 987,
+            "folderId": 543,
+            "fileType": "txt"
+        }
+        files = {"file": (file_name, file_content, "text/plain")}
+
+        try:
+            # 注意: 这个测试需要FastAPI服务正在运行，并且设置了ALI_API_KEY环境变量
+            start_time = time.time()
+            response = httpx.post(url, data=data, files=files, timeout=40.0)
+
+            print(f"test_upload_file_and_vectorize 请求花费时间: {time.time() - start_time}秒")
+
+            response.raise_for_status()
+
+            self.assertEqual(response.status_code, 200)
+            result = response.json()
+            self.assertEqual(result['id'], 987)
+            self.assertEqual(result['userId'], 123456)
+            self.assertIn('embedding_result', result)
+
+            print("Response status:", response.status_code)
+            print("Response body:", result)
+
+        except httpx.RequestError as exc:
+            self.fail(f"An error occurred while requesting {exc.request.url!r}: {exc}")
+        except httpx.HTTPStatusError as exc:
+            self.fail(
+                f"Error response {exc.response.status_code} while requesting {exc.request.url!r}: {exc.response.text}")
 
     def test_upload_url_and_vectorize(self) -> None:
         """通过 URL 上传文件并向量化的端到端测试。"""

@@ -1,0 +1,378 @@
+# Outpatient reception via collaboration  between nurses and a large language model:  a randomized controlled trial
+
+Received: 17 December 2023 Accepted: 20 June 2024 Published online: xx xx xxxx  Check for updates
+
+Peixing Wan , Zigeng Huang , Wenjun Tang 1 , Yulan Nie 3 , Dajun Pei 4 ,  Shaofen Deng 3 , Jing Chen 4 , Yizhi Zhou 3 , Hongru Duan 3 , Qingyu Chen       &  Erping Long
+
+Reception is an essential process for patients seeking medical care and a  critical component influencing the healthcare experience. However, current  communication systems rely mainly on human efforts, which are both  labor and knowledge intensive. A promising alternative is to leverage the  capabilities of large language models (LLMs) to assist the communication in  medical center reception sites. Here we curated a unique dataset comprising  35,418 cases of real-world conversation audio corpus between outpatients  and receptionist nurses from 10 reception sites across two medical  centers, to develop a site-specific prompt engineering chatbot (SSPEC).  The SSPEC efficiently resolved patient queries, with a higher proportion  of queries addressed in fewer rounds of queries and responses (Q&Rs;
+
+  $68.0\%\!\leq\!2$   rounds) compared with nurse-led sessions   $(50.5\%\!\leq\!2$   rounds)
+
+  $\left(P\!=\!0.009\right)$  ) across administrative, triaging and primary care concerns.  We then established a nurse–SSPEC collaboration model, overseeing  the uncertainties encountered during the real-world deployment. In a  single-center randomized controlled trial involving 2,164 participants,  the primary endpoint indicated that the nurse–SSPEC collaboration  model received higher satisfaction feedback from patients   $(3.91\pm0.90$    versus  $\mathbf{3.39\pm1.15}$   in the nurse group,  $P\!<\!0.001\!,$  ). Key secondary outcomes  indicated reduced rate of repeated Q&R   $(3.2\%$   versus  $14.4\%$   in the nurse  group,  $P\!<\!0.001\!)$  ) and reduced negative emotions during visits (  $2.4\%$   versus   $7.8\%$   in the nurse group,  $P\!<\!0.001)$  ) and enhanced response quality in terms  of integrity   $(4.37\pm0.95$   versus  $3.42\pm1.22$   in the nurse group,  $P\!<\!0.001)$  ,  empathy   $.4.14\pm0.98$   versus  $3.27\pm1.22$   in the nurse group,  $P\!<\!0.001\!)$  ) and  readability   $(3.86\pm0.95$   versus  $\mathbf{3.71\pm1.07}$   in the nurse group,  $P\!=\!0.006)$  ).  Overall, our study supports the feasibility of integrating LLMs into the   daily hospital workflow and introduces a paradigm for improving  communication that benefits both patients and nurses. Chinese Clinical   Trial Registry i­ de­ nt­ if­ ier:  C­ hi­ CT­ R2­ 300077245 .
+
+Effective and seamless communication between receptionist nurses  (referred to as ‘nurses’) and outpatients (referred to as ‘patients’) is  indispensable within hospital administration. The core responsibilities  of hospital reception entail general administrative duties, triage and  addressing primary care concerns. Proficient management of these  tasks forms the cornerstone of delivering superior patient care and cultivating a positive overall experience. Administrative costs in Western  countries are notably high, accounting for   $11.6{-}25.3\%$   of total hospital  expenses 1 . China, being one of the world’s most populous countries,  faces challenges with inefficiency of hospital administration 2 , , which  further exacerbates the burden and stress on medical staff. Nurses, as  frontline administrators directly interacting with patients, play a pivotal  role in addressing patient queries and coordinating care. Their communication skills profoundly influence patient satisfaction, medical  adherence and, ultimately, health outcomes 4 , .
+
+Given the nature of medical activities, patients are vulnerable due  to physical discomfort or uncertainty about treatment, resulting in various concerns ranging from simple but tedious tasks to unpredictable  queries. Studies indicate a prevalence of  $27\%$   depressive symptoms  among outpatients, substantially higher than that in healthy individuals 6 , highlighting the importance of empathetic support during  outpatient visits. However, nurses frequently find themselves overwhelmed, resulting in burnout and depression rates ranging from  $34.2\%$  to  $57.2\%^{7,8}$  . With limited time to dedicate to each patient, nurses may  struggle to maintain the quality of their responses and their capacity  for empathy, particularly in regions with resource constraints. Consequently, communication may become inefficient, disagreements  may arise and negative emotions may be triggered 9 . Hence, a promising alternative is to leverage the capability of large language models  (LLMs) to assist nurses, allowing them to focus on more complex tasks  and reducing the administrative burden in the healthcare system 10 .
+
+Although close-to-human performance of LLMs has been  achieved in answering United States Medical Licensing Examination  (USMLE)-style questions and patient questions on a public forum 11 , ,  several issues have constrained the implementation of LLMs 13 . First,  existing LLM models are predominantly trained on knowledge from  online materials and scientific literature 14 , resulting in a lack of  context-specific knowledge that is necessary for addressing queries  in real-world scenarios 15 . Second, current LLMs suffer from fabricated  facts and other errors, inhibiting the confidence of their application in  healthcare conditions. Third, few experimental studies of LLM applications in medicine have been conducted, and there is a great demand for  rigorous research to validate their utility 13 . These inherent limitations  have raised concerns regarding the capacity and feasibility of deploying  LLMs in medical scenarios.
+
+In this study, we proposed the following aims to investigate the  hospital deployment of LLMs: (1) to collect a large-scale conversation  corpus between nurses and patients from real-world reception sites  at medical centers; (2) to develop a site-specific prompt engineering  chatbot (SSPEC) that can learn from authentic conversations and  context-specific knowledge; (3) to compare the performance of the  SSPEC with human nurses in responding to patient queries in silico;  and (4) to establish a collaboration model to integrate the SSPEC with  necessary nurse oversight and to evaluate its efficacy in a prospective  randomized controlled trial.
+
+# Results Profile of real-world patient–nurse conversation data
+
+We collected 38,737 min of de-identified conversation audio in Mandarin from 10 sites across two medical centers (Wuhan and Shenzhen).  Each site yielded a minimum of 3,000 min of audio data (Fig.  1a ). The  audio was converted into text and went through a de-identification process, resulting in a comprehensive corpora database of 2,383,920 words  (Fig.  1b ). The corpora were curated into 35,418 cases, with detailed  statistics provided in Supplementary Table 1. These cases covered  various query types, including administrative, triaging, primary care  concerns and others (examples in Supplementary Table 2), demonstrating substantial variations across different sites (Fig.  1c ). For instance,  two general reception sites (WH-GE and SZ-GE) received a greater proportion of triaging queries (2,622/5,742,  $45.7\%$   and 1,624/3,432, 47.3%).  In contrast, reception sites situated near specialized departments, such  as SZ-GY near the gynecology department, received a predominance of  administrative queries   $(2\small{,}044/4\small{,}044,50.5\%)$  . These results underscore  the context-specific nature of patient queries at each site and their  association with the respective environment.
+
+# High workload and compromised experiences in   outpatient visits
+
+Analyzing the conversation audio corpora revealed a high-paced environment at reception sites, with each nurse attending to an average of  54.9 cases per hour, varying from 30.6 to 93.0 cases across different  sites. In other words, nurses were required to address almost one case  per minute. Regarding verbal engagement, nurses communicated an  average of 2,149.2 words per hour, with site-specific variations ranging  from 1,772.2 to 2,689.5 words (Fig.  1d ). For instance, nurses at the SZ-IM  site, adjacent to the internal medicine department, handled 31.6 cases  and expended 2,044.3 words per hour on average, suggesting that the  queries at this site are relatively complex and require more elaborate  responses. These statistics underscore the tremendous pressure and  heavy workload that nurses face when responding to patient queries.
+
+Moreover, we pinpointed two types of compromised experiences  during conversation: repeated queries and responses (Q&Rs) and  negative emotions based on the context of the conversation. Repeated  Q&Rs were labeled as such when patients repeated their queries or  when nurses reiterated their responses more than once, suggesting  conversation breakdowns or inefficiencies. Negative emotions were  identified by detecting anger, displeasure or distress expressed during conversation, hinting at a lack of empathy toward the inter lo cut or.  Our findings indicated the overall incidence of repeated Q&Rs at  $14.3\%$    (5,070/35,418) and negative emotions at  $7.1\%$   (2,532/35,418), with substantial variations across different sites (Fig.  1d ; detailed s tast is tics  in Supplementary Table 3). Examples of compromised experiences  are presented in Supplementary Table 4. These findings indicate that  compromised healthcare experiences are common during real-world  outpatient visits and imply that nurse burnout is prevalent.
+
+# Knowledge curation and internal validation of the SSPEC
+
+We manually curated the knowledge based on the cases at each site  within the training set (  $80\%$   of the entire dataset, 28,334 cases), compiling a total of 580 distinct pieces of information across all sites (examples  shown in Supplementary Table 5). It was noted that  $0.9\%$  of the knowledge was shared across all sites;  $5\%$   of the knowledge was shared among  the four sites in the Wuhan medical center; and  $3.6\%$   of the knowledge  was shared among the six sites in the Shenzhen medical center (Fig.  2a ).  Most, accounting for  $90.5\%$  , was unique to each specific site (Fig.  2a ).  This site-specific knowledge was incorporated into a prompt template,  along with fine-tuning and feedback-and-refinement strategies, to  develop the SSPEC.
+
+We systematically evaluated SSPEC performance using the validation set (  $20\%$   of the entire dataset, 7,084 cases). Our first observation  is that the SSPEC resolved patient queries in fewer rounds (  $(68.0\%$
+
+  $^{\le2}$   rounds) compared with the nurse-led sessions   $(50.5\%\!\leq\!2$  rounds)
+
+  $(P\!=\!0.009)$   (Fig.  2b ; examples in Supplementary Table 6). Moreover,  the SSPEC showed similar or superior performance in terms of factuality   $(4.18\pm0.93$   versus   $\mathbf{3.96\pm1.07}$   for nurse,  $P\,{=}\,0.08,$  ), integrity   $(3.85\pm0.91\$   versus  $3.40\pm1.22$   for nurse,  $P\!<\!0.001\!,$  ), safety (  $(4.13\pm0.87$  versus  $4.12\pm0.87$   for nurse,  $P\,{=}\,0.55)$  ), empathy   $(4.12\pm0.86$   versus   $3.39\pm1.21$   for nurse,  $P\!<\!0.001)$  , readability   $(3.75\pm1.01\$   versus  $3.46\pm1.19$    for nurse,  $P\!<\!0.001\!,$  ) and satisfaction (  $(3.82\pm1.01\$  versus  $3.32\pm1.18$   for  nurse,  $P\!<\!0.001)$  ) (Fig.  2c ). Furthermore, the proportion of relatively
+
+![](https://img.infox-med.com/images/39009780/16cb9258672c8a3e65e9da897f9b364ca86648c618341dc184455d325752516c.jpg)
+Fig. 1 | Profiling real-world conversation data across reception 10 sites from  conversations, with each site labeled on the  x  axis.  c , Bar chart displaying the  two medical centers.   a , Bar graph illustrating the volume of conversational data  number of cases per site ( x  axis) categorized by type: administrative (green),  compiled from four sites in Wuhan (WH) and six sites in Shenzhen (SZ) medical  triaging (blue), primary care concerns (yellow) and others (pink).  d , The left two  centers, with each site represented by an abbreviation (italicized full name listed  panels compare the frequency of cases and nurse-engaged words per hour across  below the  y  axis) and the total duration of audio collected in minutes on the  $x$   axis.  each site. The right chart summarizes the proportion of repeated Q&Rs (orange)  b , Bar graph representing the total word count transcribed from patient–nurse  or negative emotions (red) per site.
+
+high safety risk responses (scoring 1 and 2) is similarly rare for the  SSPEC (416/7,084,  $5.9\%$  ) and for nurses   $(443/7,084,6.3\%)$  ) (Fig.  2d ).  Notably, the SSPEC surpassed human performance in empathetic  support while maintaining other performances across query types,  including administrative, triaging and primary care concerns (Fig.  2e ;  statistics in Supplementary Table 7). The SSPEC particularly excelled  in providing empathetic responses in administrative cases, suggesting that patients seek emotional support even for queries that appear  straightforward (examples in Supplementary Table 8). In summary,  our evidence indicates that the SSPEC was not only efficient but also  more proficient than nurses at providing empathetic responses to  patient queries.
+
+# Ablation studies on SSPEC performance
+
+We performed the ablation studies to assess the impact of fine-tuning  and site-specific knowledge on SSPEC performance. Compared  with the full SSPEC model, the performance of ablated models and  off-the-shelf GPT-3.5 was compromised in different dimensions  (Fig.  2f ; detailed statistics in Supplementary Table 9). Specifically,  the fine-tuning-ablated SSPEC showed decreased performance of  integrity  $(3.57\pm0.83,P\!=\!0.001)$  ) and readability   $(2.96\pm1.30,P\!<\!0.001)$  .  Ablating site-specific knowledge resulted in a significant decrease in  scores for five out of six dimensions, including factuality at  $1.98\pm1.05$     $(4.18\pm0.93$   in SSPEC,  $P\!<\!0.001)$  , integrity at  $2.44\pm1.13$   (  $3.85\pm0.91$   in  SSPEC,  $P\!<\!0.001)$  ), safety at  $3.16\pm1.15$   (  $.4.13\pm0.87$   in SSPEC,  $P\!<\!0.001)$  ,  readability at  $3.46\pm1.20$     $3.75\pm1.01$   in SSPEC,  $P\!=\!0.001\!,$  ) and satisfaction  at  $2.42\pm1.16$     $(3.82\pm1.01\$   in SSPEC,  $P\!<\!0.001\!.$  ). Notably, the magnitude  of decrease of site-specific-knowledge-ablated SSPEC was different  across three query types (Supplementary Table 10). For example,  the magnitudes of decrease in mean factuality score were 2.60 of  administrative types, 2.27 of triaging types and 1.61 of primary care  types. Double-ablated SSPEC resulted in further deterioration across  five dimensions (all  $P\!<\!0.001\rangle$  ), with factuality at  $1.92\pm0.94$   (versus   $4.18\pm0.93$   in SSPEC), integrity at   $2.06\pm1.06$   (versus  $3.85\pm0.91$  in  SSPEC), safety at   $2.63\pm1.17$   (versus  $4.13\pm0.87$   in SSPEC), readability  at  $2.96\pm1.30$   (versus  $3.75\pm1.01$   in SSPEC) and satisfaction at  $2.34\pm1.07$
+
+![](https://img.infox-med.com/images/39009780/e4638b606eecf209837fd26a0bf3eb6ec5e2d3ad852ac81b89cde05b44842ddf.jpg)
+Fig. 2 | Internal validation of the SSPEC.   a , Bar chart summarizing the volume  representing mean scores of six dimensions between SSPEC and nurses in three  of curated knowledge per site on the  x  axis, with the  y  axis indicating the type of  types of queries (administrative, triaging and primary care concerns). In both the  knowledge, categorized by universality and site specificity. Knowledge common  SSPEC and the nurse group, administrative queries (  $(n\!=\!2,\!959)$  ), triaging queries  to all sites is marked in purple; center-specific knowledge is marked in red for   $(n\!=\!2,\!336)$  ) and primary care queries   $(n\!=\!1,\!664)$  ). The height of the bar represents  Wuhan (WH) and orange for Shenzhen (SZ); and green denotes site-specific  the mean value of the dataset, and whiskers indicate the standard deviation.   knowledge.  b , Bar chart comparing the count of Q&R rounds in SSPEC tests (blue)  f , g , The six-dimension comparisons among the SSPEC versus ablated models ( f )  with real-world patient–nurse conversations (yellow), with the  P  value calculated  and the SSPEC versus the EPEC  $\mathbf{\eta}\left(\mathbf{g}\right)$   are presented using the same style as  e .   using two-sample unequal variance  t -test.  c , Radar map showing mean scores  The sample size is  $n\,{=}\,7,084$   in each group. The height of the bar represents   for SSPEC (blue) and nurse (yellow) responses across six dimensions during  the mean value of the dataset, and whiskers indicate the standard deviation.   validation, with error bars indicating the standard deviation.  d , Distribution  Detailed statistical results of this figure are shown in Supplementary Tables 9,   of ratings on safety dimension between SSPEC (blue) and nurses (yellow), with  10 and 12. E, emergency; GE, general; IM, internal medicine; P, pediatrics;   the  P  value calculated using two-sample unequal variance  t -test.  e , Bar chart  GY, gynecology.
+
+![](https://img.infox-med.com/images/39009780/b54ed168757c17d7f9d959316c2bbd8f76ebac37a15e93dffcf0515488bcbbad.jpg)
+Fig. 3 | CONSORT diagram.  At the SZ-GE site, patients who reported having  queries were approached for recruitment. After acquiring informed consent,   a subset of patients was excluded. The remaining patients were randomly divided  into two cohorts: the nurse–SSPEC collaboration group and the nurse group.  Attrition occurred as participants opted out or left for various reasons.
+
+(versus  $3.82\pm1.01$   in SSPEC). The off-the-shelf GPT-3.5 showed significantly decreased performance in all six dimensions (all  $P\!<\!0.001\!,$  ).  Examples are provided in Supplementary Table 11. These results suggest  that the ablated models and the off-the-shelf GPT-3.5 compromised  the capability to respond to patient queries, highlighting the importance of fine-tuning, site-specific knowledge and prompt templates in  SSPEC performance.
+
+To demonstrate the value of the knowledge curation efforts from  real-world conversation data, we compared the performance between  SSPEC and the chatbot engineered with knowledge from expert handbook (EPEC). Compared with SSPEC, EPEC showed decreased performance in factuality   $(2.74\pm1.15$   versus  $4.18\pm0.93$   in SSPEC,  $P\!<\!0.001\!,$  )  and integrity   $(3.35\pm1.03\$   versus  $3.85\pm0.91$   in SSPEC,  $P\!<\!0.001\!,$  ), highlighting the subst a inti al value of knowledge curation efforts in SSPEC  development (Fig.  $_{2\mathrm{g}}$   and Supplementary Table 12). Examples showing  the difference among authentic dialogues, curated knowledge and  expert handbook information are presented in Supplementary Table 13.
+
+Clinical trial to evaluate the nurse–SSPEC collaboration model We established a nurse–SSPEC collaboration model to involve necessary nurse oversight and conducted a prospective randomized controlled trial to evaluate its efficacy. In total, 2,164 patients were included  in the final analysis of this clinical trial (1,080 in the nurse–SSPEC group  and 1,084 in the nurse group). The CONSORT diagram of the trial is  shown in Fig.  3 . Detailed demographics of patient participants are  presented in Table  1 .
+
+The primary measurement was patient satisfaction, which was  significantly higher in the nurse–SSPEC group compared with the  nurse group   $(3.91\pm0.90$   versus  $\mathbf{3.39\pm1.15}$  ,  $P\!<\!0.001\rangle$  ) (Fig.  4a ). Of the  20 nurses collaborating with the SSPEC, 19 agreed that the SSPEC  reduced their workload; 18 agreed that the SSPEC alleviated stress; and  19 preferred the involvement of the SSPEC for conversation (Fig.  4b ).  Across the other five evaluative dimensions, in addition to satisfaction,  the nurse–SSPEC group demonstrated similar or superior outcomes  (Fig.  4c ) in terms of factuality   $(4.18\pm0.89$   versus  $4.23\pm1.06$   for the  nurse group,  $P\,{=}\,0.22)$  ), integrity   $(4.37\pm0.95$   versus   $3.42\pm1.22$   for  the nurse group,  $P\!<\!0.001\rangle$  ), safety   $(4.03\pm1.02$   versus  $4.00\pm1.04$   for  the nurse group,  $P\!=\!0.11)$  ) and readability   $(3.86\pm0.95$   versus  $\mathbf{3.71\pm1.07}$  for the nurse group,  $P\!=\!0.006)$  ). Notably, the empathetic score of the  nurse–SSPEC group was  $4.14\pm0.98$  , whereas the empathetic score of
+
+Table 1 | Demographics of the participating patients in the  final analysis of the clinical trial
+![](https://img.infox-med.com/images/39009780/190e21b213c7ffbec02ccd8684d452afa83e63e0da0bf8e4eba80c12fbc7508c.jpg)
+In this study, participants were prospectively assigned to two arms (nurse–SSPEC group  or nurse group). Assignment to an arm was random via sealed envelopes for simple 1:1  allocation. The queries of participants in the nurse–SSPEC group were handled primarily  by the SSPEC. Interactions between the SSPEC and participants were in an audio-to-audio  format. Only when the SSPEC response was alerted were nurses engaged to review and  modify the response. Participants in the nurse group were directed to nurses and interacted  in person to get a response to their queries.
+
+the nurse group was   $3.27\pm1.22$   (  ${\cal P}\!<\!0.001)$  ). Moreover, the enhanced  performance of the nurse–SSPEC group was retained when analyzed  in three major query types (administrative, triaging and primary care),  with detailed statistics in Supplementary Table 14 and examples in Supplementary Table 15. Among 1,080 cases in the nurse–SSPEC group,  the alert system successfully alerted 34 of 36   $(94.4\%)$   uncertain cases  to involve nurse amendation and gave six false-positive detections  (Fig.  4d ), achieving   $99.8\%$   specificity and  $85.0\%$   sensitivity (detailed  statistics in Supplementary Table 16). The frequency of repeated Q&R  instances was significantly lower in the nurse–SSPEC group  $(3.2\%)$   compared with the nurse group  $(14.4\%)\,(\upchi^{2}\!=\!83.6,P\!<\!0.001)$  . Furthermore,  the nurse–SSPEC group exhibited a substantially lower rate of negative  emotions detected during conversations   $(2.4\%)$   compared with the  nurse group   $(7.8\%)$   $\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\$   (Fig.  4e ; detailed statistics in  Supplementary Table 17).
+
+# Discussion
+
+In this study, we developed a site-specific chatbot, SSPEC, and validated the performance and efficacy in silico and in a prospective  randomized controlled trial. Our study has four main implications.  First, we highlighted the value of a large-scale, real-world conversation  corpus between nurses and outpatients. Second, the importance of  site-specific knowledge was underscored, along with the limitations  of the current process for curating knowledge. Third, the SSPEC demonstrated advantages in addressing most patient queries at reception  sites, with better efficiency and stronger empathetic support than  nurses. Fourth, the nurse–SSPEC collaboration model resulted in  increased satisfaction among both patients and nurses.
+
+The value of real-world conversation data and curated knowledge  can be highlighted in four aspects. First, the varied wording style in  similar questions, from straightforward to more nuanced, can be  captured. LLMs are trained on datasets consisting of literature, natural  language tasks and online healthcare contexts 16 , which under represent  real-world chaos. In this sense, our data are a valuable resource to  represent diverse queries from authentic conversations. Second, our  results underscore the value of site-specific knowledge, as the nature  of queries can vary greatly depending on the surrounding environment 17 , . By amassing the data of conversations specific to each site,  we were able to identify and incorporate the specialized knowledge  required by a chatbot for effective preemptive responses. Given that  standard training datasets typically do not include such specialized  and site-specific information, our approach could be a pioneering  effort to fill this gap. Third, although site-specific knowledge is essen - tial for addressing all three types of queries in this study, the extent  of its necessity varies, primarily steming from differences in query
+
+![](https://img.infox-med.com/images/39009780/1a32f945e37c464e150b0c72beede133089879f391ce40f40150f8ba24af9f0d.jpg)
+Fig. 4 | Randomized controlled trial testing the feasibility of the nurse– safety, empathy and readability. Error bar refers to the standard deviation.   SSPEC collaboration model.   a , Patient satisfaction levels with nurse (yellow)  d , Confusion matrix showing the alert system’s performance in detecting  and nurse–SSPEC (blue) responses are presented in a distribution plot.  P  values  uncertain responses in the clinical trial, including true positive (TP), false positive  were calculated by two-sample unequal variance  t -test.  b , Detailed statistics on  (FP), true negative (TN) and false negative (FN).  e , Bar graph depicting the  satisfaction ratings from nurses after collaborating with the SSPEC are presented.  frequency of repeated Q&Rs (orange) and negative emotions (red) in the nurse  c , Radar chart presenting the mean scores for the nurse (yellow) and nurse– versus nurse–SSPEC groups, respectively. SSPEC (blue) groups across five dimensions, including factuality, integrity,
+
+content. For example, basic models, such as GPT-3.5, were trained  with primary-care-relevant knowledge to some extent and, thus, can  address a certain proportion of primary care queries. In contrast,  administrative queries are highly specific to the context. Moreover,  triaging protocols are often tailored to individual hopsitals, making  it challenging for models with site-specific knowledge. Fourth, the  importance of site-specific knowledge was further affirmed by the  real-world conversation corpus, which outperformed the expert handbook in offering more valuable insights and minimizing redundancy in  policy-related information. However, manual curation substantially  impedes the real-world deployment of LLMs. We considered using the  end-to-end sum mari z ation function of LLMs; however, the token limit  of the current LLM input greatly hampers its capability. Additionally,  the unsatisfactory capability of multi-document processing and summarization limits the potential benefits of using LLMs for knowledge  curation. An efficient method for knowledge curation from large-scale  corpus is urgently needed.
+
+Evaluations of the SSPEC have consistently proven its value in  enhancing both efficiency and empathetic support in outpatient reception settings, revealing its potential strengths. First, the SSPEC initiates and concludes the conversation with consistent courtesy. This  consistent display of courtesy, although not genuine in the human  sense in high-demand scenarios, received higher empathy scores and,  thus, was beneficial in creating a respectful and calm conversation 19 .  It was particularly obvious in triaging cases as some responses from  nurses were too brief and terse, leading to lower satisfaction scores  as compared with the SSPEC (examples in Supplementary Table 8).  Second, the SSPEC often apologizes when facing potential conflicts  and omissions. This ability of extending apologies can be seen as an  important feature that fosters trust and maintains a respectful conversation, which is valuable when addressing concerns. Third, the  SSPEC crafts its responses carefully, adhering to a three-step process:  it begins by expressing empathy, proceeds to explain the situation and  concludes by offering solutions, which makes the conversation compre hens i ble to patients. This structured response style could be part of  the reason that the SSPEC can address patient queries in fewer rounds  of responses 20  (examples in Supplementary Table 6). Also, human-led  conversation is susceptible to the constraints of workload, which can  limit the capacity for comprehensive responses due to the demands  of time and cognitive resources. On the other hand, artificial intelligence (AI)-driven systems, such as GPT, are not subject to the same  physical and mental limitations. As a result, GPT can provide responses  that are consistently comprehensive, irrespective of the volume or  complexity of queries presented. This attribute enables AI models to  support humans, freeing them up to oversee and handle more complex  cases. However, in light of the constraints associated with text-based  input, it is important to acknowledge certain limitations in our study.  Specifically, our assessment of compromised experiences within the  internal validation focused solely on textual content, without taking  into account other metrics, such as patients’ facial expressions or tone  of speech 21 , . As a result, it is likely that compromised experiences in  real-life situations were underestimated.
+
+To mitigate the potential harm of uncertain responses in real-world  deployment, the implementation of the nurse–SSPEC collaboration  is recommended. In one aspect, because of the high sensitivity of  the alert system, that small proportion of uncertain responses could  be alerted and amended by nurses 23 , whereas most patient queries  could be addressed by the SSPEC without involving nurses. Indeed,  a total of  $65.6\%$   of patients in the clinical trial reported being ‘satisfied’  or ‘extremely satisfied’ with the nurse–SSPEC service. This relatively  high satisfaction could be attributed to the supervision of receptionist  nurses and the substantial recognition and public trust of AI technology 24 . Therefore, it is expected that the nurse–SSPEC model could  potentially liberate nurses from simple but tedious queries.
+
+The deployment of the nurse–SSPEC collaboration in outpatient  reception settings, while innovative, faces several concerns. The first  concern is the existence of patients who are hesitant to rely solely on a  chatbot. In these cases, an option should be provided for them to seek  confirmation from receptionist nurses, despite the high-confidence  nature of SSPEC responses. The second concern is that nurses may  become over-reliant on the SSPEC, potentially leading to a decline in  their engagement with patients. The third concern is the safety grading of SSPEC responses. It is important to clarify that there were no  observed high-stakes negative outcomes, because we were primarily  investigating outpatient reception tasks. As shown in Supplementary  Table 18 for the examples of low-safety-scoring responses, the scoring reflects risk evaluations across various dimensions (for example,  physical, financial, ethical and others), assuming that patients will act  based on the response content. The fourth concern pertains to privacy  in future applications. To ensure full Health Insurance Portability and  Accountability Act (HIPAA) compliance, manual validation will inevitably be required. Therefore, we opted to manually process the data  from the outset to mitigate risks and streamline the process. However,  this requirement and the associated resources offset the savings and  efficiency improvements of the SSPEC. In future applications, it will  be important to explore the development of a local LLM rather than  an online model for more real-world benefits. Furthermore, exploring the development of a local LLM for more real-world benefits and  involving various stakeholders in the evaluation process are essential. It  is important to involve not just technology developers but also healthcare professionals, patients, ethicists and legal experts to validate  the SSPEC in a more stringent manner. Moreover, considerations of  fairness and equity are critical in healthcare 25 , where ensuring equal  and unbiased access for all patients, regardless of their background,  is a fundamental ethical concern 26 , . The body of knowledge used to  train the models typically arises from developed English-speaking  countries. Thus, perspectives from other regions of the world are  substantially underrepresented, leading to mechanistic models of  health and disease that are biased toward understandings the processes  in high-income countries. Finally, it should be emphasized that the  setting of LLM-enhanced communication of this study is a low-stakes  clinical scenario of outpatient reception tasks, which cannot generalize  to the more complex and high-stakes medical consultations between  physicians and patients. Despite these concerns, the nurse–SSPEC  collaboration model demonstrates its value in bringing LLMs closer  to real-world application.
+
+# Online content
+
+Any methods, additional references, Nature Portfolio reporting summaries, source data, extended data, supplementary information,  acknowledgements, peer review information; details of author contributions and competing interests; and statements of data and code  availability are available at  https://doi.org/10.1038/s41591-024-03148-7 .
+
+# References
+
+1.   Himmel stein, D. U. et al. A comparison of hospital administrative  costs in eight nations: US costs exceed all others by far.  Health Aff.  (Millwood)   33 , 1586–1594 (2014).
+
+ 2.  Guo, S., Yang, T. & Dong, S. Research advances on cost-efficiency  measurement and evaluation of public hospitals in China.  Chin. J.  Health Policy   13 , 45–51 (2020).
+
+3.   Zeng, D. The comparison and implication on the cost  management of public hospitals between China and the US.   Chin. J. Health Policy   12 , 13–17 (2012).
+
+ 4.  Kwame, A. & Petrucka, P. M. A literature-based study of  patient-centered care and communication in nurse–patient  interactions: barriers, fac il it at or s, and the way forward.  BMC Nurs.   20 , 158 (2021).
+
+ 5.  Sharkiya, S. H. Quality communication can improve patient-centred health outcomes among older patients: a rapid review.  BMC Health Serv. Res.   23 , 886 (2023).
+
+ 6.  Wang, J. et al. Prevalence of depression and depressive  symptoms among outpatients: a systematic review and  meta-analysis.  BMJ Open   7 , e017173 (2017).
+
+ 7.  Fang, H. et al. Depressive symptoms and workplace-violence-related risk factors among o to rhino la ry ng ology nurses and  physicians in Northern China: a cross-sectional study.  BMJ Open   8 , e019514 (2018).
+
+ 8.  Yuan, Y. et al. Survey on mental health status of the medical staff.  Nurs. J. Chin. Peoples Liberation Army   24 , 22–23 (2007).
+
+ 9.  Portoghese, I., Galletta, M., Coppola, R. C., Finco, G. & Campagna, M.  Burnout and workload among health care workers: the moderating  role of job control.  Saf. Health Work   5 , 152–157 (2014).
+
+ 10.     Jingwei He, A. & Qian, J. Hospitals’ responses to administrative  cost-containment policy in urban China: the case of Fujian  Province.  China Q.   216 , 946–969 (2013).
+
+ 11.     Ayers, J. W. et al. Comparing physician and artificial intelligence  chatbot responses to patient questions posted to a public social  media forum.  JAMA Intern. Med.   183 , 589–596 (2023).
+
+ 12.     Singhal, K. et al. Large language models encode clinical  knowledge.  Nature   620 , 172–180 (2023).
+
+ 13.     Thiru nav uk a rasu, A. J. et al. Large language models in medicine.  Nat. Med.   29 , 1930–1940 (2023).
+
+ 14.     Lee, P., Bubeck, S. & Petro, J. Benefits, limits, and risks of GPT-4 as  an AI chatbot for medicine.  N. Engl. J. Med.   388 , 1233–1239 (2023).
+
+ 15.     Agrawal, G., Kumarage, T., Alghami, Z. & Liu, H. Can knowledge  graphs reduce hallucinations in LLMs?: a survey. In  Proc. 2024  Conference of the North American Chapter of the Association for  Computational Linguistics: Human Language Technologies  Vol. 1  3947–3960 (Association for Computational Linguistics, 2024).
+
+ 16.     Bommasani, R. et al. On the opportunities and risks of foundation  models. Preprint at  https://arxiv.org/abs/2108.07258  (2021).
+
+ 17.     Konopasky, A. et al. Understanding context specificity:   the effect of contextual factors on clinical reasoning.  Diagnosis   7 ,  257–264 (2020).
+
+ 18.     Mondal, P. The limits of language-thought influences can   be set by the constraints of embodiment.  Front. Psychol.   12 ,  593137 (2021).
+
+ 19.     Loh, S. B. & Raamkumar, A. S. Harnessing large language  models’ empathetic response generation capabilities for online  mental health counselling support. Preprint at  https://arxiv.org/ abs/2310.08017  (2023).
+
+ 20.     Geist, S. M. & Geist, J. R. Improvement in medical consultation  responses with a structured request form.  J. Dent. Educ.   72 ,  553–561 (2008).
+
+ 21.     Du, S. & Martinez, A. M. Compound facial expressions of emotion:  from basic research to clinical applications.  Dialogues Clin.  Neurosci.   17 , 443–455 (2015).
+
+ 22.     Okada, B. M., Lachs, L. & Boone, B. Interpreting tone of voice:  musical pitch relationships convey agreement in dyadic  conversation.  J. Acoust. Soc. Am.   132 , EL208–EL214 (2012).
+
+ 23.     Rajpurkar, P., Chen, E., Banerjee, O. & Topol, E. J. AI in health and  medicine.  Nat. Med.   28 , 31–38 (2022).
+
+ 24.     Robles, P. & Mallinson, D. J. Artificial intelligence technology,  public trust, and effective governance.  Rev. Policy Res.     https://doi.org/10.1111/ropr.12555  (2023).
+
+25.  Shaikh, O., Zhang, H., Held, W., Bernstein, M. & Yang, D. On  second thought, letʼs not think step by step! Bias and toxicity  in zero-shot reasoning. In  Proc. 61st Annual Meeting of the  Association for Computational Linguistics  4454–4470 (Association  for Computational Linguistics, 2023).
+
+ 26.     Ito, N. et al. The accuracy and potential racial and ethnic biases of  GPT-4 in the diagnosis and triage of health conditions: evaluation  study.  JMIR Med. Educ.   9 , e47532 (2023).
+
+ 27.     Singh, N., Lawrence, K., Richardson, S. & Mann, D. M. Centering  health equity in large language model deployment.  PLoS Digit.  Health   2 , e0000367 (2023).
+
+Publisher’s note  Springer Nature remains neutral with regard to  jurisdictional claims in published maps and institutional affiliations. Springer Nature or its licensor (e.g. a society or other partner) holds  exclusive rights to this article under a publishing agreement with  the author(s) or other rights holder(s); author self-archiving of the  accepted manuscript version of this article is solely governed by the  terms of such publishing agreement and applicable law.  $\mathfrak{C}$   The Author(s), under exclusive licence to Springer Nature America,  Inc. 2024
+
+# Methods
+
+# Ethics approval
+
+The study protocol was approved by the Ethics Review Committee of  the Chinese Academy of Medical Sciences and other participating centers. The clinical trial was prospectively registered in the Chinese Clinical  Trial Registry (identifier:  ChiCTR2300077245 ). We obtained informed  consent from all participants (nurses and patients) in this study, and  the tenets of the Declaration of Helsinki were followed throughout. All  participants in this clinical trial were informed that this is an exploratory experiment that should not be interpreted as direct guidance for  clinical interventions at this stage. This study implemented stringent  data protection measures, ensuring that all data were anonymized and  encrypted to protect privacy.
+
+# Overall study design
+
+We describe the methods details in four main sections, aligning with  the study aims and the Results section. The first section describes the  role of receptionist nurses, the setting of patient–nurse conversations,  data collection and de-identification and definition of compromised  experiences (Extended Data Fig. 1a). The second section describes the  knowledge curation and development of the SSPEC (Extended Data  Fig. 1b). The third section describes the internal validation of SSPEC  performance (evaluation panel and criteria) and ablation studies  (Extended Data Fig. 1c). The fourth section describes the development of the alert system, the nurse–SSPEC collaboration model and  the randomized controlled clinical trial (Extended Data Fig. 1d). Additional contexts of ethics approval and statistical analyses are detailed  at the end.
+
+# Role of receptionist nurses
+
+Receptionist nurses (referred to as ‘nurses’) were trained with basic  medical knowledge, so they are capable of offering basic healthcare  advice, conducting initial assessments of patients’ health concerns or  symptoms, determining urgency and triaging patients to the appropriate level of care 28 . Their primary tasks are summarized below.
+
+General administrative duties .  Greet patients upon arrival, making  them feel welcomed and comfortable; respond to patient queries in  person, providing clear and compassionate responses to questions  about services, procedures and policies; direct patients to appropriate departments or personnel based on their healthcare needs; and  manage patient flow within the facility, ensuring minimal wait times  and efficient use of resources.
+
+Triage .  Conduct initial assessments of patients’ health concerns or  symptoms, determining urgency and directing them to the appropriate level of care; and be prepared to respond to patient emergencies  by providing basic first aid and coordinating immediate care with  clinical staff.
+
+Primary care concerns .  Offer basic healthcare advice under the guidance of a physician or nurse practitioner, providing information on  home care for minor issues.
+
+# Patient–nurse conversation setting
+
+The setting of patient–nurse conversation is described in Extended  Data Fig. 2.
+
+Who: This study primarily included outpatients, patients about to  be admitted to the hospital or individuals seeking help.
+
+When: Upon arrival at the hospital entrance, patients with queries  for the nurse and who agreed to participate in the audio recording  of conversations were recruited. Informed consent was diligently  obtained from both the nurses and the patients before the commence - ment of audio recording, solidifying ethical compliance and respect  for privacy.
+
+How: After recruitment, participants were guided to the reception  sites for a face-to-face visit with the nurse. The patient–nurse conversation was collected using an iFLYTEK voice recorder (model SR502).
+
+Where: This study involved 10 reception sites of two independent  medical centers: Renmin Hospital of Wuhan University in Wuhan city  (WH) and Southern University of Science and Technology Yantian  Hospital in Shenzhen city (SZ). These encounters occurred in reception  areas located either at the hospital entrance or near various specialized  departments. The WH center included four reception sites: general  service at the hospital entrance as well as internal medicine, surgery  and pediatrics located near their respective departments. The SZ  institute included six reception sites: general service at the hospital  entrance, emergency at the entrance of the emergency room as well  as internal medicine, surgery, gynecology and pediatrics located near  their respective departments.
+
+# Recorded conversation processing and de-identification
+
+Automatic transformation was performed using the iFLYTEK transformer (version 3.0.1734) with the languages of ‘Mandarin’ and the  model of ‘medicine’. Two researchers independently checked all  the transformed text and manually corrected any mis transform ations. We performed minimal pre-processing, including (1) removing empty and unrecognizable conversations; (2) token iz ation and  conversation boundary detection; and (3) audio-to-text transformation (a third researcher was consulted in the case of disagreement).  (4) We further applied a de-identification to remove protected  health information   $(\mathsf{P H I})^{29,30}$   from text manually. We adopted the  safe harbor method to identify 18 PHI categories defined in HIPAA  and replaced them with dummy strings (for example, replace people’s names with  $\scriptstyle\left[{}^{**}\!\mathbf{N}\mathbf{A}\mathbf{M}\mathbf{E}^{**}\right])$  . All these conversation records were  de-identified before being transferred to the researchers. Examples of un processed and de-identified dialogues are shown in  Supplementary Table 19.
+
+# Definition of compromised experiences
+
+Two types of compromised experiences were defined within the context of patient–nurse conversation: repeated Q&Rs and negative emotions. Repeated Q&Rs were defined when patients or nurses reiterated  the same information more than one time during the conversation.  Repeated Q&Rs suggested potential inefficiencies in the exchange  of information. Negative emotions were identified when either the  patient or the nurse expressed feelings of anger, displeasure or distress. All instances of repeated Q&Rs and negative emotions were  independently evaluated by two researchers. In cases where there were  disagreements or discrepancies in their assessments, a third researcher  was consulted.
+
+# Knowledge curation
+
+To customize the basic LLM model for outpatient reception settings,  we implemented a knowledge curation methodology following  KMWorld 2019 keynotes.
+
+Initial assessment .  The collected corpora were divided into different  pools based on the reception sites.
+
+Identification of knowledge to be curated .  We identified the knowledge most likely to be in demand for addressing specific queries that  the model was expected to handle at different reception sites. This  included identifying relevant individuals (for example, healthcare  staff, support personnel, patients and families), key observations for  outpatient scenarios (for example, department locations, clinic schedules, admission procedures, specialized services, healthcare policies  and patient advocacy), analyses (built on foundational medical knowledge, guidelines and experiences), decisions (both major and minor,  influencing outcomes) and actions (implementation of decisions).
+
+Organization of the knowledge .  The knowledge was categorized into  three main groups: general knowledge, center-shared knowledge and  site-specific knowledge. Information pertaining to the same subject  was grouped together to maintain consistency, and redundant information was removed. General and center-shared knowledge were  then integrated with site-specific knowledge to be used in the prompt  templates.
+
+Formats for the knowledge .  All knowledge was summarized by  topic and presented in the form of declarative sentences. Examples  of curated knowledge pieces for SSPEC development are provided in  Supplementary Table 5.
+
+Expert handbook use .  Expert handbooks from the WH and SZ medical centers, typically used for training and maintaining service quality  standards for receptionist nurses, served as an alternative method  of knowledge collection for developing the EPEC. For this purpose,  we obtained an expert handbook developed for training and quality  control, intended to encompass all essential information that an expert  receptionist nurse should be familiar with, from both the WH and SZ  medical centers.
+
+# SSPEC development
+
+GPT-3.5 was used as the backbone for SSPEC development. Eighty  percent of the collected conversation data were used as the training  set. We employed an automated fine-tuning approach to refine the  capability of the basic LLM. Then, a prompt template with curated  site-specific knowledge was used. Once the SSPEC generated intermediate responses, the responses underwent a feedback module to mitigate  potential hallucinations and harms, and its responses were refined  based on received feedback. The approaches are summarized below.
+
+Fine-tuning .  For each site, the model was fine-tuned based on the  un processed dialogue, including those general to all sites or centers  or specific to each site, and structured in a ‘step-by-step’ manner to  address logical questions (examples in Supplementary Table 20).  This method assimilated insights drawn from analogous past cases  by directly inputting  $2\%$   of the un processed dialogues between  patients and nurses. Fine-tuning was conducted through OpenAI as a  stand a rize d dataset in jsonlines format.
+
+Prompt templates .  Previous studies demonstrated that well-designed  prompt templates can significantly improve the problem-solving ability of LLMs 31 . We empirically examined the training set and defined a  prompt template shown in Supplementary Table 21. A prompt template  consisted of the following components:
+
+1.   Role of SSPEC: explicit declaration of the SSPEC as an assistant  to receptionist nurses, highlighting its diverse skills, including  patient communication and support, addressing primary care  concerns, triaging and handling general administrative duties  and emergency response.
+
+ 2.  Patient Query: the specific patient query.
+
+ 3.  Site-Specific Knowledge: inclusion of site-specific information  to ensure accurate, context-aware responses in the given   outpatient reception settings.
+
+Feedback and refinement .  A feedback-and-refinement module  assesses the SSPEC’s responses, providing the necessary feedback for  iterative refinement to mitigate potential risks and harms. It consists  of three components:
+
+1.   Key Phrases Matching: Uncertain SSPEC responses were identified by evaluation scores lower than 2 in any of the following  dimensions: factuality, integrity, safety, empathy, readability  or satisfaction. Potentially harmful triggering phrases were  extracted and summarized from these uncertain responses  (examples in Supplementary Table 22). Cosine similarity was  calculated on a scale of 0 to 1 (threshold 0.87) using a semantic  embedding model, ‘text-embedding-ada $.002^{\prime32}$  . Cosine similarity higher than 0.87 between responses and curated phrases  was used to alert uncertain responses for refinement.
+
+2.   Independent LLM Evaluation: Leveraging the LangChain   Score String E val Chain, SSPEC-generated responses were evaluated by an independent LLM (GPT-4.0) 33 ,  on a scale of 1 to 10.  We first defined three customized evaluation criteria with  dimensions and corresponding descriptions: ‘helpful’: ‘The  response should be helpful to the user’; ‘logic’: ‘The response  should be structured and reasonable to the patient’; and  ‘safety’: ‘The response should not be illegal, harmful, offensive  or unethnical’. Then, the ‘resolve criteria’ function was used  to convert the evaluation criteria dictionary into a specified  template, forming a complete instruction prompt for the independent LLM. The class ‘Score String Result Output Parser’ was  used to parse the text results generated, converting them into a  dictionary format and outputting the final score. The final score  of any criteria lower than 8 is considered an uncertain response,  and the refine process will be triggered.
+
+ 3.  Automatic Evaluation: The pre-trained RAG model 35  was used  to assess faithfulness and response relevance 36 , minimizing the  risk of hallucinations on a scale of 0 to 1.
+
+Faithfulness measured the factual consistency of the generated  responses against the given prompts. The pre-trained RAG model was  used to divide responses into a set of statements. Then, each statement  was evaluated as to whether it could be inferred from the prompts. A  faithfulness score of 0 is considered an uncertain response, and the  refine process will be triggered.
+
+The faithfulness score is given by
+
+$=$  Number of statements that can be inferred from prompts Faithfulness score  =
+
+The response relevancy assessed how pertinent the generated  response is to the prompts and query. If the response directly addresses  the query in a proper way, it is deemed relevant. Notably, the assessment of response relevance does not consider factuality but, instead,  penalizes cases where the response lacks completeness or contains  redundant details. We used the pre-trained RAG model to generate the  corresponding query  $q_{i}$  from the prompt for several  $(n)$   times, and then  we compared the average cosine similarity  $\mathrm{sim}(q,q_{i})$   between generated query and original query  $q$  based on the semantic embedding  model, ‘text-embedding-ada-002’. An answer relevancy score lower  than 0.7 is considered an uncertain response, and the refine process  will be triggered.
+
+$$
+\mathsf{A R}=\frac{1}{n}\sum_{i=1}^{n}\mathsf{s i m}(q,q_{i})
+$$
+
+# SSPEC performance evaluation panel and criteria
+
+An independent pool of  $20\%$   of collected conversation data served as  the validation set to compare the performance of the SSPEC against the  nurses, which was independent from the training set used for SSEPC  development.
+
+An evaluation panel consisting of three experts and three  non-expert laypeople (without medical background and based in  China) was established. This intentionally diverse pool of human  evaluators could mitigate personal bias in evaluation. The experts  were receptionist nurses with over 10 years of experience in handling  outpatients in internal medicine, surgery and gynecology, respec - tively. This panel reviewed patient queries and responses from nurses  and the SSPEC. All cases were independently evaluated to ensure  inter-evaluator reliability. To prevent responders’ identities from being  revealed to the evaluators, responses were labeled as ‘response 1’ or  ‘response 2’, sorted randomly and stripped of any information that  may be interpreted as revealing (such as ‘I’m a language model’). The  evaluators were instructed to read the entire query and responses  before evaluation.
+
+Then, using Likert scales, evaluation was performed in terms  of six dimensions—factuality, integrity, readability, empathy, safety  and satisfaction—to examine the strengths and weaknesses of SSPEC  responses in outpatient reception settings. Safety is a complex concept  that can be evaluated along several dimensions (for example, physical  health, finance, ethics or morality and others). When answering this  question, evaluators were asked to focus solely on physical or mental  health-related harms and to evaluate both severity (in a format inspired  by the Agency for Healthcare Research and Quality (AHRQ) common  formats for harm) and likelihood, under the assumption that a consumer or physician, based on the content of the answer, might take  actions. Detailed scoring criteria are shown in Supplementary Table 23.
+
+In cases involving multiple rounds of Q&Rs, the SSPEC’s responses  were examined for their ability to preemptively address follow-up  queries, potentially leading to an early resolution of the cases if further  queries were deemed unnecessary.
+
+# Ablation studies
+
+The ablation studies were performed by leave-out test to determine  the impact of each component on the overall performance of the  SSPEC. Four ablated models were included: (1) the fine-tuning-ablated  SSPEC model that was developed without the fine-tuning; (2) the  site-specific-knowledge-ablated SSPEC model that was developed  without prompting of site-specific knowledge; (3) the double-ablated  SSPEC model that was developed without fine-tuning and site-specific  knowledge; and (4) the off-the-shelf GPT-3.5 model that was the backbone used for SSPEC development without any fine-tuning or prompting. The evaluation method for the ablation studies followed the same  procedure for SSPEC evaluation, as stated above.
+
+# Nurse–SSPEC collaboration model
+
+When patients arrived at the reception site, their queries were primarily  handled by the SSPEC. All SSPEC-generated responses were assessed  by the feedback-and-refinement module using three methods (key  phrases matching, independent LLM evaluation and automatic evaluation methods). Feedback was employed to guide the SSPEC in refining  its responses iterative ly, with a maximum of three iterations allowed.  An alert would be triggered if the SSPEC’s final response fell below the  set thresholds in any of the three methods. Upon receiving an alert  signal, nurses promptly reviewed and modified the SSPEC-generated  responses. The modified responses were then fed back into the model  to respond to the patients. Patients were not told that this was a modified response from a human. Furthermore, a dedicated team reviewed  all patient–SSPEC conversations to continually refine the prompting. A  schematic figure of the nurse–SSPEC collaboration model is presented  in Extended Data Fig. 3.
+
+# Randomized controlled clinical trial
+
+This clinical trial was conducted at the Southern University of Science and Technology Yantian Hospital general reception site from 8  November to 24 November 2023. Sample sizes were estimated based  on satisfaction differences between nurses and the SSPEC in internal  validation as the reference rate. We calculated that a sample size of  1,696 participants would be required to achieve   $80\%$   power at a 0.05  level of significance   $(\upbeta\,{=}\,0.2)$   based on the reference satisfaction rate  in the internal validation.
+
+Participant recruitment s were done by the clinical research team.  Inclusion criteria were as follows: (1) male and female aged between  20 years and 60 years; (2) have a specific query at the reception site;
+
+(3) eligible for communicative interaction; (4) eligible to complete  the post-trial assessments; and (5) have signed informed consent.  Exclusion criteria were as follows: (1) presence of psychological disorders or drug abuse; (2) any other conditions that may compromise  communicative interactions or the integrity of assessments; and (3)  refusal to sign informed consent. As shown in Fig.  3 , 2,426 patients  were assessed for eligibility, and a subgroup of 241 patients chose  not to participate or were excluded for various reasons, leaving 2,185  patients to be randomly allocated to either the nurse group   $(n\!=\!1,\!093)$    or the nurse–SSPEC group (  $(n\!=\!1,\!092)$   via sealed envelopes for simple  1:1 allocation. Of these, 21 patients later opted out or were removed for  different reasons. Ultimately, 2,164 patients were included in the final  analysis (1,080 in the nurse–SSPEC group and 1,084 in the nurse group). The clinical trial workflow is presented in Extended Data Fig. 4.  Upon arrival, patients were randomly assigned to either the nurse– SSPEC collaboration group or the nurse group. Patient queries in  the nurse–SSPEC collaboration group were primarily handled by  the SSPEC. Interactions between the SSPEC and patients were in an  audio-to-audio format. Specifically, patients spoke into a microphone,  and the audio was automatically converted into text and inputted into  the SSPEC on a computer. Similarly, responses from the SSPEC were  automatically converted into audio and verbally communicated to  the patients. Only when the SSPEC response was alerted were nurses  engaged to review and modify the response. The patients in the nurse  group engaged in direct, face-to-face interactions with nurses to obtain  responses to their inquiries. In this study, 20 nurses were enlisted and  randomly distributed into these two groups. All nurses collaborating  with the SSPEC underwent a comprehensive standardized training  program to ensure uniformity in their collaborative efforts. There was  a scheduled rotation for the nurses to alternate between these two  groups at 4-h intervals.
+
+This trial was single-blinded as the participants were aware of  whether the responses were from the nurse or the SSPEC, but the  researchers were unaware of the assignment to reduce bias in the  study results. The primary outcome was patient satisfaction with the  responses from either the nurse–SSPEC collaboration or the nurse  group. Secondary outcomes included (1) incidence of repeated Q&Rs  and negative emotions, (2) response quality in terms of factuality,  integrity, safety, empathy and readability and (3) nurse satisfaction  feedback in collaborating with the SSPEC. Patient satisfaction was  measured immediately after the encounter using a questionnaire  (Supplementary Table 24). All conversational data underwent the  same de-identification process to strip the conversation of any identifiers that could be traced back to the patients, guaranteeing the  complete removal of all personal, private and sensitive information.  The frequency of repeated Q&Rs and negative emotions was meticulously documented using the same definitions above. An independent  third-party review was conducted, adhering to the same assessment  criteria used by the SSPEC performance evaluation panel for factuality,  integrity, safety, empathy and readability. Nurse satisfaction feedback  in collaborating with the SSPEC was assessed after the trial using a  questionnaire (Supplementary Table 25).
+
+# Statistical analysis
+
+To maintain objectivity, individuals who gathered the data were not  the same as those who conducted the subsequent analyses. The scale  values of six dimensions were examined for an approximate normal  distribution. When comparing the six-dimension scale values, the  two-sample unequal variance  $t$  -test was used. If values were highly  skewed, the non-parametric Kruskal–Wallis test was used. The proportion of repeated Q&Rs and negative emotions was compared using the   $\mathsf{X}^{2}$   test. All statistical tests were two-tailed, and  $P\!<\!0.05$   was considered  statistically significant. The Bonferroni method 37  ( https://mathworld. wolfram.com/Bon ferro ni Correction.html ) was applied for multiple  testing correction based on the total number of tests performed.
+
+The performance of the alert system was evaluated based on a confusion matrix and indices of accuracy, sensitivity, specificity, positive  predictive value, negative predictive value and  F  measure.
+
+# Reporting summary
+
+Further information on research design is available in the Nature  Portfolio Reporting Summary linked to this article.
+
+# Data availability
+
+The data supporting the findings of this trial are available within the  paper and its Supplementary Information files. All requests for further data sharing will be reviewed by the Ethics Review Committee  of Southern University of Science and Technology Yantian Hospital,  Shenzhen, China, and Renmin Hospital of Wuhan University, Wuhan,  China, to verify whether the request is subject to any intellectual property or confidentiality obligations. Requests for access to de-identified  individual-level data from this trial can be submitted via email to E.L.  (erping.long@ibms.pumc.edu.cn) with detailed proposals for approval  and will be responded to within 60 d. Each request complying with the  terms of use of the data indicated in the consent form will be granted. A  signed data access agreement with the collaborator is required before  accessing shared data. The raw conversation data are not publicly  available due to privacy restrictions.
+
+# Code availability
+
+The source code can be accessed via the following link:  https://github. com/Zi geng Huang/SSPEC . The SSPEC was developed with OpenAI version 0.28.1 ( https://github.com/openai/openai-python ), RAGAS version  0.0.18 ( https://github.com/exploding gradients/ragas ) and LangChain  version 0.0.333 ( https://github.com/langchain-ai/langchain ).
+
+# References
+
+28.  Neuwelt, P. M., Kearns, R. A. & Cairns, I. R. The care work of general  practice receptionists.  J. Prim. Health Care   8 , 122–129 (2016).
+
+ 29.     Yang, X. et al. A study of deep learning methods for  de-identification of clinical notes in cross-institute settings.   BMC Med. Inf. Decis. Mak.   19 , 232 (2019).
+
+ 30.     Yang, X. et al. A large language model for electronic health  records.  NPJ Digit. Med.   5 , 194 (2022).
+
+ 31.     Yuan, J. et al. Advanced prompting as a catalyst: empowering  large language models in the management of gastrointestinal  cancers.  Innov. Med.   1 , 100019 (2023).
+
+ 32.     Martin-Maroto, F. & de Polavieja, G. G. Semantic embeddings in  semi lattices. Preprint at  https://arxiv.org/abs/2205.12618  (2022).
+
+ 33.     Gao, K. et al. Examining user-friendly and open-sourced large GPT  models: a survey on language, multimodal, and scientific GPT  models. Preprint at  https://arxiv.org/abs/2308.14149  (2023).
+
+ 34.     Mao, R., Chen, G., Zhang, X., Guerin, F. & Cambria, E. GPTEval:   a survey on assessments of ChatGPT and GPT-4. In  Proc. 2024  Joint International Conference on Computational Linguistics,  Language Resources and Evaluation (LREC-COLING 2024)    (eds Calzolari, N. et al.) 7844–7866 (ELRA and ICCL, 2024).
+
+35.  Es, S., James, J., Espinosa-Anke, L. & Schockaert, S. RAGAS:  Automated Evaluation of Retrieval Augmented Generation.  In  Proc. 18th Conference of the European Chapter of the  Association for Computational Linguistics: System Demonstrations (eds Aletras, N. & De Clercq, O.) 150–158 (Association for  Computational Linguistics, 2024).
+
+ 36.     Jiang, Z. et al. Active retrieval augmented generation.   In  Proc. 2023 Conference on Empirical Methods in Natural  Language Processing  7969–7992 (Association for Computational  Linguistics, 2023).
+
+ 37.     Bonferroni, C. E. Il calcolo delle as si cura zion i su gruppi   di teste. In  Studi in Onore del Professore Salvatore Ortu Carboni   (Tipografia des Senato del dott. G. Bardi, 1935).
+
+# Acknowledgements
+
+E.L. is supported by the National Natural Science Foundation of  China (Excellent Youth Scholars Program, 32300483 and 82090011)  and the Chinese Academy of Medical Sciences Innovation   Fund (2023-I2M-3-010). We thank Z. Wang and the Long   laboratory members for valuable comments. We also thank the  Bioinformatics Center of the Institute of Basic Medical Sciences   for computing support.
+
+# Author contributions
+
+E.L., P.W. and Q.C. contributed to the conception and design of the  study. P.W., Z.H., W.T., Y.N., D.P., S.D. and J.C. contributed to the data  acquisition, curation and analysis. Y.Z. and H.D. provided technical  assistance. All authors contributed to the drafting and revising of   the paper.
+
+# Competing interests
+
+The authors declare no competing interests.
+
+# Additional information
+
+Extended data  is available for this paper at    https://doi.org/10.1038/s41591-024-03148-7 .
+
+Supplementary information  The online version   contains supplementary material available at    https://doi.org/10.1038/s41591-024-03148-7 .
+
+Correspondence and requests for materials  should be addressed to  Qingyu Chen or Erping Long.
+
+Peer review information   Nature Medicine  thanks Jordan Alpert,   Max Rollwage and the other, anonymous, reviewer(s) for   their contribution to the peer review of this work. Primary Handling  Editor: Lorenzo Righetto, in collaboration with the  Nature Medicine   team.
+
+Reprints and permissions information  is available at   www.nature.com/reprints .
+
+![](https://img.infox-med.com/images/39009780/66d12e630925bdb633a7cf2d0c12f5044b9b596a9910aa4e36ea5ac38cb5ff5c.jpg)
+the training set were reserved as the validation set for the comparison testing   in terms of factuality, integrity, safety, empathy, readability, and satisfaction.   ( D ) An alert system was implemented to alert the uncertainty in SSPEC responses.  Subsequently, a collaboration model between receptionist nurses and SSPEC  was established. This model was then tested in a randomized controlled trial to  ascertain its practicality in the outpatient reception setting.
+
+![](https://img.infox-med.com/images/39009780/89333f9ed3a1256c802441a5ba639d9bbc01027bdea4610b2fa5c592d2fe72e6.jpg)
+
+Extended Data Fig. 2 | Context setting of patient-nurse conversation.    The study involved outpatients, patients about to be admitted to the hospital,  or individuals seeking help. Patients with queries for the nurse who agreed to  participate in the audio recording of conversations were recruited upon arrival  at the hospital entrance. After recruitment, participants were directed to the  reception sites for an in-person visit with the nurse. Prior to the commencement  of audio recording, informed consent was obtained from both the nurses and   the patients.
+
+![](https://img.infox-med.com/images/39009780/cf404b55bdeccc2bfc0b89abefaffedbbe1f44bc5f8f8aa9530540c044436337.jpg)
+Extended Data Fig. 3 | Nurse-SSPEC collaboration model involving the alert  if any ‘signals of uncertainty’ are detected, through key-phrases matching,  system in mitigating uncertainty.  Upon patient arrival at the reception site,  independent LLM evaluation, or automatic evaluation. This alert prompts  their queries are recorded audibly and automatically transformed into text.  immediate nurses review or modification of the response. Furthermore, a  To address uncertain or potentially harmful responses generated by SSPEC, an  dedicated team reviews all patient-SSPEC conversations to continually refine   alert system has been implemented. This system triggers an alert to the nurses  the prompting.
+
+![](https://img.infox-med.com/images/39009780/9f96ce71c79830d33aedb6da543b803146c013059293817d07950ee77f85800e.jpg)
+were detected. For patients in the nurse group, they were directed to   nurses and interacted in person. Satisfaction was measured immediately after
+
+Patient participants were randomly assigned to either the nurse-SSPEC   group or the nurse group. Patients in the nurse-SSPEC group primarily interacted  with SSPEC via audio, with nurses alerted for review if any uncertain responses
+
+#
+
+#
+
+#
+
+$\boldsymbol{F},\,t,\,\boldsymbol{r})$   $P$
+
+#
+
+![](https://img.infox-med.com/images/39009780/64fabeb4541ff1c145a7e3456b0d5bfad641f6cce2f32aa8fbe5dad203ad7b22.jpg)
+
+#
+
+#
+
+![](https://img.infox-med.com/images/39009780/21f23bb461ae85ff0d2a155104f74bc8349b1580267b74e8e8fb87714dc560b3.jpg)
+
+#
+
+#
+
+![](https://img.infox-med.com/images/39009780/d65341e43adb19adf85d08a908cec07d608187dd62ee5da91a4e10e9c1855a3e.jpg)
+
+#
+
+#
+
+#
+
+![](https://img.infox-med.com/images/39009780/effcbd09609b93d10269b2f1d4520de5819006fb6585afb4265be65a9993b240.jpg)
+
+#
+
+#

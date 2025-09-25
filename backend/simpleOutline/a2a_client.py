@@ -49,5 +49,7 @@ async def httpx_client():
 
 if __name__ == '__main__':
     prompt = """我想调研电动汽车发展"""
+    with open('nurse_and_LLM.txt', 'r', encoding='utf-8') as f:
+        prompt = f.read()
     streaming = True
     asyncio.run(httpx_client())

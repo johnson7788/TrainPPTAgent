@@ -56,3 +56,4 @@ cache
 .env_dev
 .env_prod
 backend/personaldb/temp_download/
+backend/personaldb/nurse_and_LLM.txt

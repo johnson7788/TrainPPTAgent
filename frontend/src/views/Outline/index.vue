@@ -40,16 +40,15 @@
       <div v-if="step === 'setup'" class="setup-section">
         <div class="input-module">
           <div class="input-field">
-            <input
+            <textarea
               ref="inputRef"
               v-model="keyword"
-              :maxlength="50"
               class="text-input"
-              placeholder="输入演示主题..."
-              @keyup.enter="createOutline"
-            />
+              placeholder="输入演示主题或粘贴文档内容..."
+              rows="6"
+            ></textarea>
             <div class="input-actions">
-              <span class="character-count">{{ keyword.length }}/50</span>
+              <span class="character-count">{{ keyword.length }}/10000</span>
               <div class="buttons-wrapper">
                 <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim() || showProcessingModal">
                   <span class="btn-icon">✨</span>
@@ -185,7 +184,7 @@ const outlineCreating = ref(false)
 const step = ref<'setup' | 'outline'>('setup')
 const model = ref('GLM-4.5-Air')
 const outlineRef = ref<HTMLElement>()
-const inputRef = ref<HTMLInputElement>()
+const inputRef = ref<HTMLTextAreaElement>()
 const fileInputRef = ref<HTMLInputElement>()
 const showProcessingModal = ref(false)
 
@@ -555,20 +554,23 @@ const uploadWordAndCreateOutline = async (file: File) => {
     .input-field {
       .text-input {
         width: 100%;
-        font-size: 18px;
-        padding: 0 0 16px 0;
-        border: none;
-        border-bottom: 2px solid #e2e8f0;
+        font-size: 16px;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
         outline: none;
         transition: all 0.3s;
         background: transparent;
+        resize: vertical;
+        min-height: 140px;
         
         &::placeholder {
           color: #cbd5e1;
         }
         
         &:focus {
-          border-bottom-color: #6366f1;
+          border-color: #6366f1;
+          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
       }
 
@@ -576,7 +578,7 @@ const uploadWordAndCreateOutline = async (file: File) => {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1.5rem 1.25rem;
+      padding: 1rem 1.5rem 1.25rem;
       gap: 1rem;
 
       .character-count {

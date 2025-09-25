@@ -92,7 +92,7 @@ def _get_markdown_content(file_path: str, file_name: str) -> str:
     if CAN_USE_MINERU and file_extension == '.pdf':
         # 使用 MinerU (MagicPDFConverter) 处理PDF
         logger.info(f"使用PDF转换器(MinerU)处理文件: {file_path}")
-        converter = MagicPDFConverter()
+        converter = MagicPDFConverter(output_dir="./output_pdf")
         content, _ = converter.convert_pdf_file(file_path)
         return content
     else:
