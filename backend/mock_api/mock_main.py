@@ -171,7 +171,8 @@ data_response_content = [
         "items": [
           {
             "kind": "chart",
-              "chartType": "pie",
+            "title": "品类占比",
+            "chartType": "pie",
             "labels": ["A 类", "B 类", "C 类", "D 类"],
             "series": [
               { "name": "占比", "data": [35, 25, 20, 20] }
