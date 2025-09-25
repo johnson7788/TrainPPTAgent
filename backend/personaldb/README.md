@@ -3,7 +3,16 @@
 2. 输出的Markdown格式进行Trunk，然后对Trunk进行进行向量化。
 3. 使用[embedding_utils.py](embedding_utils.py)生成embedding向量
 
-# 运行
+
+## 支持的文档类型
+办公文档 (PDF, PowerPoint, Word, Excel)
+图像文件 (支持 EXIF 元数据提取和 OCR)
+音频文件 (支持 EXIF 元数据提取和语音转录)
+HTML(支持维基百科等特殊处理)
+文本格式 (CSV, JSON, XML)
+压缩文件 (ZIP，可迭代处理内部文件)
+
+## 运行
 python main.py
 
 #FastAPI Web 服务（端口 9900） → 接收 HTTP 请求

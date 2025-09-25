@@ -59,7 +59,6 @@
                   type="file"
                   ref="fileInputRef"
                   style="display: none"
-                  accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   @change="handleFileChange"
                 />
                 <button class="generate-btn" @click="triggerFileUpload" :disabled="showProcessingModal">

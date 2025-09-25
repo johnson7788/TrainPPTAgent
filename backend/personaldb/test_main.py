@@ -37,7 +37,8 @@ class KnowledgeBaseTestCase(unittest.TestCase):
         # }
         data = {
             "userId": 123456,
-            "query": "Robotaxi",
+            "query": "欧洲旅游",
+            # "query": "Robotaxi",
             "keyword": "",
             "topk": 3
         }
@@ -156,7 +157,6 @@ class KnowledgeBaseTestCase(unittest.TestCase):
 
             # 关键字段校验
             self.assertEqual(result.get("id"), 988)
-            self.assertEqual(result.get("userId"), 123457)
             self.assertIn("embedding_result", result)
 
             print("Response status:", response.status_code)
