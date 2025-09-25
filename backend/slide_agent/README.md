@@ -49,6 +49,18 @@ python main_api.py
 ## 注意需要修改tools.py中的搜索引擎
 slide_agent/sub_agents/research_topic/tools.py
 
+## 传入不同的metadata使用不同的搜索和不同的prompt
+详细参考a2a_client.py中metada信息和slide_agent/slide_agent/sub_agents/ppt_writer/agent.py中的函数_get_dynamic_instruction
+
+'metadata': {"user_id": "123456", "search_engine": ["KnowledgeBaseSearch","SearchImage"]}
+
+| 最终 `search_engine` 内容           | 选用的前缀提示词                                                          | 额外强制要求                            |
+| ------------------------------- | ----------------------------------------------------------------- | --------------------------------- |
+| 空（无可用工具）                        | `PREFIX_PAGE_PROMPT`                                              | 不带搜索、不带图片                         |
+| 仅为 `["SearchImage"]`            | `PREFIX_PAGE_PROMPT_WITH_IMAGE`                                   | 必须为每页搜索并填充配图，JSON 中新增 `images` 字段 |
+| 其他任意非空组合（如只文档搜索、或文档+图片、或含 KB 等） | `PREFIX_PAGE_PROMPT_WITH_SEARCH.format(tool_names=search_engine)` | **必须**使用列出的工具做搜索后再写内容             |
+
+
 ---
 
 ## 📁 项目结构简要说明
