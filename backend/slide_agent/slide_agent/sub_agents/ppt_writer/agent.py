@@ -123,13 +123,27 @@ class PPTWriterSubAgent(LlmAgent):
         outline_json: list = ctx.state.get("outline_json")
         # 获取要生成的ppt的这一页的schema大纲
         current_slide_schema = outline_json[current_slide_index]
+        metadata = ctx.state.get("metadata")
+        # 默认支持所有的搜索工具
+        search_engine = metadata.get("search_engine", ["KnowledgeBaseSearch","DocumentSearch","SearchImage"])
+        user_id = metadata.get("user_id", "")
+        if not user_id and "KnowledgeBaseSearch" in search_engine:
+            print("当前用户未指定知识库的用户id，无法使用KnowledgeBaseSearch进行搜索，必须去除知识库搜索工具")
+            search_engine.remove("KnowledgeBaseSearch")
+        # 根据不同的搜索工具，使用不同的prefix的prompt
+        if not search_engine:
+            prefix_prompt = prompt.PREFIX_PAGE_PROMPT
+        elif search_engine == ["SearchImage"]:
+            prefix_prompt = prompt.PREFIX_PAGE_PROMPT_WITH_IMAGE
+        else:
+            prefix_prompt = prompt.PREFIX_PAGE_PROMPT_WITH_SEARCH.format(tool_names=search_engine)
         # 这页ppt的类型
         current_slide_type = current_slide_schema.get("type")
         print(f"当前要生成第{current_slide_index}页的ppt， 类型为：{current_slide_type}， 具体内容为：{current_slide_schema}")
         # 根据不同的类型，形成不同的prompt
         slide_prompt = prompt.prompt_mapper[current_slide_type]
         current_slide_schema_json = json.dumps(current_slide_schema, ensure_ascii=False)
-        prompt_instruction = prompt.PREFIX_PAGE_PROMPT + slide_prompt.format(input_slide_data=current_slide_schema_json)
+        prompt_instruction = prefix_prompt + slide_prompt.format(input_slide_data=current_slide_schema_json)
         print(f"第{current_slide_index}页的prompt是：{prompt_instruction}")
         return prompt_instruction
 
