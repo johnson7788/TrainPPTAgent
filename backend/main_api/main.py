@@ -178,7 +178,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
         search_engine.append("KnowledgeBaseSearch")
     if generateFromWebSearch:
         search_engine.append("DocumentSearch")
-    # 先写死123456，方便测试，这个已经在知识库中插入了对应的数据
+    # ，方便测试，这个已经在知识库中插入了对应的数据
     metadata = {"user_id": user_id, "search_engine": search_engine, "language": language}
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
         print(f"生成正文输出的chunk_data: {chunk_data}")
