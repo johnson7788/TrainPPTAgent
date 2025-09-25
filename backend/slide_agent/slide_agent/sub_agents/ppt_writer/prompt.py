@@ -120,19 +120,19 @@ CONTENT_PAGE_PROMPT = """
 - 如果搜索到的结果中带有markdown格式的图片，并且图片有在全文中进行详细解释，可以按需插入1张图片。
 ## 图片数据格式：
 在 JSON 中添加 images 字段，包含搜索到的图片信息：
-{
+{{
   "type": "content",
-  "data": { ... },
+  "data": {{ ... }},
   "images": [
-    {
+    {{
       "id": "图片ID",
       "src": "图片URL",
       "width": 1920,
       "height": 1080,
       "alt": "图片描述"
-    }
+    }}
   ]
-}
+}}
 
 # 原始结构
 {input_slide_data}
