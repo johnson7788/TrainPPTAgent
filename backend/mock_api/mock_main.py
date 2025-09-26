@@ -78,80 +78,19 @@ image_data = {
     "data": {
         "title": "暴力犯罪",
         "items": [
-            {
-                "title": "谋杀心理特征",
-                "text": "探讨谋杀者的心理动机",
-                "images": [
-                    {
-                        "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg",
-                        "alt": "不同年份的谋杀率",
-                        "imageType": "itemFigure"
-                    }
-                ]
-            }
+            {"title": "暴力犯罪","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
+            {"title": "暴力犯罪","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
         ]
-    }
-}
-charts_data = {
-    "type": "content",
-    "data": {
-        "title": "绘图信息",
-        "items": [
-            {
-                "title": "绘图图表",
-                "text": "图表…",
-                "charts": [
-                    {
-                        "chartType": "column",
-                        "data": {
-                            "labels": ["2019","2020","2021","2022"],
-                            "legends": ["案件数"],
-                            "series": [[82, 96, 110, 104]]
-                        },
-                        "options": {"stack": False},
-                        "themeColors": ["#4e79a7"],
-                        "textColor": "#333",
-                        "lineColor": "#ddd"
-                    }
-                ]
-            }
-        ]
-    }
-}
-
-table_data = {
-    "type": "content",
-    "data": {
-        "title": "Sales Data",
-        "items": [
-            {
-                "title": "Q1 Sales",
-                "text": "Here is a summary of sales for the first quarter.",
-                "tables": [
-                    {
-                        "colWidths": [33, 33, 34],
-                        "data": [
-                            [
-                                {"text": "Product", "style": {"bold": True}},
-                                {"text": "Region", "style": {"bold": True}},
-                                {"text": "Sales", "style": {"bold": True}}
-                            ],
-                            [
-                                {"text": "Widget A"},
-                                {"text": "North"},
-                                {"text": "1,000"}
-                            ],
-                            [
-                                {"text": "Widget B"},
-                                {"text": "South"},
-                                {"text": "2,500"}
-                            ]
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
+    },
+    "images": [
+        {
+            "id": "图片ID",
+            "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg",
+            "width": 1920,
+            "height": 1080,
+            "alt": "不同年份的谋杀率"
+        }
+    ]
 }
 
 data_response_content = [
@@ -179,9 +118,73 @@ data_response_content = [
         {"title": "意识上传探索", "text": "意识上传与数字永生概念已从理论走向初步实验阶段，通过脑部扫描与神经网络建模，科学家们正在探索保存人类认知特征的可能性，为未来脑机融合奠定基础。"},
         {"title": "认知科学启发", "text": "认知科学研究为AI提供了新的理论框架与算法启发，而AI的发展也反过来促进了脑科学研究，形成双向促进的良性循环，推动了两个领域的共同进步。"}
     ]}},
+    {
+      "type": "content",
+      "data": {
+        "title": "月度活跃趋势（折线图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "2025 上半年活跃用户",
+            "chartType": "line",
+            "labels": ["1月", "2月", "3月", "4月", "5月", "6月"],
+            "series": [
+              { "name": "iOS", "data": [12, 15, 18, 22, 24, 27] },
+              { "name": "Android", "data": [10, 13, 17, 20, 23, 25] }
+            ],
+            "options": {
+              "legend": { "top": 8 },
+              "xAxis": { "boundaryGap": False },
+              "yAxis": { "name": "万" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "地区销售（条形图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "各地区销量",
+            "chartType": "bar",
+            "labels": ["华北", "华东", "华南", "西南", "华中"],
+            "series": [
+              { "name": "销量", "data": [320, 480, 450, 260, 390] }
+            ],
+            "options": {
+              "legend": { "show": False },
+              "xAxis": { "type": "value", "name": "台" },
+              "yAxis": { "type": "category" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "品类占比（饼图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "品类占比",
+            "chartType": "pie",
+            "labels": ["A 类", "B 类", "C 类", "D 类"],
+            "series": [
+              { "name": "占比", "data": [35, 25, 20, 20] }
+            ],
+            "options": {
+              "legend": { "bottom": 8 },
+              "tooltip": { "trigger": "item", "formatter": "{b}: {d}%" }
+            }
+          }
+        ]
+      }
+    },
     image_data,
-    charts_data,
-    table_data,
     {"type": "end"}
 ]
 
@@ -201,6 +204,9 @@ async def aippt_outline(request: AipptRequest):
 class AipptContentRequest(BaseModel):
     content: str
 
+class AipptByIDRequest(BaseModel):
+    id: str
+
 def preset_json_to_slides(mardkown_text):
     """不用传递的参数mardkown_text，使用假的数据data_response_content"""
     slides = []
@@ -216,6 +222,27 @@ async def aippt_content_streamer(markdown_content: str):
         yield json.dumps(slide, ensure_ascii=False) + '\n'
         await asyncio.sleep(1)
 
+async def aippt_file_id_streamer(id: str):
+    """根据用户的已有的文件数据中的文件id来生成ppt
+    id: 文件的id
+    """
+    yield json.dumps({"type": "status", "message": "正在解析文件..."}, ensure_ascii=False) + '\n'
+    await asyncio.sleep(3)
+    yield json.dumps({"type": "status", "message": "正在生成大纲..."}, ensure_ascii=False) + '\n'
+    await asyncio.sleep(1.5)
+    yield json.dumps({"type": "status", "message": "大纲生成完毕，即将生成PPT..."}, ensure_ascii=False) + '\n'
+    await asyncio.sleep(1)
+    slides = preset_json_to_slides(id)
+    for slide in slides:
+        yield json.dumps(slide, ensure_ascii=False) + '\n'
+        await asyncio.sleep(1)
+
+
+@app.post("/tools/aippt_by_id")
+async def aippt_by_id(request: AipptByIDRequest):
+    return StreamingResponse(aippt_file_id_streamer(request.id), media_type="application/json; charset=utf-8")
+
+
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
     return StreamingResponse(aippt_content_streamer(request.content), media_type="application/json; charset=utf-8")
@@ -225,10 +252,23 @@ async def get_data(filename: str):
     file_path = os.path.join("./template", filename)
     return FileResponse(file_path)
 
-@app.post("/tools/aippt_outline_from_word")
-async def aippt_outline_from_word(file: UploadFile = File(...)):
+@app.post("/tools/aippt_outline_from_file")
+async def aippt_outline_from_file(file: UploadFile = File(...)):
     print(f"上传的文件是: {file.filename}")
     return StreamingResponse(stream_generator(), media_type="text/plain")
+
+@app.get("/templates")
+async def get_templates():
+    templates = [
+        { "name": "红色通用", "id": "template_1", "cover": "/api/data/template_1.jpg" },
+        { "name": "蓝色通用", "id": "template_2", "cover": "/api/data/template_2.jpg" },
+        { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
+        { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
+        { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
+        { "name": "图片和表格", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+    ]
+
+    return {"data": templates}
 
 
 if __name__ == "__main__":
