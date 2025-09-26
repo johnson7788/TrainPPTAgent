@@ -205,6 +205,9 @@ async def aippt_outline(request: AipptRequest):
 class AipptContentRequest(BaseModel):
     content: str
 
+class AipptByIDRequest(BaseModel):
+    id: str
+
 def preset_json_to_slides(mardkown_text):
     """不用传递的参数mardkown_text，使用假的数据data_response_content"""
     slides = []
@@ -219,6 +222,27 @@ async def aippt_content_streamer(markdown_content: str):
     for slide in slides:
         yield json.dumps(slide, ensure_ascii=False) + '\n'
         await asyncio.sleep(1)
+
+async def aippt_file_id_streamer(id: str):
+    """根据用户的已有的文件数据中的文件id来生成ppt
+    id: 文件的id，例如论文的pmid
+    """
+    yield json.dumps({"type": "status", "message": "正在解析文件..."}, ensure_ascii=False) + '\n'
+    await asyncio.sleep(3)
+    yield json.dumps({"type": "status", "message": "正在生成大纲..."}, ensure_ascii=False) + '\n'
+    await asyncio.sleep(1.5)
+    yield json.dumps({"type": "status", "message": "大纲生成完毕，即将生成PPT..."}, ensure_ascii=False) + '\n'
+    await asyncio.sleep(1)
+    slides = preset_json_to_slides(id)
+    for slide in slides:
+        yield json.dumps(slide, ensure_ascii=False) + '\n'
+        await asyncio.sleep(1)
+
+
+@app.post("/tools/aippt_by_id")
+async def aippt_by_id(request: AipptByIDRequest):
+    return StreamingResponse(aippt_file_id_streamer(request.id), media_type="application/json; charset=utf-8")
+
 
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):

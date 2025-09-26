@@ -100,10 +100,10 @@ CONTENT_PAGE_PROMPT = """
   "series": [                        # 1~2 组数据
     {{ "name": "系列名", "data": [数值, ...] }}  # data 长度与 labels 一致，均为数字
   ],
-  "options": {
-      "xAxis": { "name": "xxx" },
-      "yAxis": { "name": "xxx" }
-  }
+  "options": {{
+      "xAxis": {{ "name": "xxx" }},
+      "yAxis": {{ "name": "xxx" }}
+  }}
 }}
 
 # 何时应当新增图表：
