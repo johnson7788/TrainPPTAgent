@@ -44,9 +44,11 @@ English：[README_EN.md](README_EN.md)
 ```
 TrainPPTAgent/
 ├── backend/           # 后端代码
+│   ├── mock_api/      # 模拟生成PPT
 │   ├── main_api/      # 核心 API 服务
-│   ├── slide_agent/   # AI Agent 逻辑
-│   └── ...
+│   ├── slide_agent/   # AI Agent根据大纲撰搜索网络或者本地知识库写每页PPT
+│   ├── simpleOutline/  # AI Agent 搜索并写大纲
+│   ├── personaldb/     #知识库，解析各种格式的文件，用于搜索知识库生成PPT
 ├── frontend/          # 前端代码
 │   ├── src/
 │   │   ├── views/     # 页面组件（大纲、编辑等）
@@ -55,6 +57,7 @@ TrainPPTAgent/
 │   └── vite.config.ts # 前端配置
 └── doc/               # 项目文档
     ├── API_*.md       # API 接口文档
+    ├── CHANGES.md     # 更新日志，各个文件更新了哪里
     └── ...
 ```
 
