@@ -3,6 +3,8 @@
 2. 输出的Markdown格式进行Trunk，然后对Trunk进行进行向量化。
 3. 使用[embedding_utils.py](embedding_utils.py)生成embedding向量
 
+## 支持不同的EMbedding模型
+具体查看env_template文件和embedding_utils.py文件。
 
 ## 支持的文档类型
 办公文档 (PDF, PowerPoint, Word, Excel)

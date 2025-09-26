@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+openai
+httpx
+chromadb
+python-dotenv
+pytest
+mineru[core]>=2.0.6
+markitdown[all]>=0.1.2

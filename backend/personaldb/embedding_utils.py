@@ -230,6 +230,9 @@ class ChromaDB(object):
         Returns:
             dict: 包含embedding结果
         """
+        # 首先删除已有存在的相同文件
+        del_status = self.delete_file_vectors(user_id, file_id)
+        # 然后插入新的向量
         try:
             collection_name = f"user_{user_id}"
             vectors_result = self.embedder.do_embedding(texts=documents)
@@ -284,14 +287,14 @@ class ChromaDB(object):
                 return []
 
             col = self.client.get_collection(collection_name)
-            
+
             # 获取所有与该用户ID相关的文档元数据
             # 注意：get()方法在没有where条件时返回所有文档，数据量可能很大
             # 但由于我们是按用户集合来操作的，所以这里获取的是该用户的所有数据
-            results = col.get() 
-            
+            results = col.get()
+
             metadatas = results.get('metadatas', [])
-            
+
             # 文件信息可能重复，需要去重
             unique_files = {}
             for meta in metadatas:
@@ -301,7 +304,7 @@ class ChromaDB(object):
                     # 过滤掉无效的file_id
                     if file_id is None:
                         continue
-                    
+
                     # 检查用户ID是否匹配
                     if meta.get('user_id') == user_id:
                         if file_id not in unique_files:
@@ -313,7 +316,7 @@ class ChromaDB(object):
                                 "folder_id": meta.get('folder_id'),
                                 "user_id": meta.get('user_id')
                             }
-            
+
             return list(unique_files.values())
         except Exception as e:
             # 如果collection不存在或其他异常
@@ -330,54 +333,120 @@ class ChromaDB(object):
         return collections
 
 class EmbeddingModel(object):
-    def __init__(self, model="text-embedding-v4", provider="aliyun"):
+    def __init__(self):
         """
-        Args:
+        环境变量：
+        - EMBEDDING_PROVIDER: aliyun | ollama | vllm | xinference
+        - EMBEDDING_MODEL:    各提供方的模型名
+        - 通用：EMBEDDING_DIM (可选，部分提供方不支持自定义维度)
+        - aliyun:   ALI_API_KEY
+        - vllm:     VLLM_BASE_URL(如 http://127.0.0.1:8000/v1)，VLLM_API_KEY(可选)
+        - xinference:XINFERENCE_BASE_URL(如 http://127.0.0.1:9997/v1)，XINFERENCE_API_KEY(可选)
+        - ollama:   OLLAMA_BASE_URL(默认 http://127.0.0.1:11434)
         """
-        self.model = model
-        self.provider = provider
-        if provider == "aliyun":
+        self.model = os.environ["EMBEDDING_MODEL"]
+        self.provider = os.environ["EMBEDDING_PROVIDER"].lower()
+        self.dimensions = int(os.getenv("EMBEDDING_DIM", "0")) or None
+
+        if self.provider == "aliyun":
             api_key = os.getenv("ALI_API_KEY")
-            assert api_key, "ALI_API_KEY没有设置，无法使用嵌入模型"
+            assert api_key, "ALI_API_KEY没有设置，无法使用阿里云嵌入模型"
             self.client = OpenAI(
-                api_key=api_key,  # 如果您没有配置环境变量，请在此处用您的API Key进行替换
-                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"  # 百炼服务的base_url
+                api_key=api_key,
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
+            self._impl = self._impl_openai_compatible  # 走OpenAI兼容
+        elif self.provider == "vllm":
+            base = os.getenv("VLLM_BASE_URL")
+            assert base, "VLLM_BASE_URL 未设置，例如 http://127.0.0.1:8000/v1"
+            self.client = OpenAI(
+                api_key=os.getenv("VLLM_API_KEY", "EMPTY"),  # 有些部署不校验
+                base_url=base.rstrip("/"),
+            )
+            self._impl = self._impl_openai_compatible  # vLLM自带OpenAI兼容
+        elif self.provider == "xinference":
+            base = os.getenv("XINFERENCE_BASE_URL")
+            assert base, "XINFERENCE_BASE_URL 未设置，例如 http://127.0.0.1:9997/v1"
+            self.client = OpenAI(
+                api_key=os.getenv("XINFERENCE_API_KEY", "EMPTY"),
+                base_url=base.rstrip("/"),
+            )
+            self._impl = self._impl_openai_compatible  # Xinference也提供OpenAI兼容
+        elif self.provider == "ollama":
+            # 使用Ollama原生 /api/embeddings，兼容性最稳妥
+            self.ollama_base = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
+            self.session = requests.Session()
+            self._impl = self._impl_ollama_native
         else:
-            raise Exception("目前只支持阿里云的模型")
+            raise Exception(f"不支持的EMBEDDING_PROVIDER: {self.provider}")
 
     @cache_decorator
-    def do_embedding(self, texts: list[str]):
+    def do_embedding(self, texts: List[str]):
         """
-        对数据进行embedding，处理批量大小限制，确保所有文本都被处理
-        Args:
-            texts: 数据，为一个list，每个元素为一个字符串
-        Returns:
-            dict: 包含所有输入文本的embedding结果
+        对数据进行embedding。返回：{"data":[{"embedding":[...]}, ...]}
         """
-        max_batch_size = 10  # 最大批量大小限制 避免报错
-        result = {"data": []}  # 用于收集所有批次的嵌入结果
-
-        # 循环处理所有文本，分割成批次
+        assert isinstance(texts, list) and all(isinstance(t, str) for t in texts), "texts必须为字符串列表"
+        max_batch_size = 10  # 可根据不同后端调整
+        result = {"data": []}
         for i in range(0, len(texts), max_batch_size):
-            batch_texts = texts[i:i + max_batch_size]  # 取当前批次（最多10个）
+            batch = texts[i:i + max_batch_size]
             try:
-                completion = self.client.embeddings.create(
-                    model=self.model,
-                    input=batch_texts,
-                    dimensions=1024,
-                    encoding_format="float"
-                )
-                batch_result = completion.dict()
-                result["data"].extend(batch_result["data"])  # 合并当前批次的嵌入结果
-                logger.info(f"成功嵌入批次 {i // max_batch_size + 1}，包含 {len(batch_texts)} 个文本")
+                batch_out = self._impl(batch)
+                # 规范化为 {"data":[{"embedding":[...]}...]}
+                if isinstance(batch_out, dict) and "data" in batch_out:
+                    result["data"].extend(batch_out["data"])
+                else:
+                    # 兜底：如果只是返回了向量列表
+                    result["data"].extend([{"embedding": emb} for emb in batch_out])
+                logger.info(f"成功嵌入批次 {i // max_batch_size + 1}，包含 {len(batch)} 个文本")
             except Exception as e:
-                logger.error(f"嵌入批次 {i // max_batch_size + 1} 失败: {e}")
-                # 如果需要，可以在这里返回错误，但为了继续处理，我们只记录日志
-                # 如果想在出错时停止，可以 raise e 或返回 {"error": str(e), "data": []}
-
+                logger.error(f"嵌入批次 {i // max_batch_size + 1} 失败: {e}", exc_info=True)
         logger.info(f"所有 {len(texts)} 个文本嵌入完成")
         return result
+
+    # ---------- 各提供方实现 ----------
+    def _impl_openai_compatible(self, texts: List[str]):
+        """
+        适用于：阿里云(百炼兼容)、vLLM、Xinference等OpenAI兼容服务
+        注意：有些后端不支持dimensions；不支持时自动忽略
+        """
+        kwargs = {"model": self.model, "input": texts}
+        # 尝试传维度；如后端不支持则自动降级
+        if self.dimensions:
+            kwargs["dimensions"] = self.dimensions
+        try:
+            resp = self.client.embeddings.create(**kwargs)
+        except Exception as e:
+            # 如果是因不支持dimensions导致，去掉维度再试一次
+            if self.dimensions:
+                logger.warning(f"后端可能不支持自定义维度，去掉dimensions重试。错误：{e}")
+                kwargs.pop("dimensions", None)
+                resp = self.client.embeddings.create(**kwargs)
+            else:
+                raise
+        # 统一输出格式
+        out = resp.dict()
+        # 有些实现不会返回encoding_format/等字段，不影响
+        return {"data": [{"embedding": item["embedding"]} for item in out["data"]]}
+
+    def _impl_ollama_native(self, texts: List[str]):
+        """
+        适用于Ollama原生接口：POST {OLLAMA_BASE_URL}/api/embeddings
+        body: {"model": "...", "prompt": "..."}
+        不支持批量输入 => 逐条请求
+        """
+        url = f"{self.ollama_base}/api/embeddings"
+        data = []
+        for t in texts:
+            payload = {"model": self.model, "prompt": t}
+            r = self.session.post(url, json=payload, timeout=120)
+            if r.status_code != 200:
+                raise RuntimeError(f"Ollama embeddings失败: {r.status_code} {r.text}")
+            j = r.json()
+            # 返回形如 {"embedding":[...]}
+            data.append({"embedding": j.get("embedding")})
+        return {"data": data}
+
 
 if __name__ == '__main__':
     embedder = EmbeddingModel()

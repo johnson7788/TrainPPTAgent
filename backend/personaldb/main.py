@@ -14,6 +14,7 @@ from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Request
 from pydantic import BaseModel, ValidationError
 from typing import List, Optional
 import embedding_utils
+from embedding_utils import cache_decorator
 from urllib.parse import urlparse
 from core.magic_pdf_converter import MagicPDFConverter
 from core.markitdown_converter import MarkItDownConverter
@@ -75,6 +76,7 @@ def search_personal_knowledge_base(query: SearchQuery):
         logger.error(f"搜索失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"搜索失败: {str(e)}")
 
+@cache_decorator
 def _get_markdown_content(file_path: str, file_name: str) -> str:
     """
     根据文件类型选择合适的转换器，将文件内容转换为Markdown格式。
@@ -94,13 +96,13 @@ def _get_markdown_content(file_path: str, file_name: str) -> str:
         logger.info(f"使用PDF转换器(MinerU)处理文件: {file_path}")
         converter = MagicPDFConverter(output_dir="./output_pdf")
         content, _ = converter.convert_pdf_file(file_path)
-        return content
+        return True, content
     else:
         # 使用 markitdown 处理其他文件
         logger.info(f"使用Markitdown转换器处理文件: {file_path}")
         converter = MarkItDownConverter(use_magic_pdf=False)  #use_magic_pdf设定是否使用MinerU
         content, _ = converter.convert_file(file_path)
-        return content
+        return True, content
 
 
 def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: int, user_id: int|str, file_type: str, url: str, folder_id: int):
@@ -110,7 +112,7 @@ def process_and_vectorize_local_file(file_name: str, temp_file_path: str, id: in
     # 步骤2: 使用适当的转换器读取文件内容
     logger.info(f"开始读取文件内容: {temp_file_path}")
     
-    markdown_content = _get_markdown_content(temp_file_path, file_name)
+    status, markdown_content = _get_markdown_content(temp_file_path, file_name)
 
     if not markdown_content or not markdown_content.strip():
         logger.error(f"文件内容为空或无效: {temp_file_path}")
@@ -233,23 +235,29 @@ async def upload_and_vectorize_endpoint(request: Request):
         else:
             # 对 multipart/form-data 与 x-www-form-urlencoded 都适用
             form = await request.form()
-            # 注意：form 是 MultiDict，里面的 'file'（如果是 multipart 且携带文件）会是 UploadFile
             data = dict(form)
             possible_file = form.get("file")
             if possible_file:
                 upload_file = possible_file
 
-        userId = data["userId"]
-        fileId = int(data.get("fileId"))
-        folderId = int(data.get("folderId",0))
+        # 参数解析与校验
+        userId_raw = data.get("userId")
+        fileId_raw = data.get("fileId")
+
+        if userId_raw is None:
+            raise HTTPException(status_code=422, detail="缺少或非法参数: userId")
+        if fileId_raw is None:
+            raise HTTPException(status_code=422, detail="缺少或非法参数: fileId")
+
+        try:
+            userId = int(userId_raw)
+            fileId = int(fileId_raw)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=422, detail="非法参数: userId 和 fileId 必须是整数")
+
+        folderId = int(data.get("folderId", 0))
         fileType = data.get("fileType")
         url = data.get("url")
-
-        # 基本必填校验
-        if userId is None:
-            raise HTTPException(status_code=422, detail="缺少或非法参数: userId")
-        if fileId is None:
-            raise HTTPException(status_code=422, detail="缺少或非法参数: fileId")
 
         # 互斥校验
         has_url = bool(url and str(url).strip())
@@ -413,7 +421,6 @@ def vectorize_text_endpoint(body: TextVectorizeBody):
         logger.error(f"文本向量化失败: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"文本向量化失败: {str(e)}")
 
-
 @app.get("/files/{user_id}")
 def list_user_files(user_id: int):
     """
@@ -423,13 +430,13 @@ def list_user_files(user_id: int):
         logger.info(f"收到列出用户 {user_id} 文件的请求")
         embedder = embedding_utils.EmbeddingModel()
         chroma = embedding_utils.ChromaDB(embedder)
-        
+
         files = chroma.list_files_by_user(user_id=user_id)
-        
+
         if not files:
             logger.info(f"用户 {user_id} 没有任何文件。")
             return []
-            
+
         logger.info(f"成功为用户 {user_id} 找到 {len(files)} 个文件。")
         return files
     except Exception as e:
@@ -441,5 +448,5 @@ if __name__ == "__main__":
     """
     主函数入口：启动FastAPI服务
     """
-    print("启动FastAPI服务...")
+    print("启动Personal DB FastAPI服务...")
     uvicorn.run(app, host="127.0.0.1", port=9200)
