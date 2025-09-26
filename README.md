@@ -186,6 +186,10 @@ flowchart TD
 * **逐页生成 PPT**
   ![start_ppt_generate.png](doc/start_ppt_generate.png)
 
+* **图表支持 PPT**
+  ![图表支持.png](doc/%E5%9B%BE%E8%A1%A8%E6%94%AF%E6%8C%81.png)
+
+
 ---
 
 ## 📌 待办事项
