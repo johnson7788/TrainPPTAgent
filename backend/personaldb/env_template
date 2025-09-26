@@ -1,0 +1,7 @@
+# 向量模型API的Key, 在文件embedding_utils.py中被使用
+EMBEDDING_PROVIDER=aliyun
+EMBEDDING_MODEL=text-embedding-v4
+ALI_API_KEY=sk-xxx
+# 如果有GPU，那么可以开启这个，否则CPU太慢
+USE_MINERU=true
+
