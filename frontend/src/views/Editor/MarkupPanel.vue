@@ -18,7 +18,12 @@
           :options="slideTypeOptions"
         />
       </div>
-      <div class="row" v-if="handleElement && (handleElement.type === 'text' || (handleElement.type === 'shape' && handleElement.text))">
+
+      <!-- 文本标记：text 或带文字的 shape -->
+      <div
+        class="row"
+        v-if="handleElement && (handleElement.type === 'text' || (handleElement.type === 'shape' && handleElement.text))"
+      >
         <div style="width: 40%;">当前文本类型：</div>
         <Select
           style="width: 60%;"
@@ -27,7 +32,26 @@
           :options="textTypeOptions"
         />
       </div>
-      <div class="row" v-else-if="handleElement && handleElement.type === 'image'">
+
+      <!-- 图表标记：chart -->
+      <div
+        class="row"
+        v-else-if="handleElement && handleElement.type === 'chart'"
+      >
+        <div style="width: 40%;">当前图表标记：</div>
+        <Select
+          style="width: 60%;"
+          :value="chartMark"
+          @update:value="value => updateElement(value as ChartMark | '')"
+          :options="chartMarkOptions"
+        />
+      </div>
+
+      <!-- 图片标记：image -->
+      <div
+        class="row"
+        v-else-if="handleElement && handleElement.type === 'image'"
+      >
         <div style="width: 40%;">当前图片类型：</div>
         <Select
           style="width: 60%;"
@@ -36,7 +60,10 @@
           :options="imageTypeOptions"
         />
       </div>
-      <div class="placeholder" v-else>选中图片、文字、带文字的形状，标记类型</div>
+
+      <div class="placeholder" v-else>
+        选中文本、图表、图片或带文字的形状，进行类型标记
+      </div>
     </div>
   </MoveablePanel>
 </template>
@@ -45,7 +72,7 @@
 import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMainStore, useSlidesStore } from '@/store'
-import type { ImageType, SlideType, TextType } from '@/types/slides'
+import type { ImageType, SlideType, TextType, ChartMark } from '@/types/slides'
 
 import MoveablePanel from '@/components/MoveablePanel.vue'
 import Select from '@/components/Select.vue'
@@ -81,6 +108,7 @@ const textTypeOptions = ref<{ label: string; value: TextType | '' }[]>([
   { label: 'PMID', value: 'pmid' },
   { label: 'url', value: 'url' },
   { label: 'DOI', value: 'doi' },
+  { label: '引用标题', value: 'text' },
 ])
 
 const imageTypeOptions = ref<{ label: string; value: ImageType | '' }[]>([
@@ -90,16 +118,31 @@ const imageTypeOptions = ref<{ label: string; value: ImageType | '' }[]>([
   { label: '背景图', value: 'background' },
 ])
 
+// 新增：图表标记选项（仅“内容项的图表”）
+const chartMarkOptions = ref<{ label: string; value: ChartMark | '' }[]>([
+  { label: '未标记类型', value: '' },
+  { label: '图表（内容项）', value: 'item' },
+])
+
 const slideType = computed(() => currentSlide.value?.type || '')
+
 const textType = computed(() => {
   if (!handleElement.value) return ''
   if (handleElement.value.type === 'text') return handleElement.value.textType || ''
   if (handleElement.value.type === 'shape' && handleElement.value.text) return handleElement.value.text.type || ''
   return ''
 })
+
 const imageType = computed(() => {
   if (!handleElement.value) return ''
   if (handleElement.value.type === 'image') return handleElement.value.imageType || ''
+  return ''
+})
+
+// 新增：图表标记的双向绑定
+const chartMark = computed(() => {
+  if (!handleElement.value) return ''
+  if (handleElement.value.type === 'chart') return (handleElement.value as any).chartMark || ''
   return ''
 })
 
@@ -113,8 +156,11 @@ const updateSlide = (type: SlideType | '') => {
   }
 }
 
-const updateElement = (type: TextType | ImageType | '') => {
+// 扩展：允许更新 Text/Image/Chart 三类元素的标记
+const updateElement = (type: TextType | ImageType | ChartMark | '') => {
   if (!handleElement.value) return
+
+  // 图片
   if (handleElement.value.type === 'image') {
     if (type) {
       slidesStore.updateElement({ id: handleElementId.value, props: { imageType: type as ImageType } })
@@ -126,6 +172,8 @@ const updateElement = (type: TextType | ImageType | '') => {
       })
     }
   }
+
+  // 文本 or 带文字的形状
   if (handleElement.value.type === 'text') {
     if (type) {
       slidesStore.updateElement({ id: handleElementId.value, props: { textType: type as TextType } })
@@ -152,6 +200,19 @@ const updateElement = (type: TextType | ImageType | '') => {
       slidesStore.updateElement({
         id: handleElementId.value,
         props: { text },
+      })
+    }
+  }
+
+  // 新增：图表
+  if (handleElement.value.type === 'chart') {
+    if (type) {
+      slidesStore.updateElement({ id: handleElementId.value, props: { chartMark: type as ChartMark } })
+    }
+    else {
+      slidesStore.removeElementProps({
+        id: handleElementId.value,
+        propName: 'chartMark',
       })
     }
   }

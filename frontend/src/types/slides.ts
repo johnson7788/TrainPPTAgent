@@ -139,7 +139,7 @@ interface PPTBaseElement {
 }
 
 
-export type TextType = 'title' | 'subtitle' | 'content' | 'item' | 'itemTitle' | 'notes' | 'header' | 'footer' | 'partNumber' | 'itemNumber'| 'referenceNumber' | 'doi' | 'pmid' | 'url'
+export type TextType = 'title' | 'subtitle' | 'content' | 'item' | 'itemTitle' | 'notes' | 'header' | 'footer' | 'partNumber' | 'itemNumber'| 'referenceNumber' | 'doi' | 'pmid' | 'url' | 'text'
 
 /**
  * 文本元素
@@ -424,6 +424,8 @@ export interface ChartData {
   series: number[][]
 }
 
+export type ChartMark = 'item'
+
 /**
  * 图表元素
  * 
@@ -455,6 +457,7 @@ export interface PPTChartElement extends PPTBaseElement {
   themeColors: string[]
   textColor?: string
   lineColor?: string
+  chartMark?: ChartMark
 }
 
 

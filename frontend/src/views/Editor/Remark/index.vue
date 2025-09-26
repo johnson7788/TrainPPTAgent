@@ -31,9 +31,11 @@ const slidesStore = useSlidesStore()
 const { currentSlide } = storeToRefs(slidesStore)
 
 const editorRef = useTemplateRef<InstanceType<typeof Editor>>('editorRef')
-watch(() => currentSlide.value.id, () => {
+watch(() => currentSlide.value?.id, () => {
   nextTick(() => {
-    editorRef.value!.updateTextContent()
+    if (editorRef.value && currentSlide.value) {
+      editorRef.value.updateTextContent()
+    }
   })
 }, {
   immediate: true,

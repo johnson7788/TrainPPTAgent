@@ -22,6 +22,11 @@
       </header>
 
       <section class="select-template" aria-label="模板选择">
+        <div v-if="isOutlineFromFile" class="generate-option">
+          <Checkbox v-model:value="generateFromUploadedFile">根据上传的文件生成PPT</Checkbox>
+          <Checkbox v-model:value="generateFromWebSearch">使用网络搜索生成PPT</Checkbox>
+        </div>
+
         <div class="templates-container">
           <div class="templates">
             <div
@@ -71,7 +76,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import api from '@/services'
@@ -80,14 +85,16 @@ import type { AIPPTSlide } from '@/types/AIPPT'
 import type { Slide, SlideTheme } from '@/types/slides'
 import { useMainStore, useSlidesStore } from '@/store'
 import Button from '@/components/Button.vue'
-import FullscreenSpin from '@/components/FullscreenSpin.vue'
+import Checkbox from '@/components/Checkbox.vue'
 
 const route = useRoute()
 const router = useRouter()
 const mainStore = useMainStore()
 const slideStore = useSlidesStore()
 const { templates } = storeToRefs(slideStore)
-const { sessionId } = storeToRefs(mainStore)
+const { sessionId, isOutlineFromFile, generateFromUploadedFile, generateFromWebSearch } =
+  storeToRefs(mainStore)
+
 const { AIPPTGenerator, presetImgPool } = useAIPPT()
 
 const outline = ref(route.query.outline as string)
@@ -95,7 +102,12 @@ const language = ref(route.query.language as string)
 const model = ref(route.query.model as string)
 const style = ref('通用')
 const img = ref('')
-const selectedTemplate = ref<string>(templates.value?.[0]?.id || 'template_1')
+const selectedTemplate = ref<string>('')
+
+onMounted(async () => {
+  await slideStore.fetchTemplates()
+  selectedTemplate.value = templates.value?.[0]?.id || ''
+})
 const loading = ref(false)
 
 const createPPT = async () => {
@@ -108,11 +120,14 @@ const createPPT = async () => {
   router.push(`/editor?session_id=${sessionId.value}`)
 
   try {
-    const stream = await api.AIPPT({
+    const stream = await api.AIPPT_Content({
       content: outline.value,
       language: language.value,
       style: style.value,
       model: model.value,
+      generateFromUploadedFile: generateFromUploadedFile.value,
+      generateFromWebSearch: generateFromWebSearch.value,
+      sessionId: sessionId.value
     })
 
     // 初始化图片池，使用mock数据作为备用
@@ -142,7 +157,7 @@ const createPPT = async () => {
           const text = chunk.replace(/```json|```/g, '').trim()
           if (text) {
             const slide: AIPPTSlide = JSON.parse(text)
-            
+
             // 处理从后端返回的图片数据
             if (slide.images && slide.images.length > 0) {
               // 将后端返回的图片添加到图片池
@@ -154,7 +169,7 @@ const createPPT = async () => {
               }))
               presetImgPool(backendImages)
             }
-            
+
             const slideGenerator = AIPPTGenerator(templateSlides, [slide])
             for (const generatedSlide of slideGenerator) {
               slideStore.addSlide(generatedSlide)
@@ -327,6 +342,21 @@ const createPPT = async () => {
     }
 
     &:hover .template-image img { transform: scale(1.045); }
+  }
+
+  .generate-option {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: saturate(120%) blur(2px);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    color: #475569;
+    font-size: 14px;
   }
 
   .actions {
