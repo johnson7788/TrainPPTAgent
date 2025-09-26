@@ -1,6 +1,6 @@
 services:
   main_api:
-    container_name: main_api_app
+    container_name: ppt_main_api_app
     build:
       context: ./backend/main_api
       dockerfile: Dockerfile
@@ -8,28 +8,47 @@ services:
       - "6800:6800"
     network_mode: bridge
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  personaldb:
+    container_name: ppt_personal_db
+    build:
+      context: ./backend/personaldb
+      dockerfile: Dockerfile
+    ports:
+      - "9200:9200"
+    network_mode: bridge
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   outline_api:
-    container_name: outline_api_app
+    container_name: ppt_outline_api_app
     build:
       context: ./backend/simpleOutline
       dockerfile: Dockerfile
     ports:
-      - "10001:10001"
+      - "10060:10060"
     network_mode: bridge
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   content_api:
-    container_name: content_api_app
+    container_name: ppt_content_api_app
     build:
       context: ./backend/slide_agent
       dockerfile: Dockerfile
     ports:
-      - "10011:10011"
+      - "10061:10061"
     network_mode: bridge
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   frontend:
     container_name: ppt_frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "8008:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
