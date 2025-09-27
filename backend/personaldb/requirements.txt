@@ -6,6 +6,5 @@ chromadb
 python-dotenv
 pytest
 markitdown[all]>=0.1.2
-loguru
 # 如果不需要minerU解析，可以不安装这个，容器就会很小
 #mineru[core]>=2.0.6
