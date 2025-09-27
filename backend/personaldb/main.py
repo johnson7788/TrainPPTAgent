@@ -249,12 +249,6 @@ async def upload_and_vectorize_endpoint(request: Request):
         if fileId_raw is None:
             raise HTTPException(status_code=422, detail="缺少或非法参数: fileId")
 
-        try:
-            userId = int(userId_raw)
-            fileId = int(fileId_raw)
-        except (ValueError, TypeError):
-            raise HTTPException(status_code=422, detail="非法参数: userId 和 fileId 必须是整数")
-
         folderId = int(data.get("folderId", 0))
         fileType = data.get("fileType")
         url = data.get("url")
