@@ -241,12 +241,12 @@ async def upload_and_vectorize_endpoint(request: Request):
                 upload_file = possible_file
 
         # 参数解析与校验
-        userId_raw = data.get("userId")
-        fileId_raw = data.get("fileId")
+        userId = data.get("userId")
+        fileId = data.get("fileId")
 
-        if userId_raw is None:
+        if userId is None:
             raise HTTPException(status_code=422, detail="缺少或非法参数: userId")
-        if fileId_raw is None:
+        if fileId is None:
             raise HTTPException(status_code=422, detail="缺少或非法参数: fileId")
 
         folderId = int(data.get("folderId", 0))
