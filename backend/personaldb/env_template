@@ -3,5 +3,6 @@ EMBEDDING_PROVIDER=aliyun
 EMBEDDING_MODEL=text-embedding-v4
 ALI_API_KEY=sk-xxx
 # 如果有GPU，那么可以开启这个，否则CPU太慢,如果需要USE_MINERU为True，那么mineru[core]>=2.0.6
+# Mineru自动下载模型
 USE_MINERU=false
 
