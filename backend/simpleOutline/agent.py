@@ -61,7 +61,7 @@ class OutlineAgent(LlmAgent):
             before_model_callback=before_model_callback,
             after_model_callback=after_model_callback,
             after_tool_callback=after_tool_callback,
-            tools=[AbstractSearch],
+            tools=[DocumentSearch],
             **kwargs
         )
 
