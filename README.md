@@ -166,12 +166,13 @@ flowchart TD
 
   API -->|调用大纲服务| Outline[大纲服务]
   Outline -->|调用 Web搜索| WebSearch1[Web 搜索]
-  Outline --> API --> FE
+  Outline --> API
 
   FE -->|确认大纲| API --> PPTGen[PPT生成服务：内部循环和检查Json格式]
   PPTGen -->|调用 Web搜索| WebSearch2[Web 搜索]
   PPTGen -->|调用 配图搜索| ImgSearch[配图搜索]
-  PPTGen --> API --> FE
+  PPTGen -->|调用 搜索上传文件| DBSearch[知识库]
+  PPTGen --> API
 
   FE -->|渲染展示 PPT| U
 ```
