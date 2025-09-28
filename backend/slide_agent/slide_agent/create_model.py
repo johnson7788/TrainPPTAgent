@@ -26,13 +26,14 @@ def create_model(model:str, provider: str):
     elif provider == "claude":
         # Claude 模型需要使用 LiteLlm，并遵循 LiteLLM 的模型命名规范
         assert os.environ.get("CLAUDE_API_KEY"), "CLAUDE_API_KEY is not set"
-        # 正确的做法是使用 "claude/" 前缀
+        # 正确的做法是使用 "anthropic/" 前缀
         if not model.startswith("anthropic/"):
             model = "anthropic/" + model
 
         return LiteLlm(
-            model=model,  # 例如: "claude/claude-3-opus-20240229"
+            model=model,  # 例如: "anthropic/claude-3-opus-20240229"
             api_key=os.environ.get("CLAUDE_API_KEY"),
+            num_retries=3,
         )
     elif provider == "openai":
         # openai的模型需要使用LiteLlm
@@ -40,47 +41,47 @@ def create_model(model:str, provider: str):
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("OPENAI_API_KEY"), api_base="https://api.openai.com/v1")
+        return LiteLlm(model=model, api_key=os.environ.get("OPENAI_API_KEY"), api_base="https://api.openai.com/v1", num_retries=3)
     elif provider == "deepseek":
         # deepseek的模型需要使用LiteLlm
         assert os.environ.get("DEEPSEEK_API_KEY"),  "DEEPSEEK_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("DEEPSEEK_API_KEY"), api_base="https://api.deepseek.com/v1")
+        return LiteLlm(model=model, api_key=os.environ.get("DEEPSEEK_API_KEY"), api_base="https://api.deepseek.com/v1",num_retries=3)
     elif provider == "local_google":
         assert os.environ.get("GOOGLE_API_KEY"),  "GOOGLE_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("GOOGLE_API_KEY"), api_base="http://localhost:6688")
+        return LiteLlm(model=model, api_key=os.environ.get("GOOGLE_API_KEY"), api_base="http://localhost:6688",num_retries=3)
     elif provider == "local_deepseek":
         # deepseek的模型需要使用LiteLlm
         assert os.environ.get("DEEPSEEK_API_KEY"),  "DEEPSEEK_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("DEEPSEEK_API_KEY"), api_base="http://localhost:6688")
+        return LiteLlm(model=model, api_key=os.environ.get("DEEPSEEK_API_KEY"), api_base="http://localhost:6688",num_retries=3)
     elif provider == "ali":
         # huggingface的模型需要使用LiteLlm
         assert os.environ.get("ALI_API_KEY"), "ALI_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("ALI_API_KEY"), api_base="https://dashscope.aliyuncs.com/compatible-mode/v1")
+        return LiteLlm(model=model, api_key=os.environ.get("ALI_API_KEY"), api_base="https://dashscope.aliyuncs.com/compatible-mode/v1",num_retries=3)
     elif provider == "local_ali":
         assert os.environ.get("ALI_API_KEY"), "ALI_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("ALI_API_KEY"), api_base="http://localhost:6688")
+        return LiteLlm(model=model, api_key=os.environ.get("ALI_API_KEY"), api_base="http://localhost:6688",num_retries=3)
     elif provider == "doubao":
         # huggingface的模型需要使用LiteLlm
         assert os.environ.get("DOUBAO_API_KEY"), "DOUBAO_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("DOUBAO_API_KEY"), api_base="https://ark.cn-beijing.volces.com/api/v3")
+        return LiteLlm(model=model, api_key=os.environ.get("DOUBAO_API_KEY"), api_base="https://ark.cn-beijing.volces.com/api/v3",num_retries=3)
     elif provider == "vllm":
         # huggingface的模型需要使用LiteLlm
         assert os.environ.get("VLLM_API_KEY"), "VLLM_API_KEY is not set"
@@ -88,14 +89,14 @@ def create_model(model:str, provider: str):
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("VLLM_API_KEY"), api_base=os.environ.get("VLLM_API_URL"))
+        return LiteLlm(model=model, api_key=os.environ.get("VLLM_API_KEY"), api_base=os.environ.get("VLLM_API_URL"),num_retries=3)
     elif provider == "silicon":
         # huggingface的模型需要使用LiteLlm
         assert os.environ.get("SILICON_API_KEY"), "SILICON_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("SILICON_API_KEY"), api_base="https://api.siliconflow.cn/v1")
+        return LiteLlm(model=model, api_key=os.environ.get("SILICON_API_KEY"), api_base="https://api.siliconflow.cn/v1",num_retries=3)
     elif provider == "modelscope":
         # modelscope的模型需要使用LiteLlm
         assert os.environ.get("MODELSCOPE_API_KEY"), "MODEL_SCOPE_API_KEY is not set"
@@ -111,12 +112,12 @@ def create_model(model:str, provider: str):
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("OLLAMA_API_KEY"), api_base=os.environ.get("OLLAMA_API_URL"))
+        return LiteLlm(model=model, api_key=os.environ.get("OLLAMA_API_KEY"), api_base=os.environ.get("OLLAMA_API_URL"),num_retries=3)
     elif provider == "local_openai":
         assert os.environ.get("OPENAI_API_KEY"), "OPENAI_API_KEY is not set"
         if not model.startswith("openai/"):
             # 表示兼容openai的模型请求
             model = "openai/" + model
-        return LiteLlm(model=model, api_key=os.environ.get("OPENAI_API_KEY"), api_base="http://localhost:6688")
+        return LiteLlm(model=model, api_key=os.environ.get("OPENAI_API_KEY"), api_base="http://localhost:6688",num_retries=3)
     else:
         raise ValueError(f"Unsupported provider: {provider}")
