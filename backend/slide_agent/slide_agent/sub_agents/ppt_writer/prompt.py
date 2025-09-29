@@ -18,30 +18,6 @@ PREFIX_PAGE_PROMPT_WITH_IMAGE = """
 4. 文风：简洁、商务演示友好，避免夸张或无法证实的数字。
 5. 严禁输出除 JSON 外的任何内容（包括说明、Markdown、代码块围栏）。
 
-# 重要：图片搜索工具使用
-你必须为每个页面搜索合适的配图！使用 SearchImage 工具搜索相关图片，然后将图片信息添加到返回的 JSON 中。
-
-# 图片搜索规则：
-- 封面页：搜索与主题相关的商务、抽象或科技类图片，关键词如 "business abstract"、"technology background"
-- 内容页：根据内容主题搜索相关图片，如技术类内容搜索 "technology"、"innovation"
-- 过渡页：搜索抽象或商务类图片，关键词如 "abstract background"、"business concept"
-- 结束页：搜索简洁的商务或抽象图片，关键词如 "minimal business"、"clean abstract"
-
-# 图片数据格式：
-在 JSON 中添加 images 字段，包含搜索到的图片信息：
-{
-  "type": "cover",
-  "data": { ... },
-  "images": [
-    {
-      "id": "图片ID",
-      "src": "图片URL",
-      "width": 1920,
-      "height": 1080,
-      "alt": "图片描述"
-    }
-  ]
-}
 """
 # 带搜索的prompt
 PREFIX_PAGE_PROMPT_WITH_SEARCH = """
@@ -119,24 +95,6 @@ CONTENT_PAGE_PROMPT = """
   - 构成占比：`pie`
 - 不得新增除 images 与（内容页特例中的）chart 以外的其他字段。
 
-# 添加图片规则
-- 图表和图片相斥，只能有1个图表或者1张图片，如果都不需要，那么就不用添加：
-- 如果搜索到的结果中带有markdown格式的图片，并且图片有在全文中进行详细解释，可以按需插入1张图片。
-## 图片数据格式：
-在 JSON 中添加 images 字段，包含搜索到的图片信息：
-{{
-  "type": "content",
-  "data": {{ ... }},
-  "images": [
-    {{
-      "id": "图片ID",
-      "src": "图片URL",
-      "width": 1920,
-      "height": 1080,
-      "alt": "图片描述"
-    }}
-  ]
-}}
 
 # 原始结构
 {input_slide_data}
