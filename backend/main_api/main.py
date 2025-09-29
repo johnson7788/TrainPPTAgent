@@ -201,7 +201,7 @@ async def get_templates():
         { "name": "蓝色通用", "id": "template_2", "cover": "/api/data/template_2.jpg" },
         { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
         { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
-        { "name": "图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+        # { "name": "图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
     ]
 
     return {"data": templates}

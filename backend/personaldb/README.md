@@ -3,8 +3,15 @@
 2. 输出的Markdown格式进行Trunk，然后对Trunk进行进行向量化。
 3. 使用[embedding_utils.py](embedding_utils.py)生成embedding向量
 
+# 不同的向量模型
+```cp env_template .env```
+火山引擎支持的向量模型:
+doubao-embedding-text-240715
+doubao-embedding-large-text-250515
+doubao-embedding-vision-250615
+
 # 运行
-python main.py
+```python main.py```
 
 #FastAPI Web 服务（端口 9200） → 接收 HTTP 请求
 

@@ -80,13 +80,17 @@ class OutlineAgent(LlmAgent):
 
     def _get_dynamic_instruction(self, ctx: InvocationContext) -> str:
         """动态整合所有研究发现并生成指令"""
+        # 从metadata中获取language
+        metadata = ctx.state.get("metadata", {})
+        language = metadata.get("language", "chinese")  # 默认中文
+        
         # 根据不同的情况选择不同的prompt
         user_input = self._get_user_content_from_context(ctx)
         # 根据不同的的输入长度，形成不同的prompt
         if len(user_input) > prompt.USER_INPUT_NUMBER:
-            prompt_instruction = prompt.OUTLINE_INSTRUCTION_NO_SEARCH
+            prompt_instruction = prompt.OUTLINE_INSTRUCTION_NO_SEARCH.format(language=language)
         else:
-            prompt_instruction = prompt.OUTLINE_INSTRUCTION_WITH_SEARCH
+            prompt_instruction = prompt.OUTLINE_INSTRUCTION_WITH_SEARCH.format(language=language)
         return prompt_instruction
 
 root_agent = OutlineAgent()

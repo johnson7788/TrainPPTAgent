@@ -340,6 +340,7 @@ class EmbeddingModel(object):
         - EMBEDDING_MODEL:    各提供方的模型名
         - 通用：EMBEDDING_DIM (可选，部分提供方不支持自定义维度)
         - aliyun:   ALI_API_KEY
+        - doubao:   DOUBAO_API_KEY
         - vllm:     VLLM_BASE_URL(如 http://127.0.0.1:8000/v1)，VLLM_API_KEY(可选)
         - xinference:XINFERENCE_BASE_URL(如 http://127.0.0.1:9997/v1)，XINFERENCE_API_KEY(可选)
         - ollama:   OLLAMA_BASE_URL(默认 http://127.0.0.1:11434)
@@ -354,6 +355,14 @@ class EmbeddingModel(object):
             self.client = OpenAI(
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            )
+            self._impl = self._impl_openai_compatible  # 走OpenAI兼容
+        if self.provider == "doubao":
+            api_key = os.getenv("DOUBAO_API_KEY")
+            assert api_key, "DOUBAO_API_KEY没有设置，无法使用阿里云嵌入模型"
+            self.client = OpenAI(
+                api_key=api_key,
+                base_url="https://ark.cn-beijing.volces.com/api/v3",
             )
             self._impl = self._impl_openai_compatible  # 走OpenAI兼容
         elif self.provider == "vllm":
