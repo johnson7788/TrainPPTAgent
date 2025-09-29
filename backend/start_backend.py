@@ -43,7 +43,7 @@ class BackendStarter:
                 'env_template': 'env_template'
             },
             'personal_db': {
-                'port': 10011,
+                'port': 9100,
                 'dir': self.base_dir / 'personaldb',
                 'script': 'main.py',
                 'env_file': '.env',

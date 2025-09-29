@@ -443,4 +443,4 @@ if __name__ == "__main__":
     主函数入口：启动FastAPI服务
     """
     print("启动Personal DB FastAPI服务...")
-    uvicorn.run(app, host="127.0.0.1", port=9200)
+    uvicorn.run(app, host="127.0.0.1", port=9100)

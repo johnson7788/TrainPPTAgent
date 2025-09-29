@@ -15,8 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt -i https://mirrors.tuna.tsing
 # Copy the rest of the application's code into the container at /app
 COPY . .
 
-# Expose port 6800 to the outside world
-EXPOSE 9200
+# Expose port 9100 to the outside world
+EXPOSE 9100
 
 # Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9200"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9100"]

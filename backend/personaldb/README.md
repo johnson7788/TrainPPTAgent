@@ -13,7 +13,7 @@ doubao-embedding-vision-250615
 # 运行
 ```python main.py```
 
-#FastAPI Web 服务（端口 9200） → 接收 HTTP 请求
+#FastAPI Web 服务（端口 9100） → 接收 HTTP 请求
 
 ## 分块器
 | 分块器                | 核心思路                                            | 主要参数                                                 | 重叠                | 语义/结构感知                 | 复杂度      | 适用场景                 | 典型优缺点                                                 |
