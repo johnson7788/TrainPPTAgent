@@ -4,7 +4,7 @@
 # @File  : extract_image_from_template.py
 # @Author: johnson
 # @Contact : github: johnson7788
-# @Desc  : 提取图片，并下载到本地目录，并替换模板文件里的图片链接
+# @Desc  : 提取图片，并下载到本地目录，并替换模板文件里的图片链接，并修改前端的frontend/public/mocks/imgs.json
 
 import json
 import os
