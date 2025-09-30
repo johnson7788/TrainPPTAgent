@@ -158,3 +158,18 @@ backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py
           <Checkbox v-model:value="generateFromUploadedFile">根据上传的文件生成PPT</Checkbox>
           <Checkbox v-model:value="generateFromWebSearch">使用网络搜索生成PPT</Checkbox>
         </div>
+
+## 对于跨域资源添加后端代理
+后端添加 /proxy接口
+
+前端frontend/src/hooks/useExport.ts添加
+```
++//代理下载地址
++const PROXY_ENDPOINT = '/api/proxy'
++          if (isBase64Image(el.src)) {
++            options.data = el.src
++          } else {
++            // ★ 外链图片统一转 dataURL，走代理
++            options.data = await getSafeImageDataURL(el.src)
++          }
+```
