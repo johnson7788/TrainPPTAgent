@@ -24,13 +24,23 @@ def extract_image_urls(data):
     return image_urls
 
 
-def read_template_file(template_file):
-    with open(template_file, 'r', encoding='utf-8') as file:
+def extract_front_images(data):
+    """遍历 front_images 的 JSON 数据，提取所有 src。"""
+    image_urls = []
+    if isinstance(data, list):
+        for item in data:
+            if 'src' in item:
+                image_urls.append(item['src'])
+    return image_urls
+
+
+def read_json_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 
-def write_template_file(template_file, data):
-    with open(template_file, 'w', encoding='utf-8') as file:
+def write_json_file(file_path, data):
+    with open(file_path, 'w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
 
 
@@ -48,7 +58,7 @@ def download_image(url, save_path):
 
 
 def replace_image_urls(data, url_to_image_map, local_image_url):
-    """用本地路径替换JSON数据中的图片URL"""
+    """用本地路径替换模板 JSON 数据中的图片URL"""
     if 'slides' in data and isinstance(data['slides'], list):
         for slide in data['slides']:
             if 'elements' in slide and isinstance(slide['elements'], list):
@@ -58,6 +68,18 @@ def replace_image_urls(data, url_to_image_map, local_image_url):
                         if old_url in url_to_image_map:
                             image_name = url_to_image_map[old_url]
                             element['src'] = os.path.join(local_image_url, image_name).replace("\\", "/")
+    return data
+
+
+def replace_front_images(data, url_to_image_map, local_image_url):
+    """用本地路径替换 front_images JSON 数据中的图片URL"""
+    if isinstance(data, list):
+        for item in data:
+            if 'src' in item:
+                old_url = item['src']
+                if old_url in url_to_image_map:
+                    image_name = url_to_image_map[old_url]
+                    item['src'] = os.path.join(local_image_url, image_name).replace("\\", "/")
     return data
 
 
@@ -71,33 +93,54 @@ if __name__ == '__main__':
     download_directory = '../backend/main_api/template/'
     local_image_url = "/api/data/"
 
+    front_images_file = '../frontend/public/mocks/imgs.json'
+
     if not os.path.exists(download_directory):
         os.makedirs(download_directory)
 
     images_downloaded = []
     url_to_image_map = {}  # 维护URL与本地文件名的对应关系
 
-    for template_file in template_files:
-        json_data = read_template_file(template_file)
-        urls = extract_image_urls(json_data)
-        print(f"{template_file}中的图片地址列表：共包含{len(urls)}张图片")
+    # # 处理模板文件
+    # for template_file in template_files:
+    #     json_data = read_json_file(template_file)
+    #     urls = extract_image_urls(json_data)
+    #     print(f"{template_file}中的图片地址列表：共包含{len(urls)}张图片")
+    #
+    #     for i, url in enumerate(urls, 1):
+    #         image_name = os.path.basename(urlparse(url).path)
+    #         if image_name not in images_downloaded:
+    #             save_path = os.path.join(download_directory, image_name)
+    #             print(f"下载图片： {i}. {url} 到 {save_path}")
+    #             download_image(url, save_path)
+    #             images_downloaded.append(image_name)
+    #         else:
+    #             print(f"图片 {image_name} 已经下载过了，跳过")
+    #
+    #         url_to_image_map[url] = image_name
+    #
+    #     updated_data = replace_image_urls(json_data, url_to_image_map, local_image_url)
+    #     write_json_file(template_file, updated_data)
+    #     print(f"{template_file} 图片链接已更新完成！")
+
+    # 处理 front_images 文件
+    if os.path.exists(front_images_file):
+        front_data = read_json_file(front_images_file)
+        urls = extract_front_images(front_data)
+        print(f"{front_images_file}中的图片地址列表：共包含{len(urls)}张图片")
 
         for i, url in enumerate(urls, 1):
             image_name = os.path.basename(urlparse(url).path)
-
-            # 已经下载过的跳过
-            if image_name in images_downloaded:
-                print(f"图片 {image_name} 已经下载过了，跳过")
-            else:
+            if image_name not in images_downloaded:
                 save_path = os.path.join(download_directory, image_name)
-                print(f"下载图片： {i}. {url} 到 {save_path}")
+                print(f"下载 front_images 图片： {i}. {url} 到 {save_path}")
                 download_image(url, save_path)
                 images_downloaded.append(image_name)
+            else:
+                print(f"front_images 图片 {image_name} 已经下载过了，跳过")
 
-            # 建立映射关系
             url_to_image_map[url] = image_name
 
-        # 替换 JSON 里的图片链接
-        updated_data = replace_image_urls(json_data, url_to_image_map, local_image_url)
-        write_template_file(template_file, updated_data)
-        print(f"{template_file} 图片链接已更新完成！")
+        updated_front_data = replace_front_images(front_data, url_to_image_map, local_image_url)
+        write_json_file(front_images_file, updated_front_data)
+        print(f"{front_images_file} 图片链接已更新完成！")
