@@ -22,3 +22,10 @@ PEXELS_API_KEY=xx
 
 #知识库的访问链接
 PERSONAL_DB=http://127.0.0.1:9100
+
+#不同的Agent使用不同的模型，一个是PPT撰写者，1个是PPT检查者，更多的模型请参考backend/slide_agent/slide_agent/create_model.py
+PPT_WRITER_PROVIDER=ali
+PPT_WRITER_MODEL=qwen-turbo-latest
+
+PPT_CHECKER_PROVIDER=ali
+PPT_CHECKER_MODEL=qwen-turbo-latest

@@ -5,6 +5,7 @@
 # @Author: johnson
 # @Contact : github: johnson7788
 # @Desc  :  项目的基本配置
+import os
 
 # 对所有的上面的研究员Agent的研究结果写PPT
 PPT_WRITER_AGENT_CONFIG = {
@@ -18,8 +19,8 @@ PPT_WRITER_AGENT_CONFIG = {
     # "provider": "deepseek",
     # "model": "deepseek-chat",
     # "model": "gpt-4o-2024-08-06",
-    "provider": "ali",
-    "model": "qwen-turbo-latest",
+    "provider": os.getenv("PPT_WRITER_PROVIDER", "ali"),
+    "model": os.getenv("PPT_WRITER_MODEL", "qwen-turbo-latest"),
 }
 # 检查每一页的PPT是否符合要求，不符合要求的会被重写
 PPT_CHECKER_AGENT_CONFIG = {
@@ -33,8 +34,8 @@ PPT_CHECKER_AGENT_CONFIG = {
     # "provider": "local_deepseek",
     # "model": "deepseek-chat",
     # "model": "gpt-4o-2024-08-06",
-    "provider": "ali",
-    "model": "qwen-turbo-latest",
+    "provider": os.getenv("PPT_CHECKER_PROVIDER", "ali"),
+    "model": os.getenv("PPT_CHECKER_MODEL", "qwen-turbo-latest"),
     # "provider": "deepseek",
     # "model": "deepseek-chat",
 }
