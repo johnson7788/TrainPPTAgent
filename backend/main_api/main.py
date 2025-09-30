@@ -4,21 +4,17 @@ import re
 import os
 import dotenv
 import time
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from pydantic import BaseModel
+import uuid
+import httpx
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-import uuid
-import httpx
-from a2a.client import A2AClient
-from a2a.types import (
-    MessageSendParams,
-    SendMessageRequest,
-    SendStreamingMessageRequest
-)
+from fastapi import UploadFile, File, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from outline_client import A2AOutlineClientWrapper
 from content_client import A2AContentClientWrapper
+
 dotenv.load_dotenv()
 
 OUTLINE_API = os.environ["OUTLINE_API"]
@@ -283,6 +279,60 @@ async def list_user_files(user_id: int):
         except httpx.HTTPStatusError as exc:
             # 转发下游服务的错误
             raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)
+
+
+@app.get("/proxy")
+async def proxy(request: Request, url: str = Query(..., description="Target absolute URL")):
+    """
+    透明代理上游资源，转发部分请求头，透传关键响应头，并允许前端同源访问。
+    适合图片/音视频等二进制内容。
+    """
+    HEADERS_TO_FORWARD = {"Range", "User-Agent"}  # 需要时可扩展
+    HEADERS_TO_COPY = {
+        "Content-Type",
+        "Content-Length",
+        "Content-Disposition",
+        "Accept-Ranges",
+        "ETag",
+        "Last-Modified",
+        "Cache-Control",
+        "Expires",
+    }
+    forward_headers = {}
+    for h in HEADERS_TO_FORWARD:
+        v = request.headers.get(h)
+        if v:
+            forward_headers[h] = v
+
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+        try:
+            upstream = await client.get(url, headers=forward_headers)
+        except httpx.RequestError as e:
+            raise HTTPException(status_code=502, detail=f"Upstream fetch error: {e!s}")
+
+    if upstream.status_code >= 400:
+        raise HTTPException(status_code=upstream.status_code, detail="Upstream error")
+
+    headers = {}
+    for h in HEADERS_TO_COPY:
+        if h in upstream.headers:
+            headers[h] = upstream.headers[h]
+
+    # 允许被前端同源读取
+    headers["Access-Control-Allow-Origin"] = "*"
+    # 给静态资源加简单缓存（按需调整）
+    headers.setdefault("Cache-Control", "public, max-age=86400")
+
+    return StreamingResponse(
+        upstream.aiter_bytes(),
+        status_code=upstream.status_code,
+        headers=headers,
+        media_type=upstream.headers.get("Content-Type"),
+    )
+
+@app.get("/healthz")
+def healthz():
+    return {"ok": True}
 
 
 if __name__ == "__main__":
