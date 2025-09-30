@@ -102,26 +102,26 @@ if __name__ == '__main__':
     url_to_image_map = {}  # 维护URL与本地文件名的对应关系
 
     # # 处理模板文件
-    # for template_file in template_files:
-    #     json_data = read_json_file(template_file)
-    #     urls = extract_image_urls(json_data)
-    #     print(f"{template_file}中的图片地址列表：共包含{len(urls)}张图片")
-    #
-    #     for i, url in enumerate(urls, 1):
-    #         image_name = os.path.basename(urlparse(url).path)
-    #         if image_name not in images_downloaded:
-    #             save_path = os.path.join(download_directory, image_name)
-    #             print(f"下载图片： {i}. {url} 到 {save_path}")
-    #             download_image(url, save_path)
-    #             images_downloaded.append(image_name)
-    #         else:
-    #             print(f"图片 {image_name} 已经下载过了，跳过")
-    #
-    #         url_to_image_map[url] = image_name
-    #
-    #     updated_data = replace_image_urls(json_data, url_to_image_map, local_image_url)
-    #     write_json_file(template_file, updated_data)
-    #     print(f"{template_file} 图片链接已更新完成！")
+    for template_file in template_files:
+        json_data = read_json_file(template_file)
+        urls = extract_image_urls(json_data)
+        print(f"{template_file}中的图片地址列表：共包含{len(urls)}张图片")
+
+        for i, url in enumerate(urls, 1):
+            image_name = os.path.basename(urlparse(url).path)
+            if image_name not in images_downloaded:
+                save_path = os.path.join(download_directory, image_name)
+                print(f"下载图片： {i}. {url} 到 {save_path}")
+                download_image(url, save_path)
+                images_downloaded.append(image_name)
+            else:
+                print(f"图片 {image_name} 已经下载过了，跳过")
+
+            url_to_image_map[url] = image_name
+
+        updated_data = replace_image_urls(json_data, url_to_image_map, local_image_url)
+        write_json_file(template_file, updated_data)
+        print(f"{template_file} 图片链接已更新完成！")
 
     # 处理 front_images 文件
     if os.path.exists(front_images_file):
