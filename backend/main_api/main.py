@@ -3,6 +3,8 @@ import json
 import re
 import os
 import dotenv
+from pathlib import Path
+from fastapi import FastAPI, UploadFile, File
 import time
 import logging
 from pydantic import BaseModel
@@ -19,8 +21,16 @@ from content_client import A2AContentClientWrapper
 logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
-OUTLINE_API = os.environ["OUTLINE_API"]
-CONTENT_API = os.environ["CONTENT_API"]
+# 加载统一环境配置
+project_root = Path(__file__).parent.parent.parent
+env_file = project_root / ".env"
+if env_file.exists():
+    dotenv.load_dotenv(env_file)
+else:
+    dotenv.load_dotenv()
+
+OUTLINE_API = os.environ.get("OUTLINE_API", f"http://{os.environ.get('HOST', '127.0.0.1')}:{os.environ.get('OUTLINE_API_PORT', '10001')}")
+CONTENT_API = os.environ.get("CONTENT_API", f"http://{os.environ.get('HOST', '127.0.0.1')}:{os.environ.get('CONTENT_API_PORT', '10011')}")
 app = FastAPI()
 
 # Allow CORS for the frontend development server
@@ -346,4 +356,6 @@ def healthz():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=6800)
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("MAIN_API_PORT", "6800"))
+    uvicorn.run(app, host=host, port=port)
