@@ -4,6 +4,7 @@ import re
 import os
 import dotenv
 import time
+import logging
 from pydantic import BaseModel
 import uuid
 import httpx
@@ -15,6 +16,7 @@ from fastapi import FastAPI, HTTPException, Query, Request, Response
 from outline_client import A2AOutlineClientWrapper
 from content_client import A2AContentClientWrapper
 
+logger = logging.getLogger(__name__)
 dotenv.load_dotenv()
 
 OUTLINE_API = os.environ["OUTLINE_API"]
@@ -36,10 +38,10 @@ class AipptRequest(BaseModel):
     model: str
     stream: bool
 
-async def stream_agent_response(prompt: str):
+async def stream_agent_response(prompt: str, language: str = "chinese"):
     """A generator that yields parts of the agent response."""
     outline_wrapper = A2AOutlineClientWrapper(session_id=uuid.uuid4().hex, agent_url=OUTLINE_API)
-    async for chunk_data in outline_wrapper.generate(prompt):
+    async for chunk_data in outline_wrapper.generate(prompt, language=language):
         print(f"生成大纲输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
@@ -48,7 +50,8 @@ async def stream_agent_response(prompt: str):
 @app.post("/tools/aippt_outline")
 async def aippt_outline(request: AipptRequest):
     assert request.stream, "只支持流式的返回大纲"
-    return StreamingResponse(stream_agent_response(request.content), media_type="text/plain")
+    logger.info(f"前端*outline***=====>用户输入：{request.language}")
+    return StreamingResponse(stream_agent_response(request.content, request.language), media_type="text/plain")
 
 
 @app.post("/tools/aippt_outline_from_file")
@@ -58,6 +61,7 @@ async def aippt_outline_from_file(
     url: str | None = Form(None),
     folder_id: int|str = Form(0),
     file_type: str | None = Form(None),
+    language: str = Form("chinese"),  # 添加language参数，默认为chinese
 ):
     """
     对齐 personaldb 的 /upload/：
@@ -134,8 +138,9 @@ async def aippt_outline_from_file(
             markdown_content = result.get("markdown_content")
             if markdown_content is None:
                 raise HTTPException(status_code=500, detail="personaldb 响应缺少 'markdown_content'")
+            logger.info(f"本地上传文件*outline***=====>：{ {'language': language} }")
 
-            return StreamingResponse(stream_agent_response(markdown_content), media_type="text/plain")
+            return StreamingResponse(stream_agent_response(markdown_content, language), media_type="text/plain")
 
         except httpx.TimeoutException:
             raise HTTPException(status_code=504, detail="Request to personaldb timed out.")
@@ -176,6 +181,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
         search_engine.append("DocumentSearch")
     # ，方便测试，这个已经在知识库中插入了对应的数据
     metadata = {"user_id": user_id, "search_engine": search_engine, "language": language}
+    logger.info(f"前端*内容**=====>metadata数据为：{metadata}")
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
         print(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
@@ -183,6 +189,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content
+    logger.info(f"前端*内容**=====>用户输入：{request.language}")
     return StreamingResponse(stream_content_response(markdown_content, language=request.language, generateFromUploadedFile=request.generateFromUploadedFile, generateFromWebSearch=request.generateFromWebSearch, user_id=request.user_id), media_type="text/plain")
 
 @app.get("/data/{filename}")
@@ -204,8 +211,9 @@ async def get_templates():
 
 class AipptByIDRequest(BaseModel):
     id: str
+    language: str = "chinese"  # 添加language字段，默认为chinese
 
-async def aippt_file_id_streamer(id: str):
+async def aippt_file_id_streamer(id: str, language: str = "chinese"):
     """根据用户的已有的文件数据中的文件id来生成ppt
     id: 文件的id，例如论文的pmid
     """
@@ -233,7 +241,7 @@ async def aippt_file_id_streamer(id: str):
         yield json.dumps({"type": "status", "message": "论文向量化失败，请联系管理员"}, ensure_ascii=False) + '\n'
     yield json.dumps({"type": "status", "message": "正在生成大纲..."}, ensure_ascii=False) + '\n'
     outline = ""
-    async for outline_trunk in stream_agent_response(paper_markdown):
+    async for outline_trunk in stream_agent_response(paper_markdown, language):
         outline += outline_trunk
     yield json.dumps({"type": "status", "message": "大纲生成完毕，即将生成PPT..."}, ensure_ascii=False) + '\n'
 
@@ -248,7 +256,8 @@ async def aippt_file_id_streamer(id: str):
     # 传入不同的参数，使用不同的搜索,可以同时使用多个搜索
     search_engine = ["KnowledgeBaseSearch"]
     # 方便测试，这个已经在知识库中插入了对应的数据
-    metadata = {"user_id": id, "search_engine": search_engine, "language": "中文"}
+    metadata = {"user_id": id, "search_engine": search_engine, "language": language}
+    logger.info(f"aippt_by_id**=====>metadata数据为：{metadata}")
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
         print(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
@@ -258,7 +267,7 @@ async def aippt_file_id_streamer(id: str):
 
 @app.post("/tools/aippt_by_id")
 async def aippt_by_id(request: AipptByIDRequest):
-    return StreamingResponse(aippt_file_id_streamer(request.id), media_type="application/json; charset=utf-8")
+    return StreamingResponse(aippt_file_id_streamer(request.id, request.language), media_type="application/json; charset=utf-8")
 
 
 @app.get("/files/{user_id}")
