@@ -16,6 +16,11 @@ const routes = [
     path: '/ppt',
     name: 'PPT',
     component: () => import('@/views/PPT/index.vue')
+  },
+  {
+    path: '/app/:id?',
+    name: 'APP',
+    component: () => import('@/views/APP/index.vue')
   }
 ]
 

@@ -41,6 +41,13 @@ class BackendStarter:
                 'script': 'main_api.py',
                 'env_file': '.env',
                 'env_template': 'env_template'
+            },
+            'personal_db': {
+                'port': 9100,
+                'dir': self.base_dir / 'personaldb',
+                'script': 'main.py',
+                'env_file': '.env',
+                'env_template': 'env_template'
             }
         }
         self.processes: Dict[str, subprocess.Popen] = {}

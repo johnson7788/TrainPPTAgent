@@ -12,14 +12,22 @@ interface AIPPTOutlinePayload {
 interface AIPPTPayload {
   content: string
   language: string
-  style: string
-  model: string
+  style?: string
+  model?: string
+  generateFromUploadedFile?: boolean
+  generateFromWebSearch?: boolean
+  sessionId?: string
 }
 
 interface AIWritingPayload {
   content: string
   command: string
 }
+
+interface AIByIDPayload {
+  id: string|number
+}
+
 
 export default {
   getMockData(filename: string): Promise<any> {
@@ -28,6 +36,10 @@ export default {
 
   getFileData(filename: string): Promise<any> {
     return axios.get(`${SERVER_URL}/data/${filename}.json`)
+  },
+
+  getTemplates(): Promise<any> {
+    return axios.get(`${SERVER_URL}/templates`)
   },
 
   AIPPT_Outline({
@@ -49,11 +61,14 @@ export default {
     })
   },
 
-  AIPPT({
+  AIPPT_Content({
     content,
     language,
     style,
     model,
+    generateFromUploadedFile,
+    generateFromWebSearch,
+    sessionId,
   }: AIPPTPayload): Promise<any> {
     return fetch(`${SERVER_URL}/tools/aippt`, {
       method: 'POST',
@@ -66,6 +81,23 @@ export default {
         model,
         style,
         stream: true,
+        generateFromUploadedFile,
+        generateFromWebSearch,
+        sessionId,
+      }),
+    })
+  },
+
+  AIPPTByID({
+    id,
+  }: AIByIDPayload): Promise<any> {
+    return fetch(`${SERVER_URL}/tools/aippt_by_id`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id,
       }),
     })
   },
@@ -87,10 +119,11 @@ export default {
     })
   },
 
-  AIPPT_Outline_From_Word(file: File): Promise<any> {
+  AIPPT_Outline_From_File(file: File, user_id: string): Promise<any> {
     const formData = new FormData()
     formData.append('file', file)
-    return fetch(`${SERVER_URL}/tools/aippt_outline_from_word`, {
+    formData.append('user_id', user_id)
+    return fetch(`${SERVER_URL}/tools/aippt_outline_from_file`, {
       method: 'POST',
       body: formData,
     })

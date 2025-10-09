@@ -20,6 +20,11 @@ interface ExportImageConfig {
   fontEmbedCSS?: string
 }
 
+//代理下载地址
+const PROXY_ENDPOINT = '/api/proxy' 
+
+
+
 export default () => {
   const slidesStore = useSlidesStore()
   const { slides, theme, viewportRatio, title, viewportSize } = storeToRefs(slidesStore)
@@ -34,6 +39,43 @@ export default () => {
   })
 
   const exporting = ref(false)
+
+  function isAbsoluteUrl(url: string) {
+    try { return new URL(url), true } catch { return false }
+  }
+  
+  function toProxyUrl(url: string) {
+    // 仅对绝对地址做代理，data: 和 blob: 不处理
+    if (!isAbsoluteUrl(url)) return url
+    return `${PROXY_ENDPOINT}?url=${encodeURIComponent(url)}`
+  }
+  
+  async function fetchAsDataURLThroughProxy(url: string): Promise<string> {
+    // 同源资源直接 fetch，外域走代理
+    const finalUrl = isAbsoluteUrl(url) ? toProxyUrl(url) : url
+    const res = await fetch(finalUrl)
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`)
+    const blob = await res.blob()
+    return await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader()
+      fr.onload = () => resolve(String(fr.result))
+      fr.onerror = reject
+      fr.readAsDataURL(blob)
+    })
+  }
+  
+  // 针对图片统一“转 dataURL”的安全封装（自动识别 data: / svg-base64）
+  async function getSafeImageDataURL(src: string): Promise<string> {
+    if (isBase64Image(src)) return src
+    if (isSVGImage(src)) return src // 你已有 svg2base64 场景，若是 data:svg 也算
+    return await fetchAsDataURLThroughProxy(src)
+  }
+  
+  // 针对音频/视频，优先返回“同源可取”的 path（代理）
+  function getSafeMediaPath(src: string): string {
+    if (!isAbsoluteUrl(src)) return src
+    return toProxyUrl(src)
+  }
 
   // 导出图片
   const exportImage = (domRef: HTMLElement, format: string, quality: number, ignoreWebfont = true) => {
@@ -400,7 +442,7 @@ export default () => {
   }
 
   // 导出PPTX文件
-  const exportPPTX = (_slides: Slide[], masterOverwrite: boolean, ignoreMedia: boolean) => {
+  const exportPPTX = async (_slides: Slide[], masterOverwrite: boolean, ignoreMedia: boolean) => {
     exporting.value = true
     const pptx = new pptxgen()
 
@@ -443,7 +485,8 @@ export default () => {
             pptxSlide.background = { data: background.image.src }
           }
           else {
-            pptxSlide.background = { path: background.image.src }
+            const dataUrl = await getSafeImageDataURL(background.image.src)
+            pptxSlide.background = { data: dataUrl }
           }
         }
         else if (background.type === 'solid' && background.color) {
@@ -516,8 +559,12 @@ export default () => {
             w: el.width / ratioPx2Inch.value,
             h: el.height / ratioPx2Inch.value,
           }
-          if (isBase64Image(el.src)) options.data = el.src
-          else options.path = el.src
+          if (isBase64Image(el.src)) {
+            options.data = el.src
+          } else {
+            // ★ 外链图片统一转 dataURL，走代理
+            options.data = await getSafeImageDataURL(el.src)
+          }
 
           if (el.flipH) options.flipH = el.flipH
           if (el.flipV) options.flipV = el.flipV
@@ -640,8 +687,9 @@ export default () => {
               w: el.width / ratioPx2Inch.value,
               h: el.height / ratioPx2Inch.value,
             }
+            // ★ 外链如果不是base64图片统一转 dataURL，走代理
             if (isBase64Image(el.pattern)) options.data = el.pattern
-            else options.path = el.pattern
+            else options.data = await getSafeImageDataURL(el.pattern)
   
             if (el.flipH) options.flipH = el.flipH
             if (el.flipV) options.flipV = el.flipV
@@ -891,7 +939,7 @@ export default () => {
             path: el.src,
             type: el.type,
           }
-          if (el.type === 'video' && el.poster) options.cover = el.poster
+          if (el.type === 'video' && el.poster) options.cover = await getSafeImageDataURL(el.poster)
 
           const extMatch = el.src.match(/\.([a-zA-Z0-9]+)(?:[\?#]|$)/)
           if (extMatch && extMatch[1]) options.extn = extMatch[1]

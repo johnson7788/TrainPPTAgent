@@ -61,7 +61,7 @@ class A2AOutlineClientWrapper:
             except Exception as e:
                 self.logger.error(f'获取 AgentCard 失败: {e}', exc_info=True)
                 raise RuntimeError('无法获取 agent card，无法继续运行。') from e
-    async def generate(self, user_question: str, language="English", user_id="") -> None:
+    async def generate(self, user_question: str, language="Chinese", user_id="") -> None:
         """
         user_question: 用户问题
         history： 历史对话消息

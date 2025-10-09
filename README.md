@@ -17,10 +17,9 @@ English：[README_EN.md](README_EN.md)
 * **逐页内容生成**
   采用流式传输技术，实现 PPT 内容的实时生成与展示，提升交互体验。
 
-* 用户已有大纲上传
-  
-  用户可以已有大纲，或者通过word文件上传大纲。
-  
+* **用户已有大纲或者文件上传到知识库**
+  根据知识库的内容生成PPT。
+
 * **模板支持**
   提供多种模板供用户选择，支持内容与样式的分离式填充。
 
@@ -45,9 +44,11 @@ English：[README_EN.md](README_EN.md)
 ```
 TrainPPTAgent/
 ├── backend/           # 后端代码
+│   ├── mock_api/      # 模拟生成PPT
 │   ├── main_api/      # 核心 API 服务
-│   ├── slide_agent/   # AI Agent 逻辑
-│   └── ...
+│   ├── slide_agent/   # AI Agent根据大纲撰搜索网络或者本地知识库写每页PPT
+│   ├── simpleOutline/  # AI Agent 搜索并写大纲
+│   ├── personaldb/     #知识库，解析各种格式的文件，用于搜索知识库生成PPT
 ├── frontend/          # 前端代码
 │   ├── src/
 │   │   ├── views/     # 页面组件（大纲、编辑等）
@@ -56,6 +57,7 @@ TrainPPTAgent/
 │   └── vite.config.ts # 前端配置
 └── doc/               # 项目文档
     ├── API_*.md       # API 接口文档
+    ├── CHANGES.md     # 更新日志，各个文件更新了哪里
     └── ...
 ```
 
@@ -141,8 +143,6 @@ python start_backend.py
    ```bash
    cd backend/slide_agent
    cp env_template .env  #复制完成后，修改.env文件
-   修改每个Agent的模型
-   backend/slide_agent/slide_agent/config.py
    python main_api.py
    ```
 
@@ -192,12 +192,13 @@ flowchart TD
 
   API -->|调用大纲服务| Outline[大纲服务]
   Outline -->|调用 Web搜索| WebSearch1[Web 搜索]
-  Outline --> API --> FE
+  Outline --> API
 
   FE -->|确认大纲| API --> PPTGen[PPT生成服务：内部循环和检查Json格式]
   PPTGen -->|调用 Web搜索| WebSearch2[Web 搜索]
   PPTGen -->|调用 配图搜索| ImgSearch[配图搜索]
-  PPTGen --> API --> FE
+  PPTGen -->|调用 搜索上传文件| DBSearch[知识库]
+  PPTGen --> API
 
   FE -->|渲染展示 PPT| U
 ```
@@ -215,6 +216,10 @@ flowchart TD
 * **逐页生成 PPT**
   ![start_ppt_generate.png](doc/start_ppt_generate.png)
 
+* **图表支持 PPT**
+  ![图表支持.png](doc/%E5%9B%BE%E8%A1%A8%E6%94%AF%E6%8C%81.png)
+
+
 ---
 
 ## 📌 待办事项
@@ -227,11 +232,12 @@ flowchart TD
 
 * [更新日志](doc/CHANGES.md)
 * [自定义模板说明](doc/Template.md)
-* 前端引用项目（本项目免版权，但前端部分需注意版权）：
-  [https://github.com/pipipi-pikachu/PPTist](https://github.com/pipipi-pikachu/PPTist)
 * [模版制作](doc/Template.md)
 * [不同的模型配置](doc/custom_model.md)
 ---
+
+## 📝 关于前端引用项目（本项目后端免版权，但前端部分为AGPL-3版权）：
+  [https://github.com/pipipi-pikachu/PPTist](https://github.com/pipipi-pikachu/PPTist)
 
 ## 📬 联系方式
 

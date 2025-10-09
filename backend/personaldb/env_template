@@ -1,0 +1,14 @@
+# 向量模型API的Key, 在文件embedding_utils.py中被使用， 阿里云
+
+#ALI_API_KEY=sk-xxx
+#EMBEDDING_PROVIDER=aliyun
+#EMBEDDING_MODEL=text-embedding-v4
+
+# 火山引擎，豆包
+EMBEDDING_PROVIDER=doubao
+EMBEDDING_MODEL=doubao-embedding-text-240715
+DOUBAO_API_KEY=xxx
+# 如果有GPU，那么可以开启这个，否则CPU太慢,如果需要USE_MINERU为True，那么mineru[core]>=2.0.6
+# Mineru自动下载模型
+USE_MINERU=false
+

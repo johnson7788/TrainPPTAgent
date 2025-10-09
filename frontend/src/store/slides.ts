@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { omit } from 'lodash'
 import { customAlphabet } from 'nanoid'
+import api from '@/services'
 import type { Slide, SlideTheme, PPTElement, PPTAnimation, SlideTemplate } from '@/types/slides'
 
 interface RemovePropData {
@@ -139,6 +140,20 @@ export const useSlidesStore = defineStore('slides', {
   
     setTemplates(templates: SlideTemplate[]) {
       this.templates = templates
+    },
+
+    async fetchTemplates() {
+      const result = await api.getTemplates()
+      // eslint-disable-next-line no-console
+      console.log('API result in fetchTemplates:', JSON.stringify(result, null, 2))
+      if (result && result.data) {
+        this.templates = result.data
+        // eslint-disable-next-line no-console
+        console.log('Templates updated in store:', JSON.stringify(this.templates, null, 2))
+      } else {
+        // eslint-disable-next-line no-console
+        console.log('Templates not updated, result or result.data is falsy.')
+      }
     },
 
     resetSlides() {

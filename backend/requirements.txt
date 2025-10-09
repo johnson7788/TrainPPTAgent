@@ -12,5 +12,4 @@ pytest
 click
 BeautifulSoup4
 lxml
-psutil
-python-docx
+python-multipart

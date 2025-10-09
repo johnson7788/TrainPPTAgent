@@ -143,3 +143,33 @@ main_api.py
 backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py
 
 ## 对Agent进行改造，添加了循环检查，检查输出Json的key字段必须不能少，但是可以多，因为可能添加图片等。
+
+## 增加上传时文件的标识符，用于发送给后端Agent
+文件：frontend/src/store/main.ts
+    isOutlineFromFile: false, //是否上传了文件，上传了文件，就根据文件生成ppt的大纲
+    generateFromUploadedFile: false, // 是否是依据上传的文件生成PPT
+    generateFromWebSearch: false, // 是否是依据网络搜索生成PPT
+
+文件：frontend/src/services/index.ts 
+函数AIPPT_Content，请求后端，携带generateFromUploadedFile和generateFromWebSearch
+
+文件： frontend/src/views/PPT/index.vue
+       <div v-if="isOutlineFromFile" class="generate-option">
+          <Checkbox v-model:value="generateFromUploadedFile">根据上传的文件生成PPT</Checkbox>
+          <Checkbox v-model:value="generateFromWebSearch">使用网络搜索生成PPT</Checkbox>
+        </div>
+
+## 对于跨域资源添加后端代理
+后端添加 /proxy接口
+
+前端frontend/src/hooks/useExport.ts添加
+```
++//代理下载地址
++const PROXY_ENDPOINT = '/api/proxy'
++          if (isBase64Image(el.src)) {
++            options.data = el.src
++          } else {
++            // ★ 外链图片统一转 dataURL，走代理
++            options.data = await getSafeImageDataURL(el.src)
++          }
+```

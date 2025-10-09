@@ -15,6 +15,7 @@ import { useSlidesStore } from '@/store'
 import useAddSlidesOrElements from './useAddSlidesOrElements'
 import useSlideHandler from './useSlideHandler'
 
+
 const isChartItem = (x: any): x is AIPPTContentChartItem =>
   x && x.kind === 'chart' && Array.isArray(x.labels) && Array.isArray(x.series)
 const isTextItem = (x: any): x is AIPPTContentTextItem =>
