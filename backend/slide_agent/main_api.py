@@ -44,8 +44,8 @@ from a2a.types import (
 from slide_agent.agent import root_agent
 
 @click.command()
-@click.option("--host", "host", default=None, help="服务器绑定的主机名（默认从环境变量读取）")
-@click.option("--port", "port", default=None,help="服务器监听的端口号（默认从环境变量读取）")
+@click.option("--host", "host", default="localhost", help="服务器绑定的主机名（默认为 localhost,可以指定具体本机ip）")
+@click.option("--port", "port", default=10011,help="服务器监听的端口号（默认为 10011）")
 @click.option("--agent_url", "agent_url", default="",help="Agent Card中对外展示和访问的地址")
 def main(host, port, agent_url=""):
     # 从环境变量读取配置，命令行参数优先
