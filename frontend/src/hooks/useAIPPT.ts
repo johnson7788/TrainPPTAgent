@@ -32,7 +32,7 @@ interface ImgPoolItem {
 
 export default () => {
   const slidesStore = useSlidesStore()
-  const { addSlidesFromData } = useAddSlidesOrElements()
+  const { addSlidesFromData, addSlidesFromDataToEnd } = useAddSlidesOrElements()
   const { isEmptySlide } = useSlideHandler()
 
   // 图片池，用于存储可用的图片资源
@@ -870,15 +870,12 @@ export default () => {
    * @param imgs 图片资源
    */
   const AIPPT = (templateSlides: Slide[], _AISlides: AIPPTSlide[], imgs?: ImgPoolItem[]) => {
-    // 定位到最后一页
-    slidesStore.updateSlideIndex(slidesStore.slides.length - 1)
-    
     // 生成所有幻灯片
     const slides = [...AIPPTGenerator(templateSlides, _AISlides, imgs)]
-    
+
     // 根据当前是否为空演示文稿决定是替换还是追加
     if (isEmptySlide.value) slidesStore.setSlides(slides)
-    else addSlidesFromData(slides)
+    else addSlidesFromDataToEnd(slides)
   }
 
   return {

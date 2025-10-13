@@ -81,6 +81,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import api from '@/services'
 import useAIPPT from '@/hooks/useAIPPT'
+import useAddSlidesOrElements from '@/hooks/useAddSlidesOrElements'
+import useSlideHandler from '@/hooks/useSlideHandler'
 import type { AIPPTSlide } from '@/types/AIPPT'
 import type { Slide, SlideTheme } from '@/types/slides'
 import { useMainStore, useSlidesStore } from '@/store'
@@ -96,6 +98,8 @@ const { sessionId, isOutlineFromFile, generateFromUploadedFile, generateFromWebS
   storeToRefs(mainStore)
 
 const { AIPPTGenerator, presetImgPool } = useAIPPT()
+const { addSlidesFromDataToEnd } = useAddSlidesOrElements()
+const { isEmptySlide } = useSlideHandler()
 
 const outline = ref(route.query.outline as string)
 const language = ref(route.query.language as string)
@@ -172,7 +176,12 @@ const createPPT = async () => {
 
             const slideGenerator = AIPPTGenerator(templateSlides, [slide])
             for (const generatedSlide of slideGenerator) {
-              slideStore.addSlide(generatedSlide)
+              // 使用AI专用的插入逻辑：空演示文稿时替换，否则追加到末尾
+              if (isEmptySlide.value) {
+                slideStore.setSlides([generatedSlide])
+              } else {
+                addSlidesFromDataToEnd([generatedSlide])
+              }
             }
           }
         } catch (err) {

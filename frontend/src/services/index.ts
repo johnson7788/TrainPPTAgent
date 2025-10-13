@@ -98,6 +98,7 @@ export default {
       },
       body: JSON.stringify({
         id,
+        language,
       }),
     })
   },
@@ -119,10 +120,11 @@ export default {
     })
   },
 
-  AIPPT_Outline_From_File(file: File, user_id: string): Promise<any> {
+  AIPPT_Outline_From_File(file: File, user_id: string, language: string): Promise<any> {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('user_id', user_id)
+    formData.append('language', language)
     return fetch(`${SERVER_URL}/tools/aippt_outline_from_file`, {
       method: 'POST',
       body: formData,

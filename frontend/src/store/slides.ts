@@ -182,6 +182,25 @@ export const useSlidesStore = defineStore('slides', {
       this.slides.splice(addIndex, 0, ...slides)
       this.slideIndex = addIndex
     },
+
+    // 专门用于AI生成的幻灯片插入，始终追加到末尾
+    addSlideToEnd(slide: Slide | Slide[]) {
+      const slides = Array.isArray(slide) ? slide : [slide]
+      for (const slide of slides) {
+        if (slide.sectionTag) delete slide.sectionTag
+      }
+
+      if (this.slides.length === 1 && this.slides[0].elements.length === 0) {
+        this.slides = slides
+        this.slideIndex = 0
+        return
+      }
+
+      // 直接追加到末尾
+      this.slides.push(...slides)
+      // 更新索引到最后一页
+      this.slideIndex = this.slides.length - 1
+    },
   
     updateSlide(props: Partial<Slide>, slideId?: string) {
       const slideIndex = slideId ? this.slides.findIndex(item => item.id === slideId) : this.slideIndex

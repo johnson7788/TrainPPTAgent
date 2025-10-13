@@ -99,8 +99,49 @@ export default () => {
     addHistorySnapshot()
   }
 
+  /**
+   * 专门用于AI生成的页面数据插入，始终追加到末尾
+   * @param slides 页面数据
+   */
+  const addSlidesFromDataToEnd = (slides: Slide[]) => {
+    const slideIdMap = createSlideIdMap(slides)
+    const newSlides = slides.map(slide => {
+      const { groupIdMap, elIdMap } = createElementIdMap(slide.elements)
+
+      for (const element of slide.elements) {
+        element.id = elIdMap[element.id]
+        if (element.groupId) element.groupId = groupIdMap[element.groupId]
+		
+        // 若元素绑定了页面跳转链接
+        if (element.link && element.link.type === 'slide') {
+
+          // 待添加页面中包含该页面，则替换相关绑定关系
+          if (slideIdMap[element.link.target]) {
+            element.link.target = slideIdMap[element.link.target]
+          }
+          // 待添加页面中不包含该页面，则删除该元素绑定的页面跳转
+          else delete element.link
+        }
+      }
+      // 动画id替换
+      if (slide.animations) {
+        for (const animation of slide.animations) {
+          animation.id = nanoid(10)
+          animation.elId = elIdMap[animation.elId]
+        }
+      }
+      return {
+        ...slide,
+        id: slideIdMap[slide.id],
+      }
+    })
+    slidesStore.addSlideToEnd(newSlides)
+    addHistorySnapshot()
+  }
+
   return {
     addElementsFromData,
     addSlidesFromData,
+    addSlidesFromDataToEnd,
   }
 }

@@ -309,7 +309,7 @@ const uploadWordAndCreateOutline = async (file: File) => {
   showProcessingModal.value = true
 
   try {
-    const stream = await api.AIPPT_Outline_From_File(file, mainStore.sessionId)
+    const stream = await api.AIPPT_Outline_From_File(file, mainStore.sessionId, language.value)
 
     loading.value = false
     step.value = 'outline'
