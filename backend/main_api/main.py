@@ -52,7 +52,7 @@ async def stream_agent_response(prompt: str, language: str = "chinese"):
     """A generator that yields parts of the agent response."""
     outline_wrapper = A2AOutlineClientWrapper(session_id=uuid.uuid4().hex, agent_url=OUTLINE_API)
     async for chunk_data in outline_wrapper.generate(prompt, language=language):
-        print(f"生成大纲输出的chunk_data: {chunk_data}")
+        logger.info(f"生成大纲输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 
@@ -136,7 +136,7 @@ async def aippt_outline_from_file(
             # 不直接 raise，先打日志方便定位
             if resp.status_code >= 400:
                 # 打印下游返回体，personaldb 对错误信息写得很清楚
-                print(f"[personaldb {resp.status_code}] {resp.text}")
+                logger.info(f"[personaldb {resp.status_code}] {resp.text}")
                 resp.raise_for_status()
 
             # personaldb 的处理函数最终会返回一个 JSON（你上游期望里要有 markdown_content）
@@ -181,7 +181,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
         result = markdown_content[match.start():]
     else:
         result = markdown_content
-    print(f"用户输入的markdown大纲是：{result}")
+    logger.info(f"用户输入的markdown大纲是：{result}")
     content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
     # 传入不同的参数，使用不同的搜索,可以同时使用多个搜索
     search_engine = []
@@ -193,7 +193,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
     metadata = {"user_id": user_id, "search_engine": search_engine, "language": language}
     logger.info(f"前端*内容**=====>metadata数据为：{metadata}")
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
-        print(f"生成正文输出的chunk_data: {chunk_data}")
+        logger.info(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             yield chunk_data["text"]
 @app.post("/tools/aippt")
@@ -261,7 +261,7 @@ async def aippt_file_id_streamer(id: str, language: str = "chinese"):
         result = outline[match.start():]
     else:
         result = outline
-    print(f"用户输入的markdown大纲是：{result}")
+    logger.info(f"用户输入的markdown大纲是：{result}")
     content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
     # 传入不同的参数，使用不同的搜索,可以同时使用多个搜索
     search_engine = ["KnowledgeBaseSearch"]
@@ -269,7 +269,7 @@ async def aippt_file_id_streamer(id: str, language: str = "chinese"):
     metadata = {"user_id": id, "search_engine": search_engine, "language": language}
     logger.info(f"aippt_by_id**=====>metadata数据为：{metadata}")
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
-        print(f"生成正文输出的chunk_data: {chunk_data}")
+        logger.info(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
             slide = chunk_data["text"]
             yield slide + '\n'

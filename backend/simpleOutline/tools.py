@@ -6,12 +6,15 @@
 # @Contact : github: johnson7788
 # @Desc  :
 
+import logging
 from google.adk.tools import ToolContext
 from google.adk.tools.agent_tool import AgentTool
 from weixin_search import sogou_weixin_search,get_real_url,get_article_content
 import time
 from datetime import datetime
 import random
+
+logger = logging.getLogger(__name__)
 
 async def DocumentSearch(
     keyword: str, number: int,
@@ -23,12 +26,12 @@ async def DocumentSearch(
     :return: 返回每篇文档数据
     """
     agent_name = tool_context.agent_name
-    print(f"Agent{agent_name}正在调用工具：DocumentSearch: " + keyword)
+    logger.info(f"Agent{agent_name}正在调用工具：DocumentSearch: " + keyword)
     metadata = tool_context.state.get("metadata", {})
     if metadata is None:
         metadata = {}
-    print(f"调用工具：DocumentSearch时传入的metadata: {metadata}")
-    print("文档检索: " + keyword)
+    logger.info(f"调用工具：DocumentSearch时传入的metadata: {metadata}")
+    logger.info("文档检索: " + keyword)
     start_time = time.time()
     results = sogou_weixin_search(keyword)
     if not results:
@@ -48,7 +51,7 @@ async def DocumentSearch(
         }
         articles.append(article)
     end_time = time.time()
-    print(f"关键词{keyword}相关的文章已经获取完毕，获取到{len(articles)}篇, 耗时{end_time - start_time}秒")
+    logger.info(f"关键词{keyword}相关的文章已经获取完毕，获取到{len(articles)}篇, 耗时{end_time - start_time}秒")
     metadata["tool_document_ids"] = articles
     tool_context.state["metadata"] = metadata
     return articles
