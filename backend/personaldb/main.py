@@ -27,19 +27,6 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# 请求体
-class RequestBody(BaseModel):
-    userId: int
-    qiniuUrl: str
-
-# RabbitMQ消息处理类
-class RabbitMessage(BaseModel):
-    id: int
-    userId: int
-    fileType: str
-    url: str
-    folderId: int
-
 # 创建临时下载目录
 TEMP_DIR = "temp_download"
 if not os.path.exists(TEMP_DIR):
