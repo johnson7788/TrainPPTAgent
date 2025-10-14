@@ -17,7 +17,7 @@ import random
 logger = logging.getLogger(__name__)
 
 async def DocumentSearch(
-    keyword: str, number: int,
+    keyword: str,
     tool_context: ToolContext,
 ):
     """
@@ -25,6 +25,7 @@ async def DocumentSearch(
     :param keyword: str, 搜索的相关文档的关键词
     :return: 返回每篇文档数据
     """
+    number = 3 # 默认搜索数量改小一些，防止有些本地模型的上下文过长
     agent_name = tool_context.agent_name
     logger.info(f"Agent{agent_name}正在调用工具：DocumentSearch: " + keyword)
     metadata = tool_context.state.get("metadata", {})
