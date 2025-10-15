@@ -29,3 +29,6 @@ PPT_WRITER_MODEL=qwen-turbo-latest
 
 PPT_CHECKER_PROVIDER=ali
 PPT_CHECKER_MODEL=qwen-turbo-latest
+
+# 是否使用绘图，如果模型比较小，可以关掉绘图，因为绘图时对模型收集数据和生成固定格式的JSON要求较高
+USE_CHART=True

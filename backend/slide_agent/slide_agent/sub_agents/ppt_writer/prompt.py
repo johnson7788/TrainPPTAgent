@@ -1,5 +1,6 @@
 #promt的前缀
 # 不带图片，不搜索的
+import os
 PREFIX_PAGE_PROMPT = """
 # 通用约束：
 1. 你将收到一段 单行 JSON，键名固定为 type 和 data（如有）。
@@ -50,66 +51,68 @@ TRANSITION_PAGE_PROMPT = """
 """
 
 # 不带图表的prompt，如果对于智力比较差的模型，可以不要带图表，助手下面的CONTENT_PAGE_PROMPT，然后启用这个
-# CONTENT_PAGE_PROMPT = """
-# 内容页（type: "content"）
-# 你是技术与产业结合的内容扩写器。保持 data.title 与各 items[*].title 原样不改；对 items[*].text 逐项扩写为 2～3 句、合计 60～120 字，采用“是什么→为何重要→如何落地/示例”的逻辑；不得删除已有 items；避免编造精确数据或过度承诺。
-#
-# # 原始结构
-# {input_slide_data}
-# """
+if os.environ.get("USE_CHART"):
+    # 带图表的prompt
+    CONTENT_PAGE_PROMPT = """
+    内容页（type: "content"）
+    你是技术与产业结合的内容扩写器。保持 data.title 与各 items[*].title 原样不改；对 items[*].text 逐项扩写为 2～3 句、合计 60～120 字，采用“是什么→为何重要→如何落地/示例”的逻辑；不得删除已有 items；避免编造精确数据或过度承诺。
 
-# 带图表的prompt
-CONTENT_PAGE_PROMPT = """
-内容页（type: "content"）
-你是技术与产业结合的内容扩写器。保持 data.title 与各 items[*].title 原样不改；对 items[*].text 逐项扩写为 2～3 句、合计 60～120 字，采用“是什么→为何重要→如何落地/示例”的逻辑；不得删除已有 items；避免编造精确数据或过度承诺。
+    # 图表：
+    若本页主题涉及趋势、对比或占比，请先进行搜索，如果存在相关数据，那么请在 data.items **末尾**新增 1 个 `{{"kind":"chart", ...}}` 项。遵循以下准则：
+    - 仅新增 0 或 1 个图表，不得超过 1 个；
+    - 选择合适的 chartType：时间趋势用 line，类目对比用 bar，占比用 pie；
+    - 生成 4～8 个 labels，1～2 个 series；所有数值为数字类型，长度一致；
+    - `options` 仅保留轻量配置（legend/xAxis/yAxis/tooltip），不要加入多余嵌套；
+    - 图表标题应与本页 data.title 或核心要点一致且不重复冗长。
 
-# 图表：
-若本页主题涉及趋势、对比或占比，请先进行搜索，如果存在相关数据，那么请在 data.items **末尾**新增 1 个 `{{"kind":"chart", ...}}` 项。遵循以下准则：
-- 仅新增 0 或 1 个图表，不得超过 1 个；
-- 选择合适的 chartType：时间趋势用 line，类目对比用 bar，占比用 pie；
-- 生成 4～8 个 labels，1～2 个 series；所有数值为数字类型，长度一致；
-- `options` 仅保留轻量配置（legend/xAxis/yAxis/tooltip），不要加入多余嵌套；
-- 图表标题应与本页 data.title 或核心要点一致且不重复冗长。
+    # 输出必须包含：
+    - 原始结构（type、data）保持不变；
+    - 若未新增图表，其他结构也不得变化。
 
-# 输出必须包含：
-- 原始结构（type、data）保持不变；
-- 若未新增图表，其他结构也不得变化。
+    # —— 内容页特例：允许新增 1 个图表 item —— 
+    你可以在 data.items 中**最多新增 1 个**图表 item（不替换已存在的文本 item）。
+    图表 item 的 JSON 结构必须为：
+    {{
+      "kind": "chart",                   # 必填，固定字符串 "chart"
+      "title": "图表标题",                 # 建议 ≤ 16 字
+      "text": "图表的描述信息",                 # 建议 ≤ 40 字
+      "chartType": "line" | "bar" | "pie" | "column" | "pie" | "ring" | "area" | "radar",
+      "labels": ["类目或时间刻度", ...],   # 4~8 个，均为字符串
+      "series": [                        # 1~2 组数据
+        {{ "name": "系列名", "data": [数值, ...] }}  # data 长度与 labels 一致，均为数字
+      ],
+      "options": {{
+          "xAxis": {{ "name": "xxx" }},
+          "yAxis": {{ "name": "xxx" }}
+      }}
+    }}
 
-# —— 内容页特例：允许新增 1 个图表 item —— 
-你可以在 data.items 中**最多新增 1 个**图表 item（不替换已存在的文本 item）。
-图表 item 的 JSON 结构必须为：
-{{
-  "kind": "chart",                   # 必填，固定字符串 "chart"
-  "title": "图表标题",                 # 建议 ≤ 16 字
-  "text": "图表的描述信息",                 # 建议 ≤ 40 字
-  "chartType": "line" | "bar" | "pie" | "column" | "pie" | "ring" | "area" | "radar",
-  "labels": ["类目或时间刻度", ...],   # 4~8 个，均为字符串
-  "series": [                        # 1~2 组数据
-    {{ "name": "系列名", "data": [数值, ...] }}  # data 长度与 labels 一致，均为数字
-  ],
-  "options": {{
-      "xAxis": {{ "name": "xxx" }},
-      "yAxis": {{ "name": "xxx" }}
-  }}
-}}
+    # 何时应当新增图表：
+    - 当本页内容涉及趋势（按月/季度/年份）、对比（地区/品类/渠道）、占比（份额/构成）或量化指标（活跃、销量、转化等）时；
+    - 若不存在可视化价值或数据不可合理假设，则**不要**新增图表。
 
-# 何时应当新增图表：
-- 当本页内容涉及趋势（按月/季度/年份）、对比（地区/品类/渠道）、占比（份额/构成）或量化指标（活跃、销量、转化等）时；
-- 若不存在可视化价值或数据不可合理假设，则**不要**新增图表。
-
-# 图表数据生成规则（不可编造精细数字）：
-- 仅生成**小规模、示例级**数据（4~8 个点），体现相对趋势与差异，不体现敏感或精确业务指标；
-- 所有数值均为**数字类型**；`series[*].data.length == labels.length`；
-- 选择图表类型：
-  - 时间/趋势：`line`
-  - 类目对比：`bar`
-  - 构成占比：`pie`
-- 不得新增除 images 与（内容页特例中的）chart 以外的其他字段。
+    # 图表数据生成规则（不可编造精细数字）：
+    - 仅生成**小规模、示例级**数据（4~8 个点），体现相对趋势与差异，不体现敏感或精确业务指标；
+    - 所有数值均为**数字类型**；`series[*].data.length == labels.length`；
+    - 选择图表类型：
+      - 时间/趋势：`line`
+      - 类目对比：`bar`
+      - 构成占比：`pie`
+    - 不得新增除 images 与（内容页特例中的）chart 以外的其他字段。
 
 
-# 原始结构
-{input_slide_data}
-"""
+    # 原始结构
+    {input_slide_data}
+    """
+else:
+    CONTENT_PAGE_PROMPT = """
+    内容页（type: "content"）
+    你是技术与产业结合的内容扩写器。保持 data.title 与各 items[*].title 原样不改；对 items[*].text 逐项扩写为 2～3 句、合计 60～120 字，采用“是什么→为何重要→如何落地/示例”的逻辑；不得删除已有 items；避免编造精确数据或过度承诺。
+    
+    # 原始结构
+    {input_slide_data}
+    """
+
 
 END_PAGE_PROMPT = """
 结束页（type: "end"）
