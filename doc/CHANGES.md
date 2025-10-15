@@ -50,7 +50,7 @@ src/store/slides.ts
  │    164 + }                                                                                           │
  │    165 +
 
-## 前端图片Interface扩充, AIPPT.ts
+## 前端图片Interface扩充, frontend/src/types/AIPPT.ts
 ```
 // 图片信息接口
 export interface AIPPTImage {
@@ -173,3 +173,21 @@ backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py
 +            options.data = await getSafeImageDataURL(el.src)
 +          }
 ```
+
+## 图表的渲染
+src/types/AIPPT.ts中定义图表的类型 AIPPTContentChartItem， 支持 ECharts-like 的数据格式（labels 对应横轴或扇区，series 是多维数据集）。
+export type AIPPTChartType = 'line' | 'bar' | 'pie'
+
+src/hooks/useAIPPT.ts中的isChartItem判断返回的数据类型是否为AIPPTContentChartItem，然后进行渲染
+
+模板匹配逻辑， AIPPTGenerator() 中，处理 item.type === 'content' 的部分
+找到可用的模版
+const _contentTemplates = getUseableContentTemplates(contentTemplates, items)
+
+getNewChartElement 负责核心渲染
+AIPPTContentChartItem → isChartItem → getNewChartElement → PPTChartElement → ChartRenderer
+src/views/components/element/ChartElement， 内部真正渲染图表的部分交给 <Chart /> 子组件处理。src/views/components/element/ChartElement/Chart.vue中的echarts进行最终渲染。
+
+## Bug修复，AI生成PPT时总是追加到最后
+frontend/src/hooks/useAddSlidesOrElements.ts 中的函数addSlidesFromDataToEnd
+frontend/src/store/slides.ts 中的addSlideToEnd

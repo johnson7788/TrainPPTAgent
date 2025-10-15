@@ -128,6 +128,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "2025 上半年活跃用户",
+            "text": "2025 上半年活跃用户text",
             "chartType": "line",
             "labels": ["1月", "2月", "3月", "4月", "5月", "6月"],
             "series": [
@@ -151,6 +152,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "各地区销量",
+            "text": "各地区销量text",
             "chartType": "bar",
             "labels": ["华北", "华东", "华南", "西南", "华中"],
             "series": [
@@ -173,6 +175,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "品类占比",
+            "text": "品类占比text",
             "chartType": "pie",
             "labels": ["A 类", "B 类", "C 类", "D 类"],
             "series": [
