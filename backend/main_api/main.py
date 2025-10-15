@@ -195,7 +195,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
         logger.info(f"生成正文输出的chunk_data: {chunk_data}")
         if chunk_data["type"] == "text":
-            yield chunk_data["text"]
+            yield chunk_data["text"] + "\n"
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content

@@ -129,16 +129,16 @@ class PPTWriterSubAgent(LlmAgent):
         current_slide_schema = outline_json[current_slide_index]
         metadata = ctx.state.get("metadata", {})
         # 默认支持所有的搜索工具
-        search_engine = metadata.get("search_engine")
+        search_engine = metadata.get("search_engine", [])
         # 如果是None，那么没问题，走默认PREFIX_PAGE_PROMPT，如果是空列表，那么使用所有工具
         if search_engine == []:
             search_engine = ["KnowledgeBaseSearch","DocumentSearch","SearchImage"]
         user_id = metadata.get("user_id", "")
         language = metadata.get("language", "chinese")  # 默认中文
-        if not user_id and "KnowledgeBaseSearch" in search_engine:
+        if not user_id and search_engine and "KnowledgeBaseSearch" in search_engine:
             print("当前用户未指定知识库的用户id，无法使用KnowledgeBaseSearch进行搜索，必须去除知识库搜索工具")
             search_engine.remove("KnowledgeBaseSearch")
-        # 根据不同的搜索工具，使用不同的prefix的prompt
+        # 根据不同的搜索工具，使用不同的prefix的prompt, search_engine为False的时候
         if not search_engine:
             prefix_prompt = prompt.PREFIX_PAGE_PROMPT.format(language=language)
         elif search_engine == ["SearchImage"]:
