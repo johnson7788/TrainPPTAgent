@@ -128,7 +128,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "2025 上半年活跃用户",
-            "text": "2025 上半年活跃用户text",
+            "text": "2025年的我国的1到6月份的本产品在不同设备上的月活统计",
             "chartType": "line",
             "labels": ["1月", "2月", "3月", "4月", "5月", "6月"],
             "series": [
@@ -152,7 +152,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "各地区销量",
-            "text": "各地区销量text",
+            "text": "国内各个区域的销量占比图",
             "chartType": "bar",
             "labels": ["华北", "华东", "华南", "西南", "华中"],
             "series": [
@@ -175,7 +175,7 @@ data_response_content = [
           {
             "kind": "chart",
             "title": "品类占比",
-            "text": "品类占比text",
+            "text": "全国的各地区的产品销量占比如下图",
             "chartType": "pie",
             "labels": ["A 类", "B 类", "C 类", "D 类"],
             "series": [
@@ -189,6 +189,123 @@ data_response_content = [
         ]
       }
     },
+    {
+      "type": "content",
+      "data": {
+        "title": "部门业绩（横向柱状图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "部门业绩对比",
+            "text": "2025年上半年各部门销售业绩对比（单位：万元）",
+            "chartType": "column",
+            "labels": ["销售部", "市场部", "研发部", "客服部", "行政部"],
+            "series": [
+              { "name": "业绩额", "data": [480, 360, 540, 300, 220] }
+            ],
+            "options": {
+              "legend": { "show": True },
+              "xAxis": { "type": "value", "name": "万元" },
+              "yAxis": { "type": "category" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "销售结构（环形图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "销售结构分析",
+            "text": "2025年各产品线销售结构环形占比图",
+            "chartType": "ring",
+            "labels": ["手机", "平板", "笔记本", "智能穿戴"],
+            "series": [
+              { "name": "销售占比", "data": [45, 25, 20, 10] }
+            ],
+            "options": {
+              "legend": { "top": "bottom" },
+              "tooltip": { "trigger": "item", "formatter": "{b}: {d}%" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "季度收入趋势（面积图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "2025年季度收入变化",
+            "text": "2025年公司四个季度的总收入趋势（单位：亿元）",
+            "chartType": "area",
+            "labels": ["Q1", "Q2", "Q3", "Q4"],
+            "series": [
+              { "name": "主营业务收入", "data": [8.5, 9.2, 10.8, 11.5] },
+              { "name": "其他收入", "data": [1.0, 1.3, 1.1, 1.6] }
+            ],
+            "options": {
+              "lineSmooth": True,
+              "yAxis": { "name": "亿元" },
+              "xAxis": { "boundaryGap": True }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "content",
+      "data": {
+        "title": "用户满意度（雷达图）",
+        "items": [
+          {
+            "kind": "chart",
+            "title": "主要指标满意度",
+            "text": "不同维度下的用户满意度对比",
+            "chartType": "radar",
+            "labels": ["性能", "外观", "价格", "售后", "易用性"],
+            "series": [
+              { "name": "iOS 用户", "data": [85, 90, 70, 80, 95] },
+              { "name": "Android 用户", "data": [80, 85, 78, 75, 88] }
+            ],
+            "options": {
+              "legend": { "top": "bottom" },
+              "tooltip": { "trigger": "item" }
+            }
+          }
+        ]
+      }
+    },
+    # {
+    #   "type": "content",
+    #   "data": {
+    #     "title": "价格与销量关系（散点图）",
+    #     "items": [
+    #       {
+    #         "kind": "chart",
+    #         "title": "价格与销量关系分析",
+    #         "text": "不同产品价格与销量之间的分布情况",
+    #         "chartType": "scatter",
+    #         "labels": ["样本产品"],
+    #         "series": [
+    #           { "name": "价格（千元）", "data": [3.2, 4.5, 5.1, 6.8, 8.0, 9.5] },
+    #           { "name": "销量（万台）", "data": [45, 38, 30, 24, 18, 12] }
+    #         ],
+    #         "options": {
+    #           "legend": { "show": True },
+    #           "xAxis": { "name": "价格（千元）" },
+    #           "yAxis": { "name": "销量（万台）" },
+    #           "tooltip": { "trigger": "item" }
+    #         }
+    #       }
+    #     ]
+    #   }
+    # },  # 散点图不能显示legend，奇怪？？
     image_data,
     {"type": "end"}
 ]
@@ -271,6 +388,8 @@ async def get_templates():
         { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
         { "name": "引用", "id": "template_5", "cover": "/api/data/template_5.jpg" },
         { "name": "图片和表格", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+        {"name": "单图带字", "id": "template_7", "cover": "/api/data/template_6.jpg"},
+        {"name": "单图不带字", "id": "template_8", "cover": "/api/data/template_6.jpg"},
     ]
 
     return {"data": templates}

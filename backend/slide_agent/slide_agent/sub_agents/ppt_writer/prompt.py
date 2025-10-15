@@ -71,7 +71,8 @@ CONTENT_PAGE_PROMPT = """
 {{
   "kind": "chart",                   # 必填，固定字符串 "chart"
   "title": "图表标题",                 # 建议 ≤ 16 字
-  "chartType": "line" | "bar" | "pie",
+  "text": "图表的描述信息",                 # 建议 ≤ 40 字
+  "chartType": "line" | "bar" | "pie" | "column" | "pie" | "ring" | "area" | "radar",
   "labels": ["类目或时间刻度", ...],   # 4~8 个，均为字符串
   "series": [                        # 1~2 组数据
     {{ "name": "系列名", "data": [数值, ...] }}  # data 长度与 labels 一致，均为数字

@@ -60,7 +60,15 @@ export interface AIPPTContentTextItem {
 }
 
 /** 仅支持的图表类型：折线图(line) / 柱状图(bar) / 饼图(pie) */
-export type AIPPTChartType = 'line' | 'bar' | 'pie'
+export type AIPPTChartType =
+  | 'line' // 折线图
+  | 'bar' // 条形图（纵向）
+  | 'column' // 柱状图（横向）
+  | 'pie' // 饼图
+  | 'ring' // 环形图
+  | 'area' // 面积图
+  | 'radar' // 雷达图
+  | 'scatter' // 散点图
 
 /** 图表序列（数据列） */
 export interface AIPPTChartSeries {
@@ -159,8 +167,17 @@ export function isLegacyTextItem(
   )
 }
 
-/** （可选）运行时校验：限制仅 line/bar/pie */
-export const SUPPORTED_CHART_TYPES = ['line', 'bar', 'pie'] as const
+/** （可选）运行时校验 */
+export const SUPPORTED_CHART_TYPES = [
+  'line',
+  'bar',
+  'column',
+  'pie',
+  'ring',
+  'area',
+  'radar',
+  'scatter'
+] as const
 export function isSupportedChartType(t: any): t is AIPPTChartType {
   return (SUPPORTED_CHART_TYPES as readonly string[]).includes(t)
 }

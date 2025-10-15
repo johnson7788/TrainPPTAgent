@@ -175,6 +175,11 @@ backend/slide_agent/slide_agent/sub_agents/ppt_writer/tools.py
 ```
 
 ## 图表的渲染
+核心文件
+src/types/AIPPT.ts
+src/hooks/useAIPPT.ts
+src/views/components/element/ChartElement
+处理逻辑：
 src/types/AIPPT.ts中定义图表的类型 AIPPTContentChartItem， 支持 ECharts-like 的数据格式（labels 对应横轴或扇区，series 是多维数据集）。
 export type AIPPTChartType = 'line' | 'bar' | 'pie'
 
@@ -191,3 +196,101 @@ src/views/components/element/ChartElement， 内部真正渲染图表的部分�
 ## Bug修复，AI生成PPT时总是追加到最后
 frontend/src/hooks/useAddSlidesOrElements.ts 中的函数addSlidesFromDataToEnd
 frontend/src/store/slides.ts 中的addSlideToEnd
+
+
+##  图表渲染中的文字部分进行渲染
+src/hooks/useAIPPT.ts中的 AIPPTGenerator主要进行数据的解析，包括后端的大模型返回数据和模版的选择，根据选择的模版，对模版中的数据进行替换和显示。
+contentTemplate代表模版， elements代表对后端返回的items数据进行解析后的html的数据。
+contentTemplate是当前选择的模版，如何对这个模版进行解析，那么就是如下这个函数的操作逻辑
+const elements = contentTemplate.elements.map(el => {
+  if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
+的里面打上断点，条件是 el.type === 'text'，即查看模版中的元素的类型是text时，如何进行更多的操作
+如果后端传过来的items.length为1，可能是绘图的数据，那么就对绘图的中的text进行解析
+          if (items.length === 1) {
+            const only = items[0]
+            if ((isTextItem(only) || isLegacyTextItem(only)) && checkTextType(el, 'content') && only.text) {
+              return getNewTextElement({ el: el as any, text: only.text, maxLine: 6 })
+            }
+            // 如果只有1个元素，并且是图表，那么提取图表中的text作为显示的文本
+            if (isChartItem(only) && checkTextType(el, 'content') && only.text) {
+              return getNewTextElement({ el: el as any, text: only.text, maxLine: 6 })
+            }
+          }
+yield { ...contentTemplate, id: nanoid(10), elements }
+
+前端中的items的内容如下
+```items = [
+    {
+        "kind": "chart",
+        "title": "2025 上半年活跃用户",
+        "text": "2025 上半年活跃用户text",
+        "chartType": "line",
+        "labels": [
+            "1月",
+            "2月",
+            "3月",
+            "4月",
+            "5月",
+            "6月"
+        ],
+        "series": [
+            {
+                "name": "iOS",
+                "data": [
+                    12,
+                    15,
+                    18,
+                    22,
+                    24,
+                    27
+                ]
+            },
+            {
+                "name": "Android",
+                "data": [
+                    10,
+                    13,
+                    17,
+                    20,
+                    23,
+                    25
+                ]
+            }
+        ],
+        "options": {
+            "legend": {
+                "top": 8
+            },
+            "xAxis": {
+                "boundaryGap": false
+            },
+            "yAxis": {
+                "name": "万"
+            }
+        }
+    }
+]```
+
+
+## 所有的图表类型,全部是echarts支持的
+| chartType | 图表中文名   | 数据要求                       | 特点      |
+| --------- | ------- | -------------------------- | ------- |
+| `line`    | 折线图     | 多序列，每序列为数值数组               | 可平滑、可堆叠 |
+| `bar`     | 条形图（纵向） | `labels` 为类别，`series` 为数组  | y 轴为分类  |
+| `column`  | 柱状图（横向） | 与 `bar` 相反                 | x 轴为分类  |
+| `pie`     | 饼图      | 单序列，`labels` = 分类          | 比例展示    |
+| `ring`    | 环形图     | 单序列，带 `radius` 环形效果        | 比例展示    |
+| `area`    | 面积图     | 类似 `line`，但填充面积            | 趋势变化明显  |
+| `radar`   | 雷达图     | `labels` 为维度，`series` 为数值组 | 对比维度表现  |
+| `scatter` | 散点图     | 两个数列，分别为 X/Y 坐标            | 相关性分析   |
+
+src/types/AIPPT.ts中的SUPPORTED_CHART_TYPES和AIPPTChartType
+export type AIPPTChartType =
+  | 'line' // 折线图
+  | 'bar' // 条形图（纵向）
+  | 'column' // 柱状图（横向）
+  | 'pie' // 饼图
+  | 'ring' // 环形图
+  | 'area' // 面积图
+  | 'radar' // 雷达图
+  | 'scatter' // 散点图
