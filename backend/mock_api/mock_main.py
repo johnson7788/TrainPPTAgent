@@ -281,6 +281,7 @@ data_response_content = [
         ]
       }
     },
+    {"type": "content", "data": {"title": "人口特征分析", "items": [{"kind": "chart", "title": "人口结构类型分布示意", "text": "展示典型区域按年龄分组的人口比例，帮助把握市场主力人群情况。", "chartType": "bar", "labels": ["0-14岁", "15-24岁", "25-44岁", "45-64岁", "65岁以上"], "series": [{"name": "人口占比（%）", "data": [12, 15, 34, 25, 14]}], "options": {"xAxis": {"name": "年龄段"}, "yAxis": {"name": "占比%"}}}]}},
     {"type": "content", "data": {"title": "安全环保提示", "items": [{"title": "提示地层流体及压力异常",
                                                                      "text": "地层流体及压力异常可能引发井喷或漏失，需通过实时监测钻井液密度和流量变化来识别。这类异常常出现在高压油气层或断层带附近，提前预警可避免重大安全事故。现场应配备压力传感器与自动报警系统，确保操作人员能及时响应。"},
                                                                     {"title": "说明开发方式及钻压干扰",
@@ -370,7 +371,7 @@ def preset_json_to_slides(markdown_text):
             # 如果有普通项，保留一条主内容 slide
             if normal_items:
                 new_one = {
-                    "type": one["type"],
+                    "type": "content",
                     "data": {
                         "title": one["data"].get("title", ""),
                         "items": normal_items
@@ -381,7 +382,7 @@ def preset_json_to_slides(markdown_text):
             # 每个 chart 单独作为一条 slide
             for chart in chart_items:
                 new_chart_slide = {
-                    "type": one["type"],
+                    "type": "content",
                     "data": {
                         "title": one["data"].get("title", ""),
                         "items": [chart]

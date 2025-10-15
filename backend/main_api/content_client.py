@@ -112,10 +112,10 @@ class A2AContentClientWrapper:
                     chunk_status_state = chunk_status.get("state")
 
                     if chunk_status_state == "submitted":
-                        print("任务已经触发，并提交给后端")
+                        self.logger.info("任务已经触发，并提交给后端")
                         continue
                     elif chunk_status_state == "working":
-                        print("任务处理中")
+                        self.logger.info("任务处理中")
 
                     # 尝试提取内容
                     message = chunk_status.get("message", {})
@@ -194,7 +194,7 @@ class A2AContentClientWrapper:
 
             # 普通项
             if normal_items:
-                normal_item_data = {"type": one["type"],"data": {"title": title, "items": normal_items}}
+                normal_item_data = {"type": "content","data": {"title": title, "items": normal_items}}
                 yield {
                     "type": "text",
                     "text": json.dumps(normal_item_data, ensure_ascii=False),
@@ -203,7 +203,7 @@ class A2AContentClientWrapper:
 
             # 每个 chart 单独作为一条 slide
             for chart in chart_items:
-                chart_data = {"type": one["type"], "data": {"title": title, "items": [chart]}}
+                chart_data = {"type": "content", "data": {"title": title, "items": [chart]}}
                 yield {
                     "type": "text",
                     "text": json.dumps(chart_data, ensure_ascii=False),
