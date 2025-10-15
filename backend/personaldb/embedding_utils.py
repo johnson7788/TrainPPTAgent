@@ -357,7 +357,7 @@ class EmbeddingModel(object):
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
             self._impl = self._impl_openai_compatible  # 走OpenAI兼容
-        if self.provider == "doubao":
+        elif self.provider == "doubao":
             api_key = os.getenv("DOUBAO_API_KEY")
             assert api_key, "DOUBAO_API_KEY没有设置，无法使用阿里云嵌入模型"
             self.client = OpenAI(
