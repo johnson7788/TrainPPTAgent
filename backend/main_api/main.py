@@ -163,7 +163,7 @@ async def aippt_outline_from_file(
 class AipptContentRequest(BaseModel):
     content: str
     language: str = "zh"  #默认中文
-    user_id: str = ""  # 当使用知识库时，需要根据用户的user_id查询对应的知识库
+    sessionId: str = ""  # 当使用知识库时，需要根据用户的user_id查询对应的知识库
     generateFromUploadedFile: bool = False  # 是否从上传的文件中生成PPT内容
     generateFromWebSearch: bool = True  # 是否从网络搜索中生成PPT内容
 
@@ -200,7 +200,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
 async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content
     logger.info(f"前端*内容**=====>用户输入：{request.language}")
-    return StreamingResponse(stream_content_response(markdown_content, language=request.language, generateFromUploadedFile=request.generateFromUploadedFile, generateFromWebSearch=request.generateFromWebSearch, user_id=request.user_id), media_type="text/plain")
+    return StreamingResponse(stream_content_response(markdown_content, language=request.language, generateFromUploadedFile=request.generateFromUploadedFile, generateFromWebSearch=request.generateFromWebSearch, user_id=request.sessionId), media_type="text/plain")
 
 @app.get("/data/{filename}")
 async def get_data(filename: str):

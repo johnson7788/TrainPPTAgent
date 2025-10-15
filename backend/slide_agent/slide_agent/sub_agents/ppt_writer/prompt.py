@@ -49,6 +49,16 @@ TRANSITION_PAGE_PROMPT = """
 {input_slide_data}
 """
 
+# 不带图表的prompt，如果对于智力比较差的模型，可以不要带图表
+CONTENT_PAGE_PROMPT = """
+内容页（type: "content"）
+你是技术与产业结合的内容扩写器。保持 data.title 与各 items[*].title 原样不改；对 items[*].text 逐项扩写为 2～3 句、合计 60～120 字，采用“是什么→为何重要→如何落地/示例”的逻辑；不得删除已有 items；避免编造精确数据或过度承诺。
+
+# 原始结构
+{input_slide_data}
+"""
+
+# 带图表的prompt
 CONTENT_PAGE_PROMPT = """
 内容页（type: "content"）
 你是技术与产业结合的内容扩写器。保持 data.title 与各 items[*].title 原样不改；对 items[*].text 逐项扩写为 2～3 句、合计 60～120 字，采用“是什么→为何重要→如何落地/示例”的逻辑；不得删除已有 items；避免编造精确数据或过度承诺。

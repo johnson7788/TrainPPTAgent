@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 import asyncio
@@ -133,8 +134,10 @@ class A2AContentClientWrapper:
                                 # print(f"收到的是data内容:")
                                 yield {"type": "data", "data": part["data"], "author":author}
                             else:
-                                # text文本
+                                # text文本,对于图表会拆分成2条数据返回
                                 yield {"type": "text", "text": part["text"], "author": author}
+                                # for item in self.process_chart_part_text(part.get("text", ""), author):
+                                #     yield item
                 elif result.get("kind") == "artifact-update":
                     artifact = result.get("artifact", {})
                     parts = artifact.get("parts", [])
@@ -154,6 +157,59 @@ class A2AContentClientWrapper:
                     self.logger.warning(f"未识别的chunk类型: {result.get('kind')}")
             print(f"Agent正常处理完成，对话结束。")
             yield {"type": "final", "text": "对话结束", "author": "system"}
+
+    def process_chart_part_text(self, part_text: str, author: str):
+        """
+        如果是content,并且包含chart，那么就拆分成2条
+        尝试解析 part_text：
+        - 如果是 JSON 且 type=content，则拆分成普通项与 chart 项；
+        - 否则原样返回。
+
+        返回一个生成器（yield 多条结果）。
+        """
+        if not isinstance(part_text, str):
+            yield {"type": "text", "text": str(part_text), "author": author}
+            return
+
+        try:
+            one = json.loads(part_text)
+        except json.JSONDecodeError:
+            # 不是 JSON，直接返回原始文本
+            yield {"type": "text", "text": part_text, "author": author}
+            return
+
+        # 如果是 content 类型则拆分
+        if isinstance(one, dict) and one.get("type") == "content":
+            data = one.get("data", {})
+            items = data.get("items", [])
+            title = data.get("title", "")
+            normal_items = []
+            chart_items = []
+
+            for item in items:
+                if item.get("kind") == "chart":
+                    chart_items.append(item)
+                else:
+                    normal_items.append(item)
+
+            # 普通项
+            if normal_items:
+                yield {
+                    "type": "text",
+                    "text": json.dumps({"title": title, "items": normal_items}, ensure_ascii=False),
+                    "author": author,
+                }
+
+            # 每个 chart 单独作为一条 slide
+            for chart in chart_items:
+                yield {
+                    "type": "text",
+                    "text": json.dumps({"title": title, "items": [chart]}, ensure_ascii=False),
+                    "author": author,
+                }
+        else:
+            # 不是 content 类型
+            yield {"type": "text", "text": part_text, "author": author}
 
 if __name__ == '__main__':
     async def main():

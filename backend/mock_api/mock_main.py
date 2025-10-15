@@ -281,6 +281,24 @@ data_response_content = [
         ]
       }
     },
+    {"type": "content", "data": {"title": "安全环保提示", "items": [{"title": "提示地层流体及压力异常",
+                                                                     "text": "地层流体及压力异常可能引发井喷或漏失，需通过实时监测钻井液密度和流量变化来识别。这类异常常出现在高压油气层或断层带附近，提前预警可避免重大安全事故。现场应配备压力传感器与自动报警系统，确保操作人员能及时响应。"},
+                                                                    {"title": "说明开发方式及钻压干扰",
+                                                                     "text": "不同的开发方式（如注水、气驱）会影响地层压力分布，可能导致钻压波动或井壁失稳。合理设计钻压参数并结合地质模型分析，有助于减少对邻井的干扰。例如，在多井区作业时，应避免同时高负荷钻进以降低风险。"},
+                                                                    {"title": "检测有毒有害气体含量",
+                                                                     "text": "有毒有害气体如硫化氢、甲烷等可能积聚在井口或作业区域，威胁人员健康甚至引发爆炸。需使用便携式气体检测仪定期巡检，并设置通风系统与报警阈值。一旦超标立即撤离并启动应急程序。"},
+                                                                    {"title": "评估环境影响及防护措施",
+                                                                     "text": "钻探活动可能造成土壤污染、噪声扰民或生态破坏，应在施工前开展环境影响评估。采取防渗漏装置、降噪屏障和植被恢复等措施，可有效减轻对周边环境的影响。同时建立环境监测机制，确保合规运行。"},
+                                                                    {"kind": "chart", "title": "环境风险等级分布",
+                                                                     "text": "不同作业环节的环境风险等级对比",
+                                                                     "chartType": "bar",
+                                                                     "labels": ["钻井作业", "完井测试", "运输装卸",
+                                                                                "废弃物处理"], "series": [
+                                                                        {"name": "风险等级", "data": [7, 6, 5, 8]}],
+                                                                     "options": {"xAxis": {"name": "作业环节"},
+                                                                                 "yAxis": {
+                                                                                     "name": "风险等级（1-10）"}}}]}}
+    ,
     # {
     #   "type": "content",
     #   "data": {
@@ -329,12 +347,51 @@ class AipptContentRequest(BaseModel):
 class AipptByIDRequest(BaseModel):
     id: str
 
-def preset_json_to_slides(mardkown_text):
-    """不用传递的参数mardkown_text，使用假的数据data_response_content"""
+def preset_json_to_slides(markdown_text):
+    """不用传递参数 markdown_text，使用假的数据 data_response_content。
+    如果发现 items 中有 kind == 'chart'，则将其单独拆成一条 slide。
+    """
     slides = []
     for one in data_response_content:
-        slides.append(one)
+        one_type = one["type"]
+        if one_type == "content":
+            # 获取原始 items
+            items = one["data"].get("items", [])
+            # 分离普通项和图表项
+            normal_items = []
+            chart_items = []
+
+            for item in items:
+                if item.get("kind") == "chart":
+                    chart_items.append(item)
+                else:
+                    normal_items.append(item)
+
+            # 如果有普通项，保留一条主内容 slide
+            if normal_items:
+                new_one = {
+                    "type": one["type"],
+                    "data": {
+                        "title": one["data"].get("title", ""),
+                        "items": normal_items
+                    }
+                }
+                slides.append(new_one)
+
+            # 每个 chart 单独作为一条 slide
+            for chart in chart_items:
+                new_chart_slide = {
+                    "type": one["type"],
+                    "data": {
+                        "title": one["data"].get("title", ""),
+                        "items": [chart]
+                    }
+                }
+                slides.append(new_chart_slide)
+        else:
+            slides.append(one)
     return slides
+
 
 async def aippt_content_streamer(markdown_content: str):
     """Parses markdown and streams slide data as JSON objects."""

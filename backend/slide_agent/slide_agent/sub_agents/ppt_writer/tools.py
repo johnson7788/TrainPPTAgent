@@ -206,6 +206,8 @@ def KnowledgeBaseSearch(keyword: str, tool_context: ToolContext):
     metadata = tool_context.state.get("metadata", {})
     # 就是对应用户上传PDF文件
     user_id = metadata.get("user_id", 999)
+    if not user_id:
+        user_id = 999
     logger.info(f"❤️❤️❤️❤️😜😜😜😜😜调用知识库搜索接口, user_id: {user_id}, query: {keyword}, topk: {topk}")
     print(f"❤️❤️❤️❤️😜😜😜😜😜调用知识库搜索接口, user_id: {user_id}, query: {keyword}, topk: {topk}")
     PERSONAL_DB = os.environ.get('PERSONAL_DB', '')
