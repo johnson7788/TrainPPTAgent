@@ -1,1 +1,205 @@
-{"title":"未命名演示文稿","width":1000,"height":562.5,"theme":{"themeColors":["#5b9bd5","#ed7d31","#a5a5a5","#ffc000","#4472c4","#70ad47"],"fontColor":"#333","fontName":"","backgroundColor":"#fff","shadow":{"h":3,"v":3,"blur":2,"color":"#808080"},"outline":{"width":2,"color":"#525252","style":"solid"}},"slides":[{"id":"LqKU62Xhgx","elements":[{"type":"image","id":"T126KdLNYC","src":"https://images.pexels.com/photos/29968980/pexels-photo-29968980.jpeg?auto=compress&cs=tinysrgb&w=600","width":372.8317223198594,"height":562.5,"left":0,"top":0,"fixedRatio":true,"rotate":0,"lock":true,"radius":0,"filters":{"grayscale":"100%"},"imageType":"pageFigure"},{"type":"text","id":"MFF_2iTXwl","left":451.4176786773429,"top":52.26334519572953,"width":510.82443653618026,"height":56,"content":"<p style=\"\"><span style=\"font-size: 36px;\"><span style=\"color: rgb(155, 0, 0);\">模板内容页标题</span></span></p>","rotate":0,"defaultFontName":"","defaultColor":"#333","vertical":false,"lineHeight":1,"paragraphSpace":0,"textType":"title"},{"type":"shape","id":"chGcTZPN11","left":419.4176786773429,"top":64.26334519572953,"width":32,"height":32,"viewBox":[200,200],"path":"M 0 0 L 80 0 L 200 100 L 80 200 L 0 200 L 120 100 L 0 0 Z","fill":"rgb(155, 0, 0)","fixedRatio":true,"rotate":0,"lock":false},{"type":"line","id":"v66M0GKD8b","left":419.4176786773429,"top":123.04141353244943,"start":[0,0],"end":[540.4804270462632,0],"points":["",""],"color":"rgb(155, 0, 0)","style":"solid","width":2,"lock":false},{"type":"shape","id":"CeYyWY3QQ2","left":952.2597864768684,"top":11.378540183867166,"width":36.65230204626337,"height":36.65230204626337,"viewBox":[36.65230204626337,36.65230204626337],"path":"M 0 0 L 0 36.65230204626337 L 36.65230204626337 36.65230204626337 L 36.65230204626337 32.98707184163703 L 3.6652302046263374 32.98707184163703 L 3.6652302046263374 0 Z","fill":"rgb(155, 0, 0)","fixedRatio":false,"rotate":180,"pathFormula":"L","keypoints":[0.1],"lock":true},{"type":"shape","id":"-6j5e-9aTs","left":952.2597864768684,"top":513.6679826512456,"width":36.65230204626337,"height":36.65230204626337,"viewBox":[36.65230204626337,36.65230204626337],"path":"M 0 0 L 0 36.65230204626337 L 36.65230204626337 36.65230204626337 L 36.65230204626337 32.98707184163703 L 3.6652302046263374 32.98707184163703 L 3.6652302046263374 0 Z","fill":"rgb(155, 0, 0)","fixedRatio":false,"rotate":-90,"pathFormula":"L","keypoints":[0.1],"lock":true},{"type":"chart","id":"2cjkN0tR58","chartType":"bar","left":485.51357583963835,"top":174.8172514619883,"width":408.5061137692717,"height":254.33280170122276,"rotate":0,"themeColors":["#5b9bd5","#ed7d31","#a5a5a5","#ffc000","#4472c4","#70ad47"],"textColor":"#333","data":{"labels":["类别1","类别2","类别3","类别4","类别5"],"legends":["系列1","系列2"],"series":[[12,19,5,2,18],[7,11,13,21,9]]},"chartMark":"item"}],"background":{"type":"solid","color":"#fff"},"type":"content"}]}
+{
+  "title": "未命名演示文稿",
+  "width": 1000,
+  "height": 562.5,
+  "theme": {
+    "themeColors": [
+      "#5b9bd5",
+      "#ed7d31",
+      "#a5a5a5",
+      "#ffc000",
+      "#4472c4",
+      "#70ad47"
+    ],
+    "fontColor": "#333",
+    "fontName": "",
+    "backgroundColor": "#fff",
+    "shadow": {
+      "h": 3,
+      "v": 3,
+      "blur": 2,
+      "color": "#808080"
+    },
+    "outline": {
+      "width": 2,
+      "color": "#525252",
+      "style": "solid"
+    }
+  },
+  "slides": [
+    {
+      "id": "LqKU62Xhgx",
+      "elements": [
+        {
+          "type": "image",
+          "id": "T126KdLNYC",
+          "src": "https://images.pexels.com/photos/29968980/pexels-photo-29968980.jpeg?auto=compress&cs=tinysrgb&w=600",
+          "width": 372.8317223198594,
+          "height": 562.5,
+          "left": 0,
+          "top": 0,
+          "fixedRatio": true,
+          "rotate": 0,
+          "lock": true,
+          "radius": 0,
+          "filters": {
+            "grayscale": "100%"
+          },
+          "imageType": "pageFigure"
+        },
+        {
+          "type": "text",
+          "id": "MFF_2iTXwl",
+          "left": 451.4176786773429,
+          "top": 52.26334519572953,
+          "width": 510.82443653618026,
+          "height": 56,
+          "content": "<p style=\"\"><span style=\"font-size: 36px;\"><span style=\"color: rgb(155, 0, 0);\">模板内容页标题</span></span></p>",
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "vertical": false,
+          "lineHeight": 1,
+          "paragraphSpace": 0,
+          "textType": "title"
+        },
+        {
+          "type": "shape",
+          "id": "chGcTZPN11",
+          "left": 419.4176786773429,
+          "top": 64.26334519572953,
+          "width": 32,
+          "height": 32,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 0 0 L 80 0 L 200 100 L 80 200 L 0 200 L 120 100 L 0 0 Z",
+          "fill": "rgb(155, 0, 0)",
+          "fixedRatio": true,
+          "rotate": 0,
+          "lock": false
+        },
+        {
+          "type": "line",
+          "id": "v66M0GKD8b",
+          "left": 419.4176786773429,
+          "top": 123.04141353244943,
+          "start": [
+            0,
+            0
+          ],
+          "end": [
+            540.4804270462632,
+            0
+          ],
+          "points": [
+            "",
+            ""
+          ],
+          "color": "rgb(155, 0, 0)",
+          "style": "solid",
+          "width": 2,
+          "lock": false
+        },
+        {
+          "type": "shape",
+          "id": "CeYyWY3QQ2",
+          "left": 952.2597864768684,
+          "top": 11.378540183867166,
+          "width": 36.65230204626337,
+          "height": 36.65230204626337,
+          "viewBox": [
+            36.65230204626337,
+            36.65230204626337
+          ],
+          "path": "M 0 0 L 0 36.65230204626337 L 36.65230204626337 36.65230204626337 L 36.65230204626337 32.98707184163703 L 3.6652302046263374 32.98707184163703 L 3.6652302046263374 0 Z",
+          "fill": "rgb(155, 0, 0)",
+          "fixedRatio": false,
+          "rotate": 180,
+          "pathFormula": "L",
+          "keypoints": [
+            0.1
+          ],
+          "lock": true
+        },
+        {
+          "type": "shape",
+          "id": "-6j5e-9aTs",
+          "left": 952.2597864768684,
+          "top": 513.6679826512456,
+          "width": 36.65230204626337,
+          "height": 36.65230204626337,
+          "viewBox": [
+            36.65230204626337,
+            36.65230204626337
+          ],
+          "path": "M 0 0 L 0 36.65230204626337 L 36.65230204626337 36.65230204626337 L 36.65230204626337 32.98707184163703 L 3.6652302046263374 32.98707184163703 L 3.6652302046263374 0 Z",
+          "fill": "rgb(155, 0, 0)",
+          "fixedRatio": false,
+          "rotate": -90,
+          "pathFormula": "L",
+          "keypoints": [
+            0.1
+          ],
+          "lock": true
+        },
+        {
+          "type": "chart",
+          "id": "2cjkN0tR58",
+          "chartType": "bar",
+          "left": 485.51357583963835,
+          "top": 174.8172514619883,
+          "width": 408.5061137692717,
+          "height": 254.33280170122276,
+          "rotate": 0,
+          "themeColors": [
+            "#5b9bd5",
+            "#ed7d31",
+            "#a5a5a5",
+            "#ffc000",
+            "#4472c4",
+            "#70ad47"
+          ],
+          "textColor": "#333",
+          "data": {
+            "labels": [
+              "类别1",
+              "类别2",
+              "类别3",
+              "类别4",
+              "类别5"
+            ],
+            "legends": [
+              "系列1",
+              "系列2"
+            ],
+            "series": [
+              [
+                12,
+                19,
+                5,
+                2,
+                18
+              ],
+              [
+                7,
+                11,
+                13,
+                21,
+                9
+              ]
+            ]
+          },
+          "chartMark": "item"
+        }
+      ],
+      "background": {
+        "type": "solid",
+        "color": "#fff"
+      },
+      "type": "content"
+    }
+  ],
+  "intend": 4
+}
