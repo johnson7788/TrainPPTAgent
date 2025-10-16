@@ -72,7 +72,7 @@ class A2AContentClientWrapper:
         if self.agent_card is None:
             await self.setup()
         logging.basicConfig(level=logging.INFO)
-        async with httpx.AsyncClient(timeout=60.0) as httpx_client:
+        async with httpx.AsyncClient(timeout=360.0) as httpx_client:
             self.client = A2AClient(httpx_client=httpx_client, agent_card=self.agent_card)
             self.logger.info('A2AClient 初始化完成。')
 
