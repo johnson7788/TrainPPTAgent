@@ -138,6 +138,8 @@ class A2AContentClientWrapper:
                                 # yield {"type": "text", "text": part["text"], "author": author}
                                 for item in self.process_chart_part_text(part.get("text", ""), author):
                                     yield item
+                                    # 关键的sleep，防止前端对chunk进行粘连，无法进行json解析
+                                    await asyncio.sleep(1)
                 elif result.get("kind") == "artifact-update":
                     artifact = result.get("artifact", {})
                     parts = artifact.get("parts", [])
