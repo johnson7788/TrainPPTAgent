@@ -57,3 +57,4 @@ cache
 .env_prod
 backend/personaldb/temp_download
 utils/temp_data.txt
+template/output_points.png

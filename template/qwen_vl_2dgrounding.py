@@ -16,17 +16,16 @@
    python qwen_vl_2dgrounding.py \
      --image ./cakes.png \
      --prompt "定位最右上角的棕色蛋糕，以JSON格式输出其bbox坐标" \
-     --backend openai \
      --viz bbox \
      --out output_bbox.png
 
 2) 使用 DashScope 原生 HTTP 并渲染 points：
-   python qwen_vl_2dgrounding.py \
-     --image ./football_field.jpg \
-     --prompt prompt = '''Locate every person inside the football field with points, report their point coordinates, role(player, referee or unknown) and shirt color in JSON format like this: {"point_2d": [x, y], "label": "person", "role": "player/referee/unknown", "shirt_color": "the person's shirt color"}''' \
-     --backend dashscope \
-     --viz points \
-     --out output_points.png
+python qwen_vl_2dgrounding.py \
+  --image ./football_field.jpg \
+  --prompt "Locate every person inside the football field with points, report their point coordinates, role(player, referee or unknown) and shirt color in JSON format like this: {\"point_2d\": [x, y], \"label\": \"person\", \"role\": \"player/referee/unknown\", \"shirt_color\": \"the person's shirt color\"}" \
+  --viz points \
+  --out output_points.png
+
 
 准备：
 - pip install pillow requests openai python-dotenv
@@ -56,8 +55,6 @@ from dotenv import load_dotenv
 
 DEFAULT_MODEL = "qwen3-vl-235b-a22b-instruct"
 OPENAI_COMPAT_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-DASHSCOPE_HTTP_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"  # 原生HTTP兼容地址（与上类似）
-# 说明：两者均为“兼容模式”域名；--backend=openai 时走 openai SDK，--backend=dashscope 时走 requests
 
 # 颜色池（先给一组常见颜色，不够再补 ImageColor 内置颜色）
 BASE_COLORS = [
@@ -277,6 +274,7 @@ def _dash_http_call(call_url: str, headers: dict, payload: dict, max_try: int = 
     for _ in range(max_try):
         try:
             ret = requests.post(call_url, json=payload, headers=headers, timeout=180)
+            print(ret.status_code, ret.text)
             if ret.status_code != 200:
                 raise RuntimeError(f"http {ret.status_code}: {ret.text}")
             ret_json = ret.json()
@@ -290,43 +288,6 @@ def _dash_http_call(call_url: str, headers: dict, payload: dict, max_try: int = 
             time.sleep(sleep_sec)
     raise RuntimeError("DashScope HTTP 重试失败")
 
-
-def infer_with_dashscope_http(
-    api_key: str,
-    image_path_or_url: str,
-    prompt: str,
-    model: str = DEFAULT_MODEL,
-    min_pixels: int = 64 * 32 * 32,
-    max_pixels: int = 9800 * 32 * 32,
-    call_url: str = DASHSCOPE_HTTP_URL,
-) -> str:
-    """
-    通过 DashScope 原生 HTTP 方式调用（兼容模式），传入图片 URL（本地会读文件转为 bytes 再用 data URI）。
-    """
-    # 为保持与 openai 方式一致，这里也统一转 data URI，API 端会处理
-    if image_path_or_url.startswith("http://") or image_path_or_url.startswith("https://"):
-        resp = requests.get(image_path_or_url, timeout=30)
-        resp.raise_for_status()
-        b64 = base64.b64encode(resp.content).decode("utf-8")
-    else:
-        with open(image_path_or_url, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode("utf-8")
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    }
-    messages = [{
-        "role": "user",
-        "content": [
-            {"image": f"data:image/jpeg;base64,{b64}", "min_pixels": min_pixels, "max_pixels": max_pixels},
-            {"type": "text", "text": prompt},
-        ],
-    }]
-    payload = {"model": model, "input": {"messages": messages}}
-    return _dash_http_call(call_url, headers, payload)
-
-
 # ----------------------------
 # 命令行与主流程
 # ----------------------------
@@ -337,8 +298,6 @@ def main():
     parser = argparse.ArgumentParser(description="Qwen3-VL 2D Grounding 命令行工具（bbox/points 可视化）")
     parser.add_argument("--image", required=True, help="图片路径或 URL")
     parser.add_argument("--prompt", required=True, help="传给模型的提示词")
-    parser.add_argument("--backend", choices=["openai", "dashscope"], default="openai",
-                        help="选择后端：openai (OpenAI 兼容端点) 或 dashscope (原生 HTTP)")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="模型名称")
     parser.add_argument("--viz", choices=["bbox", "points"], default="bbox", help="可视化类型：bbox 或 points")
     parser.add_argument("--out", default="vis_output.png", help="可视化结果输出路径")
@@ -346,7 +305,6 @@ def main():
     parser.add_argument("--min-pixels", type=int, default=64*32*32, help="推理图像下限像素（接口参数）")
     parser.add_argument("--max-pixels", type=int, default=9800*32*32, help="推理图像上限像素（接口参数）")
     parser.add_argument("--base-url", default=OPENAI_COMPAT_BASE, help="OpenAI 兼容端点 base_url")
-    parser.add_argument("--http-url", default=DASHSCOPE_HTTP_URL, help="DashScope 原生 HTTP 调用 URL")
 
     args = parser.parse_args()
 
@@ -355,26 +313,15 @@ def main():
         raise EnvironmentError("未找到 ALI_API_KEY。请在 .env 中配置或导出环境变量。")
 
     # 推理
-    if args.backend == "openai":
-        model_text = infer_with_openai_compat(
-            api_key=api_key,
-            image_path_or_url=args.image,
-            prompt=args.prompt,
-            model=args.model,
-            min_pixels=args.min_pixels,
-            max_pixels=args.max_pixels,
-            base_url=args.base_url,
-        )
-    else:
-        model_text = infer_with_dashscope_http(
-            api_key=api_key,
-            image_path_or_url=args.image,
-            prompt=args.prompt,
-            model=args.model,
-            min_pixels=args.min_pixels,
-            max_pixels=args.max_pixels,
-            call_url=args.http_url,
-        )
+    model_text = infer_with_openai_compat(
+        api_key=api_key,
+        image_path_or_url=args.image,
+        prompt=args.prompt,
+        model=args.model,
+        min_pixels=args.min_pixels,
+        max_pixels=args.max_pixels,
+        base_url=args.base_url,
+    )
 
     print("\n=== 原始模型输出（截断展示） ===")
     preview = (model_text or "")[:800]
