@@ -33,6 +33,8 @@ doc/Template.md
 
 
 ## 运行的代码
+设置ALI的key，用于qwen的VL进行版面识别。
+cp env_template .env 
 ```
 输出识别结果到slide0_vis.png
 slide0.png是单张pptx文件的截图
