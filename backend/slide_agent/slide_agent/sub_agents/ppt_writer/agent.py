@@ -104,13 +104,19 @@ class PPTWriterSubAgent(LlmAgent):
             st["last_validation_passed"] = None
         else:
             # 上次未通过：不清空，并把错误反馈加入上下文，帮助模型修正
-            if feedback_text:
-                ctx.session.events.append(
-                    Event(
-                        author="CheckerAgent",
-                        content=types.Content(parts=[types.Part(text=feedback_text)])
-                    )
-                )
+            # if feedback_text:
+            #     ctx.session.events.append(
+            #         Event(
+            #             author="CheckerAgent",
+            #             content=types.Content(parts=[types.Part(text=feedback_text)])
+            #         )
+            #     )
+            logger.info(f"=====>>>6. 当前正在进行对: 第{current_slide_index}个块重新生成")
+            del_history = ctx.session.events.pop()
+            logger.info(f"=============>>>删除了最后1个内容块：\n{del_history}")
+            del_history = ctx.session.events.pop()
+            logger.info(f"=============>>>删除了倒数第2个内容块：\n{del_history}")
+            logger.info(f"=============>>>删除后的历史记录为：\n{ctx.session.events}")
         if current_slide_index == 0:
             print(f"正在生成第{current_slide_index}页幻灯片...")
 
@@ -151,7 +157,7 @@ class PPTWriterSubAgent(LlmAgent):
         # 根据不同的类型，形成不同的prompt
         slide_prompt = prompt.prompt_mapper[current_slide_type]
         current_slide_schema_json = json.dumps(current_slide_schema, ensure_ascii=False)
-        prompt_instruction = prefix_prompt + slide_prompt.format(input_slide_data=current_slide_schema_json)
+        prompt_instruction = prefix_prompt + slide_prompt.format(input_slide_data=current_slide_schema_json, language=language)
         print(f"第{current_slide_index}页的prompt是：{prompt_instruction}")
         return prompt_instruction
 
@@ -198,10 +204,10 @@ class CheckerAgent(BaseAgent):
             fail_msg = "校验结果：❌ 非 JSON。将触发重试或跳过策略。"
             ctx.session.state["last_validation_passed"] = False
             ctx.session.state["last_validation_feedback"] = fail_msg
-            yield Event(
-                author=self.name,
-                content=types.Content(parts=[types.Part(text="校验结果：❌ 非 JSON。将触发重试或跳过策略。")])
-            )
+            # yield Event(
+            #     author=self.name,
+            #     content=types.Content(parts=[types.Part(text="校验结果：❌ 非 JSON。将触发重试或跳过策略。")])
+            # )
             return
         current_slide_index: int = ctx.session.state.get("current_slide_index", 0)
         outline_json: list = ctx.session.state.get("outline_json")
@@ -223,7 +229,7 @@ class CheckerAgent(BaseAgent):
         ctx.session.state["last_slide_json"] = data
         # === 记录“通过校验”的状态，并清空反馈文本 ===
         ctx.session.state["last_validation_passed"] = True
-        ctx.session.state["last_validation_feedback"] = None
+        # ctx.session.state["last_validation_feedback"] = None
         yield Event(
             author=self.name,
             content=types.Content(parts=[types.Part(text="校验结果：✅ 有效 JSON。")])

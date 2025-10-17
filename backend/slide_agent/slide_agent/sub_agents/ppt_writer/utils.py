@@ -23,6 +23,7 @@ def only_json(text: str) -> Optional[dict]:
     except Exception:
         return None
 
+
 def validate_slide(data: Any, required_schema: Dict[str, Any]) -> Tuple[bool, List[str]]:
     """
     校验生成结果是否为 dict，且包含 required_schema 的所有 key（可多不可少）。
