@@ -20,7 +20,7 @@ doc/Template.md
 把“上传的 PPTX文件 → 自动生成的普通 JSON”转换为“可复用的 PPT 模版 JSON”。
 
 ## 实现步骤
-1）pptx文件通过前端的页面的导入，转换成json文件
+1）启动前端，pptx文件通过前端的页面的导入，转换成json文件
 ![导入pptx.png](%E5%AF%BC%E5%85%A5pptx.png)
 
 2）Qwen VL或者yolo模型对页面进行判断和其中的元素进行判断，属于哪种页面类型，每个元素是哪个元素类型。
