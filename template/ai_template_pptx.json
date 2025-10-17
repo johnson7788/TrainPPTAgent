@@ -1,0 +1,1184 @@
+{
+  "title": "未命名演示文稿",
+  "width": 1280,
+  "height": 720,
+  "theme": {
+    "themeColors": [
+      "#5B9BD5",
+      "#ED7D31",
+      "#A5A5A5",
+      "#FFC000",
+      "#4472C4",
+      "#70AD47"
+    ],
+    "fontColor": "#333",
+    "fontName": "",
+    "backgroundColor": "#fff",
+    "shadow": {
+      "h": 3,
+      "v": 3,
+      "blur": 2,
+      "color": "#808080"
+    },
+    "outline": {
+      "width": 2,
+      "color": "#525252",
+      "style": "solid"
+    }
+  },
+  "slides": [
+    {
+      "id": "CETXXYMxOo",
+      "elements": [
+        {
+          "type": "shape",
+          "id": "bjs2PLVTZk",
+          "width": 92.66771653543306,
+          "height": 92.6672965879265,
+          "left": 539.6723359580052,
+          "top": 96.3358530183727,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "q0UP2wVsI2",
+          "width": 122.66414698162728,
+          "height": 122.66372703412073,
+          "left": 684.9690288713911,
+          "top": 265.580997375328,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#0000009e"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "XXDzwjIKPJ",
+          "width": 150.30309711286088,
+          "height": 150.30246719160104,
+          "left": 446.94425196850386,
+          "top": 161.39160104986874,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "bltS5fKMxq",
+          "width": 19.5593706340311,
+          "height": 19.559371553809868,
+          "left": 768.2761278622216,
+          "top": 175.06327250575077,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "#5B9BD5",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "lI9MqHhhZ3",
+          "width": 26.794742058709566,
+          "height": 26.794743318731438,
+          "left": 750.6126517173644,
+          "top": 120.93305396618669,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "#5B9BD5",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "text",
+          "id": "wt6qjjlgxi",
+          "width": 635.0041994750655,
+          "height": 82.296875,
+          "left": 354.15832020997374,
+          "top": 430.8549081364829,
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "content": "<p style=\"text-align: center;\"><span style=\"color: #E74337;font-size: 61.3px;font-family: 微软雅黑;font-weight: bold;\">黑红工作报告</span><span style=\"color: #E74337;font-size: 61.3px;font-family: 微软雅黑;font-weight: bold;\">PPT</span><span style=\"color: #E74337;font-size: 61.3px;font-family: 微软雅黑;font-weight: bold;\">模板</span></p>",
+          "lineHeight": 1,
+          "outline": {
+            "color": "#000000",
+            "width": 0,
+            "style": "solid"
+          },
+          "fill": "",
+          "vertical": false,
+          "textType": "title"
+        },
+        {
+          "type": "text",
+          "id": "BAviFOQxUE",
+          "width": 633.321154855643,
+          "height": 57.796875,
+          "left": 361.55233595800524,
+          "top": 522.1314435695538,
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "content": "<p style=\"text-align: left;\"><span style=\"color: #FFFFFF;font-size: 37.3px;font-family: 微软雅黑;\">适用于商业计划</span><span style=\"color: #FFFFFF;font-size: 37.3px;font-family: 微软雅黑;\">/</span><span style=\"color: #FFFFFF;font-size: 37.3px;font-family: 微软雅黑;\">述职汇报</span><span style=\"color: #FFFFFF;font-size: 37.3px;font-family: 微软雅黑;\">/</span><span style=\"color: #FFFFFF;font-size: 37.3px;font-family: 微软雅黑;\">总结计划</span></p>",
+          "lineHeight": 1,
+          "outline": {
+            "color": "#000000",
+            "width": 0,
+            "style": "solid"
+          },
+          "fill": "",
+          "vertical": false,
+          "textType": "subtitle"
+        },
+        {
+          "type": "shape",
+          "id": "piNP2MXLm4",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 693.2851443569554,
+          "top": 180.40325459317583,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "Q2mJ1HWDQz",
+          "width": 38.32335958005249,
+          "height": 38.32335958005249,
+          "left": 659.0959580052493,
+          "top": 226.86740157480313,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "adHZwjqnrI",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 600.4881889763778,
+          "top": 238.93574803149605,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "q0gGNjJLWb",
+          "width": 42.071706036745404,
+          "height": 42.071706036745404,
+          "left": 720.0982677165354,
+          "top": 216.18750656167975,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "URV-R1Y43W",
+          "width": 43.03895013123359,
+          "height": 43.03895013123359,
+          "left": 613.5308136482939,
+          "top": 182.18330708661415,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "LuPHslLp0t",
+          "width": 44.45669291338582,
+          "height": 44.45669291338582,
+          "left": 537.4709711286089,
+          "top": 220.59286089238844,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "TIYnAlpd1q",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 586.4738057742782,
+          "top": 355.2801049868766,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "lLGqVse5nI",
+          "width": 38.32335958005249,
+          "height": 38.32335958005249,
+          "left": 601.8988976377952,
+          "top": 290.0517585301837,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "F1BWrKy-GB",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 679.2707611548556,
+          "top": 296.7476115485564,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "2O-obJavo0",
+          "width": 42.071706036745404,
+          "height": 42.071706036745404,
+          "left": 537.1483464566928,
+          "top": 296.98351706036743,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "kuEwBAbWBm",
+          "width": 43.03895013123359,
+          "height": 43.03895013123359,
+          "left": 642.7484514435695,
+          "top": 330.02026246719157,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "mYTq8kfybK",
+          "width": 44.45669291338582,
+          "height": 44.45669291338582,
+          "left": 717.3905511811023,
+          "top": 290.19296587926505,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "3ZraDv24wI",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 692.851338582677,
+          "top": 181.88608923884513,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "QU3dSSeXyy",
+          "width": 38.32335958005249,
+          "height": 38.32335958005249,
+          "left": 658.6621522309711,
+          "top": 228.35034120734906,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "fN-crPsDpv",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 600.0543832020996,
+          "top": 240.41858267716532,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "w7JC9wI-nx",
+          "width": 42.071706036745404,
+          "height": 42.071706036745404,
+          "left": 719.664461942257,
+          "top": 217.67034120734905,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "gnbQZMU4Dj",
+          "width": 43.03895013123359,
+          "height": 43.03895013123359,
+          "left": 613.0970078740157,
+          "top": 183.66624671916009,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "kfEp3DYd8-",
+          "width": 44.45669291338582,
+          "height": 44.45669291338582,
+          "left": 537.0371653543307,
+          "top": 222.07580052493438,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 350,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "861pbeZta7",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 586.0398950131233,
+          "top": 356.76293963254585,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "ubJmMCQHHy",
+          "width": 38.32335958005249,
+          "height": 38.32335958005249,
+          "left": 601.465091863517,
+          "top": 291.5346981627296,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "h1IcBoYesC",
+          "width": 19.559370078740155,
+          "height": 19.559370078740155,
+          "left": 678.8368503937007,
+          "top": 298.2304461942257,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "Z0DtarNhKM",
+          "width": 42.071706036745404,
+          "height": 42.071706036745404,
+          "left": 536.714435695538,
+          "top": 298.4663517060367,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "XPBUkeBVIn",
+          "width": 43.03895013123359,
+          "height": 43.03895013123359,
+          "left": 642.3146456692913,
+          "top": 331.5032020997375,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "shadow": {
+            "h": 6.599663291074443,
+            "v": 6.599663291074442,
+            "blur": 34.666666666666664,
+            "color": "#000000d1"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "qjqv8tYpAC",
+          "width": 44.45669291338582,
+          "height": 44.45669291338582,
+          "left": 716.956745406824,
+          "top": 291.67590551181104,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 170,
+          "outline": {
+            "color": "#E74337",
+            "width": 2,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": true,
+          "shadow": {
+            "h": 2.8284271247461903,
+            "v": 2.82842712474619,
+            "blur": 34.666666666666664,
+            "color": "#000000e3"
+          }
+        },
+        {
+          "type": "shape",
+          "id": "Ge4MPkP6Wd",
+          "width": 253.8387401574803,
+          "height": 253.8387401574803,
+          "left": 524.8995275590551,
+          "top": 144.80398950131232,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "#E74337",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 4,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false,
+          "role": "shape"
+        },
+        {
+          "type": "shape",
+          "id": "YatLHYwVFE",
+          "width": 233.1122309711286,
+          "height": 233.1122309711286,
+          "left": 535.2627821522309,
+          "top": 155.16724409448818,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 A 50 50 0 1 1 100 200 A 50 50 0 1 1 100 0 Z",
+          "fill": "",
+          "fixedRatio": false,
+          "rotate": 0,
+          "outline": {
+            "color": "#E74337",
+            "width": 4,
+            "style": "solid"
+          },
+          "text": {
+            "content": "",
+            "defaultFontName": "",
+            "defaultColor": "#333",
+            "align": "middle"
+          },
+          "flipH": false,
+          "flipV": false
+        },
+        {
+          "type": "text",
+          "id": "ODWn8mM1RT",
+          "width": 210.56598425196847,
+          "height": 93,
+          "left": 544.7007874015748,
+          "top": 222.94792650918635,
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "content": "<p style=\"text-align: left;\"><span style=\"color: #FFFFFF;font-size: 72.0px;font-family: 微软雅黑;font-weight: bold;\">20XX</span></p>",
+          "lineHeight": 1,
+          "outline": {
+            "color": "#000000",
+            "width": 0,
+            "style": "solid"
+          },
+          "fill": "",
+          "vertical": false
+        }
+      ],
+      "background": {
+        "type": "image",
+        "image": {
+          "src": "https://picsum.photos/1920/1080?random=1",
+          "size": "cover"
+        }
+      },
+      "remark": "",
+      "width": 1280,
+      "height": 720,
+      "type": "cover"
+    }
+  ],
+  "intend": 4
+}
