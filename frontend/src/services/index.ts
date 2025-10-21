@@ -26,6 +26,7 @@ interface AIWritingPayload {
 
 interface AIByIDPayload {
   id: string|number
+  language?: string
 }
 
 
@@ -90,6 +91,7 @@ export default {
 
   AIPPTByID({
     id,
+    language,
   }: AIByIDPayload): Promise<any> {
     return fetch(`${SERVER_URL}/tools/aippt_by_id`, {
       method: 'POST',
