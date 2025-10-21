@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 import logging
 import time
@@ -187,6 +188,11 @@ class A2AContentClientWrapper:
             title = data.get("title", "")
             normal_items = []
             chart_items = []
+            sibling_fields = {
+                k: deepcopy(v)
+                for k, v in one.items()
+                if k not in ("type", "data")  # 保留同级信息，但不覆盖 type/data
+            }
 
             for item in items:
                 if item.get("kind") == "chart":
@@ -196,7 +202,7 @@ class A2AContentClientWrapper:
 
             # 普通项
             if normal_items:
-                normal_item_data = {"type": "content","data": {"title": title, "items": normal_items}}
+                normal_item_data = {"type": "content","data": {"title": title, "items": normal_items}, **deepcopy(sibling_fields)}
                 yield {
                     "type": "text",
                     "text": json.dumps(normal_item_data, ensure_ascii=False),
@@ -205,7 +211,7 @@ class A2AContentClientWrapper:
 
             # 每个 chart 单独作为一条 slide
             for chart in chart_items:
-                chart_data = {"type": "content", "data": {"title": title, "items": [chart]}}
+                chart_data = {"type": "content", "data": {"title": title, "items": [chart]}, **deepcopy(sibling_fields)}
                 yield {
                     "type": "text",
                     "text": json.dumps(chart_data, ensure_ascii=False),

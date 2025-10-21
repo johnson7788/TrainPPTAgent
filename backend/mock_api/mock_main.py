@@ -1,3 +1,4 @@
+from copy import deepcopy
 import os
 import asyncio
 import json
@@ -8,9 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request, Response
-
+from pathlib import Path
 
 app = FastAPI()
+TEMPLATE_DIR = Path(__file__).resolve().parent / "template"
 
 # Allow CORS for the frontend development server
 app.add_middleware(
@@ -362,6 +364,11 @@ def preset_json_to_slides(markdown_text):
             # 分离普通项和图表项
             normal_items = []
             chart_items = []
+            sibling_fields = {
+                k: deepcopy(v)
+                for k, v in one.items()
+                if k not in ("type", "data")  # 保留同级信息，但不覆盖 type/data
+            }
 
             for item in items:
                 if item.get("kind") == "chart":
@@ -376,7 +383,8 @@ def preset_json_to_slides(markdown_text):
                     "data": {
                         "title": one["data"].get("title", ""),
                         "items": normal_items
-                    }
+                    },
+                    **deepcopy(sibling_fields)
                 }
                 slides.append(new_one)
 
@@ -393,7 +401,6 @@ def preset_json_to_slides(markdown_text):
         else:
             slides.append(one)
     return slides
-
 
 async def aippt_content_streamer(markdown_content: str):
     """Parses markdown and streams slide data as JSON objects."""
@@ -430,8 +437,8 @@ async def aippt_content(request: AipptContentRequest):
 
 @app.get("/data/{filename}")
 async def get_data(filename: str):
-    file_path = os.path.join("./template", filename)
-    return FileResponse(file_path)
+    file_path = TEMPLATE_DIR / filename
+    return FileResponse(str(file_path))
 
 @app.post("/tools/aippt_outline_from_file")
 async def aippt_outline_from_file(file: UploadFile = File(...)):
