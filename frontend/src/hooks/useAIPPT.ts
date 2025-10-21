@@ -10,7 +10,7 @@ import type {
   Slide,
   TextType
 } from '@/types/slides'
-import type { AIPPTSlide, AnyContentItem, AIPPTContentChartItem, AIPPTContentTextItem, AIPPTLegacyTextItem } from '@/types/AIPPT'
+import type { AIPPTSlide, AnyContentItem, AIPPTContentChartItem, AIPPTContentTextItem, AIPPTLegacyTextItem, AIPPTContentImageItem } from '@/types/AIPPT'
 import { useSlidesStore } from '@/store'
 import useAddSlidesOrElements from './useAddSlidesOrElements'
 import useSlideHandler from './useSlideHandler'
@@ -22,6 +22,11 @@ const isTextItem = (x: any): x is AIPPTContentTextItem =>
   x && x.kind === 'text' && typeof x.title === 'string' && typeof x.text === 'string'
 const isLegacyTextItem = (x: any): x is AIPPTLegacyTextItem =>
   x && x.kind === undefined && typeof x.title === 'string' && typeof x.text === 'string'
+
+// 判断数据是否是图片类型
+const isImageItem = (x: any): x is AIPPTContentImageItem =>
+  x && x.kind === 'image'
+
 
 interface ImgPoolItem {
   id: string
@@ -659,7 +664,7 @@ export default () => {
           }
         })
         const longestTitle = textTitleList.reduce((longest, current) => current.length > longest.length ? current : longest, '')
-        const longestText  = textBodyList.reduce((longest, current) => current.length > longest.length ? current : longest, '')
+        const longestText = textBodyList.reduce((longest, current) => current.length > longest.length ? current : longest, '')
 
         const chartItems = items.filter(isChartItem) as AIPPTContentChartItem[]
 

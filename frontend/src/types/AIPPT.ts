@@ -96,11 +96,23 @@ export interface AIPPTContentChartItem {
   textColor?: string
 }
 
+/** 新增,带图片的item*/
+export interface AIPPTContentImageItem {
+  kind: 'image'
+  /** 图片标题 */
+  title: string
+  /** 图片描述文本 */
+  text: string
+  /** 图片的链接 */
+  src: string
+}
+
 /** 内容页可包含的 item 联合类型（含兼容项） */
 export type AIPPTContentItem =
   | AIPPTLegacyTextItem
   | AIPPTContentTextItem
   | AIPPTContentChartItem
+  | AIPPTContentImageItem
 
 export interface AIPPTContent extends AIPPTBaseSlide {
   type: 'content'
@@ -146,6 +158,12 @@ export function isChartItem(
   item: AIPPTContentItem
 ): item is AIPPTContentChartItem {
   return (item as any).kind === 'chart'
+}
+
+export function isImageItem(
+  item: AIPPTContentItem
+): item is AIPPTContentImageItem {
+  return (item as any).kind === 'image'
 }
 
 export function isTextItem(
