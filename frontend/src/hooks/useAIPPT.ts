@@ -721,8 +721,6 @@ export default () => {
             return el
           }
 
-          if (el.type !== 'text' && el.type !== 'shape') return el
-
           // === 图片型内容项（imageItems） ===
           if (hasImageItems) {
             // 3.1 itemFigure：按位置顺序取 items[].src
@@ -756,6 +754,8 @@ export default () => {
               }
             }
           }
+
+          if (el.type !== 'text' && el.type !== 'shape') return el
 
           if (items.length === 1) {
             const only = items[0]
