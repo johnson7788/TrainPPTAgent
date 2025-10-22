@@ -56,6 +56,14 @@ export default () => {
     return el.type === 'chart' && (el as any).chartMark === 'chartItem'
   }
   
+  // 识别模版里的图片槽位类型（例如 itemFigure）
+  const checkImageType = (el: PPTElement, imageType: string) =>
+    el.type === 'image' && (el as PPTImageElement).imageType === imageType
+
+  // 统计内容页里的 itemFigure 数量（图片项容器数）
+  const countImageItemSlots = (slide: Slide) =>
+    slide.elements.filter(el => checkImageType(el, 'itemFigure')).length
+
   /**
    * 获取可用的模板
    * 根据需要的元素数量和类型，选择最合适的模板
@@ -124,11 +132,26 @@ export default () => {
   const getUseableContentTemplates = (templates: Slide[], items: AnyContentItem[]) => {
     const needChart = items.filter(isChartItem).length
     const needText = items.filter(it => isTextItem(it) || isLegacyTextItem(it)).length
+    const needImage = items.filter(isImageItem).length
 
-    let candidates = templates.filter(slide => countChartSlots(slide) >= needChart && countTextItemSlots(slide) >= needText)
+    // 在候选模版里，同时满足图片槽位
+    let candidates = templates.filter(slide =>
+      countChartSlots(slide) >= needChart &&
+      countTextItemSlots(slide) >= needText &&
+      (needImage === 0 || countImageItemSlots(slide) >= needImage)
+    )
 
     if (candidates.length === 0) {
-      if (needChart > 0) {
+      // 优先保证有图片槽位
+      if (needImage > 0) {
+        candidates = templates
+          .filter(slide => countImageItemSlots(slide) > 0)
+          .sort((a, b) =>
+            (countImageItemSlots(b) - countImageItemSlots(a)) ||
+            (countChartSlots(b) - countChartSlots(a)) ||
+            (countTextItemSlots(b) - countTextItemSlots(a))
+          )
+      } else if (needChart > 0) {
         candidates = templates
           .filter(slide => countChartSlots(slide) > 0)
           .sort((a, b) => (countChartSlots(b) - countChartSlots(a)) || (countTextItemSlots(b) - countTextItemSlots(a)))
@@ -136,11 +159,12 @@ export default () => {
         return getUseableTemplates(templates, needText, 'item')
       }
     }
-
+    // 评分也把图片的“溢出”考虑进去，尽量贴合
     const score = (slide: Slide) => {
       const cOverflow = Math.max(0, countChartSlots(slide) - needChart)
       const tOverflow = Math.max(0, countTextItemSlots(slide) - needText)
-      return cOverflow * 100 + tOverflow
+      const iOverflow = Math.max(0, countImageItemSlots(slide) - needImage)
+      return iOverflow * 10000 + cOverflow * 100 + tOverflow
     }
     const bestScore = Math.min(...candidates.map(score))
     return candidates.filter(s => score(s) === bestScore)
@@ -633,9 +657,24 @@ export default () => {
           .filter(el => checkTextType(el, 'itemTitle'))
           .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
           .map(el => el.id)
+        // 与“图片项”相关的三个列表
+        const sortedSubtitleIds = contentTemplate.elements
+          .filter(el => checkTextType(el, 'subtitle'))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
+
+        const sortedImageItemFigureIds = contentTemplate.elements
+          .filter(el => checkImageType(el, 'itemFigure'))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
 
         const sortedTextItemIds = contentTemplate.elements
           .filter(el => checkTextType(el, 'item'))
+          .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
+          .map(el => el.id)
+
+        const sortedContentForImageIds = contentTemplate.elements
+          .filter(el => checkTextType(el, 'content'))
           .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
           .map(el => el.id)
 
@@ -643,6 +682,7 @@ export default () => {
           .filter(el => checkChartItemMark(el))
           .sort((a, b) => (a.left + a.top * 2) - (b.left + b.top * 2))
           .map(el => el.id)
+          
         if (sortedChartItemIds.length === 0) {
           sortedChartItemIds = contentTemplate.elements
             .filter(el => el.type === 'chart')
@@ -667,8 +707,11 @@ export default () => {
         const longestText = textBodyList.reduce((longest, current) => current.length > longest.length ? current : longest, '')
 
         const chartItems = items.filter(isChartItem) as AIPPTContentChartItem[]
+        const imageItems = (items.filter(isImageItem) as AIPPTContentImageItem[])
+        const hasImageItems = imageItems.length > 0
 
         const elements = contentTemplate.elements.map(el => {
+          // 背景图等
           if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
 
           if (el.type === 'chart') {
@@ -679,6 +722,40 @@ export default () => {
           }
 
           if (el.type !== 'text' && el.type !== 'shape') return el
+
+          // === 图片型内容项（imageItems） ===
+          if (hasImageItems) {
+            // 3.1 itemFigure：按位置顺序取 items[].src
+            if (checkImageType(el, 'itemFigure')) {
+              const idx = sortedImageItemFigureIds.findIndex(id => id === el.id)
+              const it = imageItems[idx]
+              if (it && it.src) {
+                const imgEl = el as PPTImageElement
+                // 直接替换为外链 src，不走图片池/裁剪，尽量保留原 clip
+                return { ...imgEl, src: it.src }
+              }
+              return el
+            }
+
+            // 3.2 subtitle：items[].title
+            if (checkTextType(el, 'subtitle')) {
+              const idx = sortedSubtitleIds.findIndex(id => id === el.id)
+              const it = imageItems[idx]
+              if (it && it.title) {
+                return getNewTextElement({ el: el as any, text: it.title, maxLine: 1 })
+              }
+              return el
+            }
+
+            // 3.3 content：items[].text（注意这里的 content 是“每项正文”的语义）
+            if (checkTextType(el, 'content')) {
+              const idx = sortedContentForImageIds.findIndex(id => id === el.id)
+              const it = imageItems[idx]
+              if (it && it.text) {
+                return getNewTextElement({ el: el as any, text: it.text, maxLine: 6 })
+              }
+            }
+          }
 
           if (items.length === 1) {
             const only = items[0]
