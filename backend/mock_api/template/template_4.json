@@ -8246,6 +8246,190 @@
       "type": "content"
     },
     {
+      "id": "MS-hziVq3X",
+      "elements": [
+        {
+          "type": "text",
+          "id": "OfJpp013X8",
+          "left": 217.7925625601871,
+          "top": 29.49407353172103,
+          "width": 504.15183867141155,
+          "height": 56,
+          "content": "<p style=\"\"><span style=\"font-size: 36px;\"><span style=\"color: #47acc5;\">模板内容页标题</span></span></p>",
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "vertical": false,
+          "lineHeight": 1,
+          "paragraphSpace": 0,
+          "textType": "title"
+        },
+        {
+          "type": "shape",
+          "id": "qQXSjy1cnf",
+          "left": 179.1199646954184,
+          "top": 38.157774599336676,
+          "width": 38.67259786476868,
+          "height": 38.67259786476868,
+          "viewBox": [
+            200,
+            200
+          ],
+          "path": "M 100 0 L 120 80 L 200 100 L 120 120 L 100 200 L 80 120 L 0 100 L 80 80 L 100 0 Z",
+          "fill": "#47acc5",
+          "fixedRatio": true,
+          "rotate": 0,
+          "lock": false
+        },
+        {
+          "type": "text",
+          "id": "nPi7CBzUO2",
+          "left": 179.1199646954184,
+          "top": 154.96238702817647,
+          "width": 619.3794604596253,
+          "height": 68,
+          "content": "<p style=\"\">内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项正文内容项</p>",
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "vertical": false,
+          "textType": "content"
+        },
+        {
+          "type": "line",
+          "id": "VQ45FroEET",
+          "left": 178.89434562661643,
+          "top": 99.6496006669523,
+          "start": [
+            0,
+            0
+          ],
+          "end": [
+            540.4804270462632,
+            0
+          ],
+          "points": [
+            "",
+            ""
+          ],
+          "color": "#47acc5",
+          "style": "solid",
+          "width": 2,
+          "lock": false
+        },
+        {
+          "type": "image",
+          "id": "n8APEvRXX_",
+          "src": "/api/data/free-photo-of-colorful-backstreet-in-istanbul-with-yellow-scooter.jpeg",
+          "width": 506.32897622034153,
+          "height": 238.22778331167066,
+          "left": 209.2358396843033,
+          "top": 256.01129718234984,
+          "fixedRatio": true,
+          "rotate": 0,
+          "lock": false,
+          "imageType": "itemFigure"
+        },
+        {
+          "type": "line",
+          "id": "5hD6paOWBq",
+          "left": 526.2786365658366,
+          "top": 383.19941800118625,
+          "start": [
+            0,
+            154.21115065243185
+          ],
+          "end": [
+            462.6334519572953,
+            0
+          ],
+          "points": [
+            "",
+            ""
+          ],
+          "color": "#47acc5",
+          "style": "solid",
+          "width": 2,
+          "broken": [
+            462.6334519572953,
+            154.21115065243185
+          ],
+          "lock": true
+        },
+        {
+          "type": "line",
+          "id": "ronrdh-Fxp",
+          "left": 514.4366585112695,
+          "top": 395.42361728944246,
+          "start": [
+            0,
+            154.21115065243185
+          ],
+          "end": [
+            462.6334519572953,
+            0
+          ],
+          "points": [
+            "",
+            ""
+          ],
+          "color": "#47acc5",
+          "style": "solid",
+          "width": 2,
+          "broken": [
+            462.6334519572953,
+            154.21115065243185
+          ],
+          "lock": true
+        },
+        {
+          "type": "line",
+          "id": "3YueFRgq_A",
+          "left": 863.0319172597865,
+          "top": 11.792537811387902,
+          "start": [
+            0,
+            0
+          ],
+          "end": [
+            126.03795966785276,
+            53.38078291814942
+          ],
+          "points": [
+            "",
+            ""
+          ],
+          "color": "#47acc5",
+          "style": "solid",
+          "width": 2,
+          "broken": [
+            126.03795966785276,
+            0
+          ],
+          "lock": true
+        },
+        {
+          "type": "text",
+          "id": "oaOUTPgT5p",
+          "left": 198.45626362780274,
+          "top": 104.96238702817648,
+          "width": 514.1163025648884,
+          "height": 50,
+          "content": "<p style=\"text-align: center;\"><strong><span style=\"font-size: 20px;\">图像的标题</span></strong></p>",
+          "rotate": 0,
+          "defaultFontName": "",
+          "defaultColor": "#333",
+          "vertical": false,
+          "textType": "subtitle"
+        }
+      ],
+      "background": {
+        "type": "solid",
+        "color": "#fff"
+      },
+      "type": "content"
+    },
+    {
       "id": "snHHmro6IP",
       "elements": [
         {
