@@ -715,8 +715,7 @@ export default () => {
         const hasImageItems = imageItems.length > 0
 
         const elements = contentTemplate.elements.map(el => {
-
-                    // === 图片型内容项（imageItems） ===
+          // === 图片型内容项（imageItems） ===
           if (hasImageItems) {
             // 3.1 itemFigure：按位置顺序取 items[].src
             if (checkImageType(el, 'itemFigure')) {

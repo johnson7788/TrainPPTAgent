@@ -522,3 +522,80 @@ items中的src替换模版中的itemFigure
       "type": "content"
     },
 ```
+
+
+## item中的图片渲染，图片分为背景图和项目图，背景图主要装饰作用，项目图，主要解释说明作用。
+```
+backend/mock_api/mock_main.py
+实现思路：
+# 元素中的图片，不是背景图，这个必须被替换才行
+image_item_data = {
+    "type": "content",
+    "data": {
+        "title": "元素中的图片itemFigure",
+        "items": [
+            {
+            "kind": "image",
+            "title": "暴力犯罪",
+            "text": "文字是items中的text，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。",
+            "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg"
+            },
+        ]
+    },
+}
+
+AIPPT.ts中定义类型
+/** 新增,带图片的item*/
+export interface AIPPTContentImageItem {
+  kind: 'image'
+  /** 图片标题 */
+  title: string
+  /** 图片描述文本 */
+  text: string
+  /** 图片的链接 */
+  src: string
+}
+
+
+useAIPPT.ts中添加图片的判断
+  // 识别模版里的图片槽位类型（例如 itemFigure）
+  const checkImageType = (el: PPTElement, imageType: string) =>
+    el.type === 'image' && (el as PPTImageElement).imageType === imageType
+
+  // 统计内容页里的 itemFigure 数量（图片项容器数）
+  const countImageItemSlots = (slide: Slide) =>
+    slide.elements.filter(el => checkImageType(el, 'itemFigure')).length
+
+          if (hasImageItems) {
+            // 3.1 itemFigure：按位置顺序取 items[].src
+            if (checkImageType(el, 'itemFigure')) {
+              const idx = sortedImageItemFigureIds.findIndex(id => id === el.id)
+              const it = imageItems[idx]
+              if (it && it.src) {
+                const imgEl = el as PPTImageElement
+                // 直接替换为外链 src，不走图片池/裁剪，尽量保留原 clip
+                return { ...imgEl, src: it.src }
+              }
+              return el
+            }
+
+            // 3.2 subtitle：items[].title
+            if (checkTextType(el, 'subtitle')) {
+              const idx = sortedSubtitleIds.findIndex(id => id === el.id)
+              const it = imageItems[idx]
+              if (it && it.title) {
+                return getNewTextElement({ el: el as any, text: it.title, maxLine: 1 })
+              }
+              return el
+            }
+
+            // 3.3 content：items[].text（注意这里的 content 是“每项正文”的语义）
+            if (checkTextType(el, 'content')) {
+              const idx = sortedContentForImageIds.findIndex(id => id === el.id)
+              const it = imageItems[idx]
+              if (it && it.text) {
+                return getNewTextElement({ el: el as any, text: it.text, maxLine: 6 })
+              }
+            }
+          }
+```
