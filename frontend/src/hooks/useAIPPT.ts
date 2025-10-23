@@ -711,17 +711,8 @@ export default () => {
         const hasImageItems = imageItems.length > 0
 
         const elements = contentTemplate.elements.map(el => {
-          // 背景图等
-          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
 
-          if (el.type === 'chart') {
-            const idx = sortedChartItemIds.findIndex(id => id === el.id)
-            const chartItem = chartItems[idx]
-            if (chartItem) return getNewChartElement(el as PPTChartElement, chartItem)
-            return el
-          }
-
-          // === 图片型内容项（imageItems） ===
+                    // === 图片型内容项（imageItems） ===
           if (hasImageItems) {
             // 3.1 itemFigure：按位置顺序取 items[].src
             if (checkImageType(el, 'itemFigure')) {
@@ -753,6 +744,15 @@ export default () => {
                 return getNewTextElement({ el: el as any, text: it.text, maxLine: 6 })
               }
             }
+          }
+          // 背景图等
+          if (el.type === 'image' && (el as any).imageType && imgPool.value.length) return getNewImgElement(el as PPTImageElement)
+
+          if (el.type === 'chart') {
+            const idx = sortedChartItemIds.findIndex(id => id === el.id)
+            const chartItem = chartItems[idx]
+            if (chartItem) return getNewChartElement(el as PPTChartElement, chartItem)
+            return el
           }
 
           if (el.type !== 'text' && el.type !== 'shape') return el
