@@ -334,34 +334,38 @@ export default () => {
   const getNewImgElement = (el: PPTImageElement): PPTImageElement => {
     const img = getUseableImage(el)
     if (!img) return el
-  
-    // 计算裁剪范围以保持宽高比
-    let scale = 1
-    let w = el.width
-    let h = el.height
-    let range: ImageClipDataRange = [[0, 0], [0, 0]]
-    const radio = el.width / el.height
 
-    if (img.width / img.height >= radio) {
-      // 图片更宽，左右裁剪
-      scale = img.height / el.height
-      w = img.width / scale
-      const diff = (w - el.width) / 2 / w * 100
-      range = [[diff, 0], [100 - diff, 100]]
+    // 计算图片和容器的宽高比
+    const containerRatio = el.width / el.height
+    const imageRatio = img.width / img.height
+
+    // 使用contain模式：图片完整显示，不裁剪任何内容
+    // 计算缩放比例，选择较小的比例确保图片完全包含在容器内
+    const scaleX = el.width / img.width
+    const scaleY = el.height / img.height
+    const scale = Math.min(scaleX, scaleY)
+
+    // 计算缩放后的图片尺寸
+    const scaledWidth = img.width * scale
+    const scaledHeight = img.height * scale
+
+    // 计算居中位置的偏移量
+    const offsetX = (el.width - scaledWidth) / 2
+    const offsetY = (el.height - scaledHeight) / 2
+
+    // 更新元素尺寸和位置，确保图片完整显示
+    const newElement: PPTImageElement = {
+      ...el,
+      src: img.src,
+      width: scaledWidth,
+      height: scaledHeight,
+      left: el.left + offsetX,
+      top: el.top + offsetY,
+      // 不使用裁剪，移除clip属性或设置为完整显示
+      clip: undefined
     }
-    else {
-      // 图片更高，上下裁剪
-      scale = img.width / el.width
-      h = img.height / scale
-      const diff = (h - el.height) / 2 / h * 100
-      range = [[0, diff], [100, 100 - diff]]
-    }
-    
-    const clipShape = (el.clip && el.clip.shape) ? el.clip.shape : 'rect'
-    const clip = { range, shape: clipShape }
-    const src = img.src
-  
-    return { ...el, src, clip }
+
+    return newElement
   }
   
   /**

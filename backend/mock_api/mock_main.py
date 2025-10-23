@@ -82,8 +82,8 @@ image_data = {
     "data": {
         "title": "暴力犯罪",
         "items": [
-            {"title": "暴力犯罪","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
-            {"title": "暴力犯罪","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
+            {"title": "暴力犯罪1","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
+            {"title": "暴力犯罪2","text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。"},
         ]
     },
     "images": [
@@ -100,12 +100,12 @@ image_data = {
 image_item_data = {
     "type": "content",
     "data": {
-        "title": "暴力犯罪",
+        "title": "元素中的图片itemFigure",
         "items": [
             {
             "kind": "image",
             "title": "暴力犯罪",
-            "text": "AI助手已实现高度个性化，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。",
+            "text": "文字是items中的text，能够学习用户习惯、偏好和需求，提供定制化服务，成为日常生活和工作的得力助手，显著提升个人效率与体验。",
             "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg"
             },
         ]
@@ -410,7 +410,8 @@ def preset_json_to_slides(markdown_text):
                     "data": {
                         "title": one["data"].get("title", ""),
                         "items": [chart]
-                    }
+                    },
+                    **deepcopy(sibling_fields),
                 }
                 slides.append(new_chart_slide)
         else:
