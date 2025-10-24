@@ -23,8 +23,11 @@ English：[README_EN.md](README_EN.md)
 * **模板支持**
   提供多种模板供用户选择，支持内容与样式的分离式填充。
 
+* **模型支持**
+  支持各种商业模型和本地模型，参考doc/custom_model.md。
+
 * **前后端分离架构**
-  前端使用 **Vue.js + Vite + TypeScript**，后端基于 **Python (Flask/FastAPI)**，架构清晰、可扩展性强。
+  前端使用 **Vue.js + Vite + TypeScript**，后端基于 **Python (FastAPI)**，架构清晰、可扩展性强。
 
 * **强化学习驱动**
   引入 **GRPO 强化学习方法**，优化 PPT Agent 的生成效果，使结果更符合用户需求。
