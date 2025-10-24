@@ -64,7 +64,7 @@ class ProductionStarter:
         }
 
         self.frontend_port = int(os.environ.get('FRONTEND_PORT', '5173'))
-        self.host = os.environ.get('HOST', '0.0.0.0')
+        self.host = os.environ.get('HOST', '127.0.0.1')
         self.processes: Dict[str, subprocess.Popen] = {}
         self.frontend_server = None
 
