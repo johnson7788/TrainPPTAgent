@@ -13,3 +13,6 @@ click
 BeautifulSoup4
 lxml
 python-multipart
+openai
+chromadb
+markitdown[all]>=0.1.2
