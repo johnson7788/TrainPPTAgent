@@ -38,6 +38,7 @@ hs_err_pid*
 # 模型
 *.pth
 *.pt
+logs
 
 .env
 .DS_Store
@@ -58,3 +59,4 @@ cache
 backend/personaldb/temp_download
 utils/temp_data.txt
 template/output_points.png
+logs

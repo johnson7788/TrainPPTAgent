@@ -100,8 +100,7 @@ python start_production.py
 - ✅ **生产就绪** - 适合正式环境的性能和稳定性配置
 
 **访问地址：**
-- 前端界面：`http://your-server-ip:5173`
-- 后端API：`http://your-server-ip:6800`
+- 前端界面：`http://127.0.0.1:5173`
 
 > 📚 详细说明请参考：[生产环境部署指南](README_PRODUCTION.md)
 
