@@ -418,14 +418,6 @@ def preset_json_to_slides(markdown_text):
             slides.append(one)
     return slides
 
-async def aippt_content_streamer(markdown_content: str):
-    """Parses markdown and streams slide data as JSON objects."""
-    # slides = parse_markdown_to_slides(markdown_content)
-    slides = preset_json_to_slides(markdown_content)
-    for slide in slides:
-        yield json.dumps(slide, ensure_ascii=False) + '\n'
-        await asyncio.sleep(1)
-
 async def aippt_file_id_streamer(id: str):
     """根据用户的已有的文件数据中的文件id来生成ppt
     id: 文件的id
@@ -446,10 +438,34 @@ async def aippt_file_id_streamer(id: str):
 async def aippt_by_id(request: AipptByIDRequest):
     return StreamingResponse(aippt_file_id_streamer(request.id), media_type="application/json; charset=utf-8")
 
+async def aippt_content_streamer(markdown_content: str):
+    """Parses markdown and streams slide data as JSON objects."""
+    slides = preset_json_to_slides(markdown_content)
+    last_flush = asyncio.get_event_loop().time()
+    for slide in slides:
+        # 心跳：每10秒发一次注释，避免某些代理断连接
+        now = asyncio.get_event_loop().time()
+        if now - last_flush > 10:
+            yield b": keep-alive\n\n"
+            last_flush = now
+        payload = json.dumps(slide, ensure_ascii=False)
+        yield f"data: {payload}\n\n".encode("utf-8")
+        await asyncio.sleep(1)
+    # 可选：显式结束信号（前端可据此收尾）
+    yield b"data: [DONE]\n\n"
 
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
-    return StreamingResponse(aippt_content_streamer(request.content), media_type="application/json; charset=utf-8")
+    return StreamingResponse(
+        aippt_content_streamer(request.content),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
 
 @app.get("/data/{filename}")
 async def get_data(filename: str):

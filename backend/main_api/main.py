@@ -168,39 +168,66 @@ class AipptContentRequest(BaseModel):
     generateFromWebSearch: bool = True  # 是否从网络搜索中生成PPT内容
 
 async def stream_content_response(markdown_content: str, language, generateFromUploadedFile, generateFromWebSearch, user_id):
-    """  # PPT的正文内容生成
-    markdown_content: 代表大纲
-    language:代表语言
-    generateFromUploadedFile: 代表是从上传的文件中生成
-    generateFromWebSearch： 代表是从网络搜索中生成
-    """
-    # 用正则找到第一个一级标题及之后的内容
     match = re.search(r"(# .*)", markdown_content, flags=re.DOTALL)
-
-    if match:
-        result = markdown_content[match.start():]
-    else:
-        result = markdown_content
+    result = markdown_content[match.start():] if match else markdown_content
     logger.info(f"用户输入的markdown大纲是：{result}")
+
     content_wrapper = A2AContentClientWrapper(session_id=uuid.uuid4().hex, agent_url=CONTENT_API)
-    # 传入不同的参数，使用不同的搜索,可以同时使用多个搜索
+
     search_engine = []
     if generateFromUploadedFile:
         search_engine.append("KnowledgeBaseSearch")
     if generateFromWebSearch:
-        search_engine.append("DocumentSearch")
-    # ，方便测试，这个已经在知识库中插入了对应的数据
+        search_engine.append("PaperSearch")
+
     metadata = {"user_id": user_id, "search_engine": search_engine, "language": language}
     logger.info(f"前端*内容**=====>metadata数据为：{metadata}")
+
+    last_flush = asyncio.get_event_loop().time()
+
     async for chunk_data in content_wrapper.generate(user_question=result, metadata=metadata):
         logger.info(f"生成正文输出的chunk_data: {chunk_data}")
-        if chunk_data["type"] == "text":
-            yield chunk_data["text"] + "\n"
+
+        # 心跳：每15秒发一次注释，避免某些代理断连接
+        now = asyncio.get_event_loop().time()
+        if now - last_flush > 10:
+            yield b": keep-alive\n\n"
+            last_flush = now
+
+        if chunk_data.get("type") == "text":
+            # 注意：每条 SSE 事件以空行结束
+            payload = chunk_data["text"]
+            yield f"data: {payload}\n\n".encode("utf-8")
+
+    # 可选：显式结束信号（前端可据此收尾）
+    yield b"data: [DONE]\n\n"
+
 @app.post("/tools/aippt")
 async def aippt_content(request: AipptContentRequest):
     markdown_content = request.content
-    logger.info(f"前端*内容**=====>用户输入：{request.language}")
-    return StreamingResponse(stream_content_response(markdown_content, language=request.language, generateFromUploadedFile=request.generateFromUploadedFile, generateFromWebSearch=request.generateFromWebSearch, user_id=request.sessionId), media_type="text/plain")
+    # 兼容旧字段名：如果 user_id 为空就用 sessionId
+    user_id = getattr(request, "user_id", None) or getattr(request, "sessionId", None)
+
+    async def event_generator():
+        async for chunk in stream_content_response(
+            markdown_content,
+            language=request.language,
+            generateFromUploadedFile=request.generateFromUploadedFile,
+            generateFromWebSearch=request.generateFromWebSearch,
+            user_id=user_id
+        ):
+            yield chunk
+
+    # 关键：SSE 推荐这些头
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 @app.get("/data/{filename}")
 async def get_data(filename: str):

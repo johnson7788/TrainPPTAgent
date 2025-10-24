@@ -131,10 +131,10 @@ const createPPT = async () => {
       model: model.value,
       generateFromUploadedFile: generateFromUploadedFile.value,
       generateFromWebSearch: generateFromWebSearch.value,
-      sessionId: sessionId.value
+      sessionId: sessionId.value,      // 后端已兼容；或改名 user_id
     })
 
-    // 初始化图片池，使用mock数据作为备用
+    // 初始化图片池（mock 兜底）
     const mockImgs = await api.getMockData('imgs')
     presetImgPool(mockImgs)
 
@@ -143,56 +143,94 @@ const createPPT = async () => {
     const templateTheme: SlideTheme = templateData.theme
     slideStore.setTheme(templateTheme)
 
-    const reader: ReadableStreamDefaultReader = stream.body.getReader()
+    const reader: ReadableStreamDefaultReader<Uint8Array> = stream.body!.getReader()
     const decoder = new TextDecoder('utf-8')
 
-    const readStream = () => {
+    let buffer = '' // 用来跨 chunk 缓存
+
+    const processEvent = (evt: string) => {
+      // evt 是一条完整的 SSE 事件（不包含尾部空行）
+      // 兼容多行 data:，拼接起来
+      const dataLines = evt
+        .split('\n')
+        .filter(l => l.startsWith('data:'))
+        .map(l => l.slice(5).trimStart()) // 去掉 'data: '
+
+      const payload = dataLines.join('\n')
+
+      if (!payload) return
+      if (payload === '[DONE]') {
+        loading.value = false
+        mainStore.setAIPPTDialogState(false)
+        mainStore.setGenerating(false)
+        return 'DONE'
+      }
+
+      // 某些模型可能会包围 ```json``` fence，这里做容错
+      const jsonText = payload.replace(/```json|```/g, '').trim()
+
+      try {
+        const slide: AIPPTSlide = JSON.parse(jsonText)
+
+        // 处理后端返回的图片池
+        if (slide.images?.length) {
+          const backendImages = slide.images.map((img: any) => ({
+            id: img.id || Math.random().toString(),
+            src: img.src,
+            width: img.width || 1920,
+            height: img.height || 1080
+          }))
+          presetImgPool(backendImages)
+        }
+
+        // 用模板生成并插入
+        const slideGenerator = AIPPTGenerator(templateSlides, [slide])
+        for (const generatedSlide of slideGenerator) {
+          if (isEmptySlide.value) {
+            slideStore.setSlides([generatedSlide])
+          } else {
+            addSlidesFromDataToEnd([generatedSlide])
+          }
+        }
+      } catch (e) {
+        // 如果这条不是完整 JSON（比如后端按“文本片段”流），可以考虑改成累积 JSON 方案
+        console.warn('解析 JSON 失败，跳过本条事件：', e, jsonText)
+      }
+    }
+
+    const pump = (): any =>
       reader.read().then(({ done, value }) => {
         if (done) {
+          // 读流结束：兜底把缓冲里最后一条尝试处理
+          if (buffer.trim()) {
+            const status = processEvent(buffer)
+            buffer = ''
+            if (status === 'DONE') return
+          }
           loading.value = false
-          mainStore.setAIPPTDialogState(false)
           mainStore.setGenerating(false)
           return
         }
 
-        const chunk = decoder.decode(value, { stream: true })
-        try {
-          console.log('模型返回的 chunk:', chunk)
-          const text = chunk.replace(/```json|```/g, '').trim()
-          if (text) {
-            const slide: AIPPTSlide = JSON.parse(text)
+        buffer += decoder.decode(value, { stream: true })
 
-            // 处理从后端返回的图片数据
-            if (slide.images && slide.images.length > 0) {
-              // 将后端返回的图片添加到图片池
-              const backendImages = slide.images.map((img: any) => ({
-                id: img.id || Math.random().toString(),
-                src: img.src,
-                width: img.width || 1920,
-                height: img.height || 1080
-              }))
-              presetImgPool(backendImages)
-            }
+        // SSE 以空行分隔事件：\n\n（注意：可能是 \r\n\r\n）
+        const parts = buffer.split(/\r?\n\r?\n/)
+        // 最后一段可能是不完整，留在缓冲
+        buffer = parts.pop() || ''
 
-            const slideGenerator = AIPPTGenerator(templateSlides, [slide])
-            for (const generatedSlide of slideGenerator) {
-              // 使用AI专用的插入逻辑：空演示文稿时替换，否则追加到末尾
-              if (isEmptySlide.value) {
-                slideStore.setSlides([generatedSlide])
-              } else {
-                addSlidesFromDataToEnd([generatedSlide])
-              }
-            }
+        for (const evt of parts) {
+          const status = processEvent(evt)
+          if (status === 'DONE') {
+            reader.cancel()
+            return
           }
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(err)
         }
 
-        readStream()
+        return pump()
       })
-    }
-    readStream()
+
+    await pump()
   } catch (e) {
     loading.value = false
     mainStore.setGenerating(false)
