@@ -1,35 +1,25 @@
-# 谷歌Gemini模型
+# 谷歌Gemini模型，下面使用哪个模型，就配置哪个模型的key
 GOOGLE_API_KEY=xxx
 DEEPSEEK_API_KEY=xxx
 ALI_API_KEY=sk-xxx
 OPENAI_API_KEY=xxx
 CLAUDE_API_KEY=xxx
 
-# 使用哪个模型供应商, ollama, 或者vllm，需要提供OLLAMA_API_URL， VLLM_API_URL
-
-MODEL_PROVIDER=deepseek
-LLM_MODEL=deepseek-chat
-# 是否使用代理，clash的代理7890
-# HTTP_PROXY=http://127.0.0.1:7890
-# HTTPS_PROXY=http://127.0.0.1:7890
-
+# 一般不用修改
 OUTLINE_API=http://127.0.0.1:10001
 CONTENT_API=http://127.0.0.1:10011
 #知识库的访问链接
 PERSONAL_DB=http://127.0.0.1:9100
 
-# 是否使用代理
+# 是否使用代理，clash的代理7890， 如果使用Openai等模型，可以开启，如果本地有代理
 # HTTP_PROXY=http://127.0.0.1:7890
 # HTTPS_PROXY=http://127.0.0.1:7890
 
-# Pexels API配置，不是必须的，测试时会使用模拟的图片返回，线上时建议配置自己的图片库或者生成图片的模型
-PEXELS_API_KEY=xx
-
-# 获取Pexels API密钥的步骤：
-# 1. 访问 https://www.pexels.com/api/
-# 2. 注册账号并申请API密钥
-# 3. 将获得的API密钥填入此处
-
+# 使用哪个模型供应商, ollama, 或者vllm，需要提供OLLAMA_API_URL， VLLM_API_URL
+# 如果使用本地模型，请阅读custom_model.md
+# 生成大纲使用的模型
+MODEL_PROVIDER=deepseek
+LLM_MODEL=deepseek-chat
 
 #不同的Agent使用不同的模型，一个是PPT撰写者，1个是PPT检查者，更多的模型请参考backend/slide_agent/slide_agent/create_model.py
 PPT_WRITER_PROVIDER=ali
@@ -41,6 +31,7 @@ PPT_CHECKER_MODEL=qwen-turbo-latest
 # 是否使用绘图，如果模型比较小，可以关掉绘图，因为绘图时对模型收集数据和生成固定格式的JSON要求较高
 USE_CHART=True
 
+# 向量库的配置
 # 向量模型API的Key, 在文件embedding_utils.py中被使用， 阿里云，
 # 支持embedding厂商：aliyun，doubao，vllm，xinference，ollama
 
