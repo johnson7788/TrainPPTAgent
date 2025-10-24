@@ -51,6 +51,12 @@ class ProductionStarter:
                 'dir': self.backend_dir / 'slide_agent',
                 'script': 'main_api.py',
                 'name': '内容生成服务'
+            },
+            'personal_db': {
+                'port': 9100,
+                'dir': self.backend_dir / 'personaldb',
+                'script': 'main.py',
+                'name': '知识库'
             }
         }
 
