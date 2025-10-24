@@ -56,7 +56,7 @@ class ProductionStarter:
                 'name': '内容生成服务'
             },
             'personal_db': {
-                'port': 9100,
+                'port': int(os.environ.get('PERSONALDB_PORT', '9100')),
                 'dir': self.backend_dir / 'personaldb',
                 'script': 'main.py',
                 'name': '知识库'
