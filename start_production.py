@@ -32,6 +32,9 @@ class ProductionStarter:
         env_file = self.project_root / '.env'
         if env_file.exists():
             load_dotenv(env_file)
+        else:
+            print("WARNING: 未找到环境配置文件，请检查项目根目录下是否存在.env文件，如果没有，从env_template.txt考呗一份")
+            sys.exit(1)
 
         self.services = {
             'main_api': {
@@ -190,14 +193,8 @@ class ProductionStarter:
                 pass
 
         if occupied_ports:
-            self.logger.warning(f"发现端口占用: {occupied_ports}")
-            response = input("是否清理这些端口? (y/N): ").strip().lower()
-            if response == 'y':
-                self.kill_processes_on_ports(occupied_ports)
-            else:
-                self.logger.error("端口被占用，无法启动服务")
-                sys.exit(1)
-
+            self.logger.warning(f"发现端口占用: {occupied_ports}，清理占用端口")
+            self.kill_processes_on_ports(occupied_ports)
     def kill_processes_on_ports(self, ports: List[int]):
         """清理占用端口的进程"""
         try:
