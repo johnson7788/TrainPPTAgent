@@ -363,7 +363,7 @@ class ProductionStarter:
         print("\\n💡 使用说明:")
         print("  - 按 Ctrl+C 停止所有服务")
         print("  - 在浏览器中访问前端界面开始使用")
-        print("  - 服务日志保存在 logs/ 目录中")
+        print("  - 服务日志保存在 logs/ 目录中，如果前端没有任何响应，那么请检查此目录下每个服务的日志是否报错")
         print("="*80)
 
     def monitor_services(self):
