@@ -262,41 +262,49 @@ class ProductionStarter:
         self.logger.info(f"启动前端服务 (端口: {self.frontend_port})")
 
         # 创建一个闭包来传递dist_dir
-        dist_dir = self.dist_dir
+        # dist_dir = self.dist_dir
+        #
+        # class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+        #     def __init__(self, *args, **kwargs):
+        #         super().__init__(*args, directory=str(dist_dir), **kwargs)
+        #
+        #     def end_headers(self):
+        #         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        #         self.send_header('Pragma', 'no-cache')
+        #         self.send_header('Expires', '0')
+        #         super().end_headers()
+        #
+        #     def do_GET(self):
+        #         # 处理SPA路由，将所有非文件请求重定向到index.html
+        #         if self.path != '/' and not self.path.startswith('/assets/') and '.' not in self.path:
+        #             self.path = '/index.html'
+        #         return super().do_GET()
+        #
+        # def run_server():
+        #     try:
+        #         # 设置工作目录到dist目录
+        #         os.chdir(dist_dir)
+        #
+        #         with socketserver.TCPServer((self.host, self.frontend_port), CustomHTTPRequestHandler) as httpd:
+        #             self.frontend_server = httpd
+        #             self.logger.info(f"✅ 前端服务启动成功")
+        #             httpd.serve_forever()
+        #     except Exception as e:
+        #         self.logger.error(f"前端服务启动失败: {e}")
+        #     finally:
+        #         # 恢复工作目录
+        #         os.chdir(self.project_root)
+        #
+        # server_thread = threading.Thread(target=run_server, daemon=True)
+        # server_thread.start()
 
-        class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, directory=str(dist_dir), **kwargs)
-
-            def end_headers(self):
-                self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
-                self.send_header('Pragma', 'no-cache')
-                self.send_header('Expires', '0')
-                super().end_headers()
-
-            def do_GET(self):
-                # 处理SPA路由，将所有非文件请求重定向到index.html
-                if self.path != '/' and not self.path.startswith('/assets/') and '.' not in self.path:
-                    self.path = '/index.html'
-                return super().do_GET()
-
-        def run_server():
-            try:
-                # 设置工作目录到dist目录
-                os.chdir(dist_dir)
-
-                with socketserver.TCPServer((self.host, self.frontend_port), CustomHTTPRequestHandler) as httpd:
-                    self.frontend_server = httpd
-                    self.logger.info(f"✅ 前端服务启动成功")
-                    httpd.serve_forever()
-            except Exception as e:
-                self.logger.error(f"前端服务启动失败: {e}")
-            finally:
-                # 恢复工作目录
-                os.chdir(self.project_root)
-
-        server_thread = threading.Thread(target=run_server, daemon=True)
-        server_thread.start()
+        result = subprocess.run(
+            ['npm', 'run', 'dev'],
+            cwd=self.frontend_dir,
+            capture_output=True,
+            text=True,
+            check=True
+        )
         time.sleep(2)
 
     def start_all_services(self):
@@ -390,7 +398,7 @@ class ProductionStarter:
         self.install_dependencies()
 
         # 构建前端
-        self.build_frontend()
+        # self.build_frontend()
 
         # 检查端口
         self.check_ports()
