@@ -188,6 +188,7 @@ class A2AContentClientWrapper:
             title = data.get("title", "")
             normal_items = []
             chart_items = []
+            image_items = []
             sibling_fields = {
                 k: deepcopy(v)
                 for k, v in one.items()
@@ -197,6 +198,8 @@ class A2AContentClientWrapper:
             for item in items:
                 if item.get("kind") == "chart":
                     chart_items.append(item)
+                elif item.get("kind") == "image":
+                    image_items.append(item)
                 else:
                     normal_items.append(item)
 
@@ -215,6 +218,15 @@ class A2AContentClientWrapper:
                 yield {
                     "type": "text",
                     "text": json.dumps(chart_data, ensure_ascii=False),
+                    "author": author,
+                }
+
+            # 每个 image 单独作为一条 slide
+            for img_item in image_items:
+                image_data = {"type": "content", "data": {"title": title, "items": [img_item]}, **deepcopy(sibling_fields)}
+                yield {
+                    "type": "text",
+                    "text": json.dumps(image_data, ensure_ascii=False),
                     "author": author,
                 }
         else:

@@ -388,6 +388,8 @@ def preset_json_to_slides(markdown_text):
             for item in items:
                 if item.get("kind") == "chart":
                     chart_items.append(item)
+                elif item.get("kind") == "image":
+                    image_items.append(item)
                 else:
                     normal_items.append(item)
 
@@ -414,8 +416,11 @@ def preset_json_to_slides(markdown_text):
                     **deepcopy(sibling_fields),
                 }
                 slides.append(new_chart_slide)
-        else:
-            slides.append(one)
+            for img_item in image_items:
+                image_data = {"type": "content", "data": {"title": title, "items": [img_item]}, **deepcopy(sibling_fields)}
+                slides.append(image_data)
+            # slides.append(one)
+    print(slides)
     return slides
 
 async def aippt_file_id_streamer(id: str):
