@@ -86,7 +86,7 @@ python mock_main.py
 
 ```bash
 # 1. 配置环境变量
-cp .env_template .env
+cp env_template .env
 vim .env  # 填入你的API密钥
 
 # 2. 一键启动生产环境
