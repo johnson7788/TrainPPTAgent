@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TrainPPTAgent 生产环境一键启动脚本
+TrainPPTAgent dev环境一键启动脚本，生产环境需要使用npm run build或者docker
 支持前端构建、后端服务启动、进程管理和监控
 """
 
