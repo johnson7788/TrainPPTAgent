@@ -102,15 +102,6 @@
                 <option value="日本語">日本語</option>
               </select>
             </div>
-            <div class="config-item">
-              <label class="config-label">AI模型</label>
-              <select v-model="model" class="config-select">
-                <option value="GLM-4.5-Air">GLM-4.5-Air</option>
-                <option value="GLM-4.5-Flash">GLM-4.5-Flash</option>
-                <option value="ark-doubao-seed-1.6-flash">Doubao-Seed-1.6-flash</option>
-                <option value="ark-doubao-seed-1.6">Doubao-Seed-1.6</option>
-              </select>
-            </div>
           </div>
         </div>
       </div>

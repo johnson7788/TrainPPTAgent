@@ -298,14 +298,31 @@ class ProductionStarter:
         # server_thread = threading.Thread(target=run_server, daemon=True)
         # server_thread.start()
 
-        result = subprocess.run(
-            ['npm', 'run', 'dev'],
-            cwd=self.frontend_dir,
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        time.sleep(2)
+        try:
+            log_file = self.logs_dir / f"frontend.log"
+
+            with open(log_file, 'w', encoding='utf-8') as log_f:
+                process = subprocess.Popen(
+                    ['npm', 'run', 'dev'],
+                    cwd=self.frontend_dir,
+                    stdout=log_f,
+                    stderr=subprocess.STDOUT,
+                    text=True
+                )
+
+                # 等待服务启动
+                time.sleep(3)
+
+                if process.poll() is None:
+                    self.logger.info(f"✅ 前端启动成功 (PID: {process.pid})")
+                    return process
+                else:
+                    self.logger.error(f"❌ 前端启动失败，查看日志: {log_file}")
+                    return None
+
+        except Exception as e:
+            self.logger.error(f"启动前端时出错: {e}")
+            return None
 
     def start_all_services(self):
         """启动所有服务"""
@@ -322,7 +339,9 @@ class ProductionStarter:
                 sys.exit(1)
 
         # 启动前端服务
-        self.start_frontend_server()
+        process = self.start_frontend_server()
+        if process:
+            self.processes['frontend'] = process
 
         # 显示服务状态
         self.show_service_status()
