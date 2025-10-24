@@ -83,15 +83,15 @@ XINFERENCE_API_KEY=EMPTY
 # MODEL_PROVIDER：选择 LLM 提供商。
 # 支持：google, claude, openai, deepseek, ali, silicon, modelscope, doubao, vllm, ollama, local
 MODEL_PROVIDER=ali
-LLM_MODEL=qwen-turbo
+LLM_MODEL=qwen-turbo-latest
 
 # --- 幻灯片内容生成（撰写与校对代理）---
 # 你可以为撰写和校对代理选择不同的模型。
 PPT_WRITER_PROVIDER=ali
-PPT_WRITER_MODEL=qwen-turbo
+PPT_WRITER_MODEL=qwen-turbo-latest
 
 PPT_CHECKER_PROVIDER=ali
-PPT_CHECKER_MODEL=qwen-turbo
+PPT_CHECKER_MODEL=qwen-turbo-latest
 
 
 # ====================================================================
