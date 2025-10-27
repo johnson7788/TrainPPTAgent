@@ -9,12 +9,14 @@
 - Step5: 标注完成后点击左上角菜单，导出成JSON文件
 ![export_template_json.png](export_template_json.png)
 - Step6: 拷贝JSON文件到template目录下，并修改文件名
-- Step7: 修改前端代码frontend/src/store/slides.ts，添加一个你自定义的模版
+- Step7: 修改backend/main_api/main.py的templates列表，添加一行你自定义的模版
 ```
-    templates: [
-      { name: '红色通用', id: 'template_1', cover: '/api/data/template_1.jpg' },
-      { name: '蓝色通用', id: 'template_2', cover: '/api/data/template_2.jpg' },
-      { name: '紫色通用', id: 'template_3', cover: '/api/data/template_3.jpg' },
-      { name: '莫兰迪配色', id: 'template_4', cover: '/api/data/template_4.jpg' },
-    ], // 模板
+async def get_templates():
+    templates = [
+        { "name": "红色通用", "id": "template_1", "cover": "/api/data/template_1.jpg" },
+        { "name": "蓝色通用", "id": "template_2", "cover": "/api/data/template_2.jpg" },
+        { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
+        { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
+        # { "name": "图表", "id": "template_6", "cover": "/api/data/template_6.jpg" },
+    ]
 ```
