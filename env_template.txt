@@ -23,6 +23,10 @@ CLAUDE_API_KEY=xxx
 # - LLM 提供商：deepseek，例如：LLM_MODEL=deepseek-chat
 DEEPSEEK_API_KEY=xxx
 
+# GLM 模型
+# - LLM 提供商：glm，例如：LLM_MODEL=glm-4-flash
+GLM_API_KEY=xxx
+
 # 阿里云 DashScope 模型（Qwen）
 # - LLM 提供商：ali，例如：LLM_MODEL=qwen-turbo
 # - 嵌入提供商：aliyun，例如：EMBEDDING_MODEL=text-embedding-v2
@@ -81,7 +85,7 @@ XINFERENCE_API_KEY=EMPTY
 
 # --- 大纲生成主模型 ---
 # MODEL_PROVIDER：选择 LLM 提供商。
-# 支持：google, claude, openai, deepseek, ali, silicon, modelscope, doubao, vllm, ollama, local
+# 支持：google, claude, openai, deepseek, ali, silicon, modelscope, doubao, vllm, ollama, glm, local
 MODEL_PROVIDER=ali
 LLM_MODEL=qwen-turbo-latest
 

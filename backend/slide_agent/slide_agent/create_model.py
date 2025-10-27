@@ -49,6 +49,13 @@ def create_model(model:str, provider: str):
             # 表示兼容openai的模型请求
             model = "openai/" + model
         return LiteLlm(model=model, api_key=os.environ.get("DEEPSEEK_API_KEY"), api_base="https://api.deepseek.com/v1",num_retries=3)
+    elif provider == "glm":
+        # GLM的模型需要使用LiteLlm
+        assert os.environ.get("GLM_API_KEY"),  "GLM_API_KEY is not set"
+        if not model.startswith("openai/"):
+            # 表示兼容openai的模型请求
+            model = "openai/" + model
+        return LiteLlm(model=model, api_key=os.environ.get("GLM_API_KEY"), api_base="https://open.bigmodel.cn/api/paas/v4",num_retries=3)
     elif provider == "local_google":
         assert os.environ.get("GOOGLE_API_KEY"),  "GOOGLE_API_KEY is not set"
         if not model.startswith("openai/"):
