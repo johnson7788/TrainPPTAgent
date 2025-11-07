@@ -376,8 +376,10 @@ def preset_json_to_slides(markdown_text):
         if one_type == "content":
             # 获取原始 items
             items = one["data"].get("items", [])
+            title = one["data"].get("title", "")
             # 分离普通项和图表项
             normal_items = []
+            image_items = []
             chart_items = []
             sibling_fields = {
                 k: deepcopy(v)
@@ -427,21 +429,34 @@ async def aippt_file_id_streamer(id: str):
     """根据用户的已有的文件数据中的文件id来生成ppt
     id: 文件的id
     """
-    yield json.dumps({"type": "status", "message": "正在解析文件..."}, ensure_ascii=False) + '\n'
+    yield f'data: {json.dumps({"type": "status", "message": "正在解析文件..."}, ensure_ascii=False)}\n\n'.encode("utf-8")
     await asyncio.sleep(3)
-    yield json.dumps({"type": "status", "message": "正在生成大纲..."}, ensure_ascii=False) + '\n'
-    await asyncio.sleep(1.5)
-    yield json.dumps({"type": "status", "message": "大纲生成完毕，即将生成PPT..."}, ensure_ascii=False) + '\n'
+    yield f'data: {json.dumps({"type": "status", "message": "正在生成大纲..."}, ensure_ascii=False)}\n\n'.encode("utf-8")
+    # 返回markdown_response的大纲内容
+    for char in markdown_response:
+        yield f'data: {json.dumps({"type": "outline", "text": char}, ensure_ascii=False)}\n\n'.encode("utf-8")
+        await asyncio.sleep(0.01)
+    yield f'data: {json.dumps({"type": "status", "message": "大纲生成完毕，即将生成PPT..."}, ensure_ascii=False)}\n\n'.encode("utf-8")
     await asyncio.sleep(1)
     slides = preset_json_to_slides(id)
     for slide in slides:
-        yield json.dumps(slide, ensure_ascii=False) + '\n'
+        payload = json.dumps(slide, ensure_ascii=False)
+        yield f"data: {payload}\n\n".encode("utf-8")
         await asyncio.sleep(1)
+    yield b"data: [DONE]\n\n"
 
 
 @app.post("/tools/aippt_by_id")
 async def aippt_by_id(request: AipptByIDRequest):
-    return StreamingResponse(aippt_file_id_streamer(request.id), media_type="application/json; charset=utf-8")
+    return StreamingResponse(
+        aippt_file_id_streamer(request.id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
 
 async def aippt_content_streamer(markdown_content: str):
     """Parses markdown and streams slide data as JSON objects."""
