@@ -131,6 +131,12 @@ const createPPT = async () => {
     const templateTheme: SlideTheme = templateData.theme
     slideStore.setTheme(templateTheme)
 
+    // 根据模板的宽度和高度动态设置 viewportSize 和 viewportRatio
+    if (templateData.width && templateData.height) {
+      slideStore.setViewportSize(templateData.width)
+      slideStore.setViewportRatio(templateData.height / templateData.width)
+    }
+
     const reader: ReadableStreamDefaultReader = stream.body.getReader()
     const decoder = new TextDecoder('utf-8')
     let buffer = ''

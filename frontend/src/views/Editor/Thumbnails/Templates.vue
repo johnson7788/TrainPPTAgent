@@ -87,6 +87,12 @@ const changeCatalog = (id: string) => {
   api.getFileData(activeCatalog.value).then(ret => {
     slides.value = ret.slides
 
+    // 根据模板的宽度和高度动态设置 viewportSize 和 viewportRatio
+    if (ret.width && ret.height) {
+      slidesStore.setViewportSize(ret.width)
+      slidesStore.setViewportRatio(ret.height / ret.width)
+    }
+
     if (listRef.value) listRef.value.scrollTo(0, 0) 
   })
 }
