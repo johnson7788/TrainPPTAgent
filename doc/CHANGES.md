@@ -599,3 +599,65 @@ useAIPPT.ts中添加图片的判断
             }
           }
 ```
+
+## 后端获取模版
+```
+@app.get("/templates")
+async def get_templates():
+    templates = [
+        { "name": "红色通用", "id": "template_1", "cover": "/api/data/template_1.jpg" },
+        { "name": "蓝色通用", "id": "template_2", "cover": "/api/data/template_2.jpg" },
+        { "name": "紫色通用", "id": "template_3", "cover": "/api/data/template_3.jpg" },
+        { "name": "莫兰迪配色", "id": "template_4", "cover": "/api/data/template_4.jpg" },
+    ]
+
+    return {"data": templates}
+    
+前端获取模版
+frontend/src/services/index.ts    
+getTemplates(): Promise<any> {
+    return axios.get(`${SERVER_URL}/templates`)
+  },
+src/store/slides.ts
+async fetchTemplates() {
+  const result = await api.getTemplates()
+```
+
+## 修复动态的ppt的模版尺寸Bug
+src/store/slides.ts中的涉及参数，改成从后台的template的json的文件中的宽度和高度获取
+画布基准宽度：viewportSize， 
+宽高比例（默认 16:9）：viewportRatio
+```
+--- a/frontend/src/views/Editor/Thumbnails/Templates.vue
++++ b/frontend/src/views/Editor/Thumbnails/Templates.vue
+@@ -87,6 +87,12 @@ const changeCatalog = (id: string) => {
+   api.getFileData(activeCatalog.value).then(ret => {
+     slides.value = ret.slides
+
++    // 根据模板的宽度和高度动态设置 viewportSize 和 viewportRatio
++    if (ret.width && ret.height) {
++      slidesStore.setViewportSize(ret.width)
++      slidesStore.setViewportRatio(ret.height / ret.width)
++    }
++
+     if (listRef.value) listRef.value.scrollTo(0, 0)
+   })
+ }
+
+diff --git a/frontend/src/views/PPT/index.vue b/frontend/src/views/PPT/index.vue
+index f6fc205..590b29e 100644
+--- a/frontend/src/views/PPT/index.vue
++++ b/frontend/src/views/PPT/index.vue
+@@ -143,6 +143,12 @@ const createPPT = async () => {
+     const templateTheme: SlideTheme = templateData.theme
+     slideStore.setTheme(templateTheme)
+
++    // 根据模板的宽度和高度动态设置 viewportSize 和 viewportRatio
++    if (templateData.width && templateData.height) {
++      slideStore.setViewportSize(templateData.width)
++      slideStore.setViewportRatio(templateData.height / templateData.width)
++    }
++
+     const reader: ReadableStreamDefaultReader<Uint8Array> = stream.body!.getReader()
+     const decoder = new TextDecoder('utf-8')
+```

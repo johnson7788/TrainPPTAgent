@@ -422,6 +422,8 @@ def preset_json_to_slides(markdown_text):
                 image_data = {"type": "content", "data": {"title": title, "items": [img_item]}, **deepcopy(sibling_fields)}
                 slides.append(image_data)
             # slides.append(one)
+        else:
+            slides.append(one)
     print(slides)
     return slides
 
