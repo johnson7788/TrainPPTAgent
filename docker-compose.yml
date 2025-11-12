@@ -6,10 +6,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "6800:6800"
-    network_mode: bridge
+    network_mode: trainpptagent-main_ppt_network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      - outline_api
+      - content_api   # 新增：确保 main_api 在 content_api 之后再启动（调度层面）
+
   personaldb:
     container_name: ppt_personal_db
     build:
@@ -17,32 +21,58 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9200:9200"
-    network_mode: bridge
+    network_mode: trainpptagent-main_ppt_network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
   outline_api:
     container_name: ppt_outline_api_app
     build:
       context: ./backend/simpleOutline
       dockerfile: Dockerfile
     ports:
-      - "10060:10060"
-    network_mode: bridge
+      - "10060:10001"
+    network_mode: trainpptagent-main_ppt_network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    command: >
+      python main_api.py
+      --host 0.0.0.0
+      --port 10001
+      --agent_url http://ppt_outline_api_app:10001/
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:10001/.well-known/agent.json"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
   content_api:
     container_name: ppt_content_api_app
     build:
       context: ./backend/slide_agent
       dockerfile: Dockerfile
     ports:
-      - "10061:10061"
-    network_mode: bridge
+      - "10061:10011"
+    network_mode: trainpptagent-main_ppt_network
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # 关键：显式指定发布给其他容器用的 URL
+    command: >
+      python main_api.py
+      --host 0.0.0.0
+      --port 10011
+      --agent_url http://ppt_content_api_app:10011/
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:10011/.well-known/agent.json"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
   frontend:
     container_name: ppt_frontend
     build:
