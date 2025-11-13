@@ -367,7 +367,73 @@ export default () => {
 
     return newElement
   }
-  
+
+  /**
+   * 加载外链图片并获取其实际尺寸
+   * @param src 图片URL
+   * @returns Promise<{width: number, height: number}>
+   */
+  const loadImageDimensions = (src: string): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        resolve({ width: img.naturalWidth, height: img.naturalHeight })
+      }
+      img.onerror = () => {
+        reject(new Error(`Failed to load image: ${src}`))
+      }
+      img.src = src
+    })
+  }
+
+  /**
+   * 创建新的外链图片元素，完整显示图片内容（contain模式）
+   * 与 getNewImgElement 类似，但用于处理外链图片（需要先加载获取尺寸）
+   * @param el 原始图片元素（模板中的占位元素）
+   * @param src 外链图片URL
+   * @returns Promise<PPTImageElement> 更新后的图片元素
+   */
+  const getNewExternalImgElement = async (
+    el: PPTImageElement,
+    src: string
+  ): Promise<PPTImageElement> => {
+    try {
+      // 加载图片获取实际尺寸
+      const imgDimensions = await loadImageDimensions(src)
+
+      // 使用 contain 模式：完整显示图片，不裁剪
+      const scaleX = el.width / imgDimensions.width
+      const scaleY = el.height / imgDimensions.height
+      const scale = Math.min(scaleX, scaleY)
+
+      const scaledWidth = imgDimensions.width * scale
+      const scaledHeight = imgDimensions.height * scale
+
+      const offsetX = (el.width - scaledWidth) / 2
+      const offsetY = (el.height - scaledHeight) / 2
+
+      const newElement: PPTImageElement = {
+        ...el,
+        src: src,
+        width: scaledWidth,
+        height: scaledHeight,
+        left: el.left + offsetX,
+        top: el.top + offsetY,
+        clip: undefined, // 清除裁剪，避免拉伸
+      }
+
+      return newElement
+    } catch (error) {
+      console.error('Failed to load external image:', error)
+      // 如果加载失败，至少清除 clip 属性，避免拉伸
+      return {
+        ...el,
+        src: src,
+        clip: undefined,
+      }
+    }
+  }
+
   /**
    * 提取Markdown内容
    * @param content 原始内容

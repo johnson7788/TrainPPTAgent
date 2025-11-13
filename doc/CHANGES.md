@@ -661,3 +661,38 @@ index f6fc205..590b29e 100644
      const reader: ReadableStreamDefaultReader<Uint8Array> = stream.body!.getReader()
      const decoder = new TextDecoder('utf-8')
 ```
+
+
+# 元素的类型记录
+{label:"未标记类型",value:""},{label:"封面页",value:"cover"},{label:"目录页",value:"contents"},{label:"过渡页",value:"transition"},{label:"内容页",value:"content"},{label:"引用页",value:"reference"},{label:"结束页",value:"end"}]),s=Pe([{label:"未标记类型",value:""},{label:"标题",value:"title"},{label:"副标题",value:"subtitle"},{label:"正文",value:"content"},{label:"列表项目",value:"item"},{label:"列表项标题",value:"itemTitle"},{label:"注释",value:"notes"},{label:"页眉",value:"header"},{label:"页脚",value:"footer"},{label:"节编号",value:"partNumber"},{label:"项目编号",value:"itemNumber"},{label:"引用编号",value:"referenceNumber"},{label:"PMID",value:"pmid"},{label:"url",value:"url"},{label:"DOI",value:"doi"},{label:"引用标题",value:"text"}]),l=Pe([{label:"未标记类型",value:""},{label:"页面插图",value:"pageFigure"},{label:"项目插图",value:"itemFigure"},{label:"背景图",value:"background"}]),c=Pe([{label:"未标记类型",value:""},{label:"图表（内容项）",value:"item"}
+
+
+# 项目图片动态压缩比frontend/src/hooks/useAIPPT.ts
+```
++
++  /**
++   * 加载外链图片并获取其实际尺寸
++   * @param src 图片URL
++   * @returns Promise<{width: number, height: number}>
++   */
++  const loadImageDimensions = (src: string): Promise<{ width: number; height: number }> => {
++    return new Promise((resolve, reject) => {
++      const img = new Image()
++      img.onload = () => {
++        resolve({ width: img.naturalWidth, height: img.naturalHeight })
++      }
++      img.onerror = () => {
++        reject(new Error(`Failed to load image: ${src}`))
++      }
++      img.src = src
++    })
++  }
++
++  /**
++   * 创建新的外链图片元素，完整显示图片内容（contain模式）
++   * 与 getNewImgElement 类似，但用于处理外链图片（需要先加载获取尺寸）
++   * @param el 原始图片元素（模板中的占位元素）
++   * @param src 外链图片URL
++   * @returns Promise<PPTImageElement> 更新后的图片元素
++   */
+```

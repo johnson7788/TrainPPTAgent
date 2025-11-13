@@ -37,8 +37,6 @@ PREFIX_PAGE_PROMPT_WITH_IMAGE = """
     {
       "id": "图片ID",
       "src": "图片URL",
-      "width": 1920,
-      "height": 1080,
       "alt": "图片描述"
     }
   ]

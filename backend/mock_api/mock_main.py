@@ -90,8 +90,6 @@ image_data = {
         {
             "id": "图片ID",
             "src": "https://www.hertz.com/content/dam/hertz/global/blog-articles/things-to-do/hertz230-things-to-do-londons-top-10-attractions/Big-Ben-Clock-Tower.jpg",
-            "width": 1920,
-            "height": 1080,
             "alt": "不同年份的谋杀率"
         }
     ]
