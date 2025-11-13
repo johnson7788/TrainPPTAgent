@@ -178,7 +178,7 @@ async def stream_content_response(markdown_content: str, language, generateFromU
     if generateFromUploadedFile:
         search_engine.append("KnowledgeBaseSearch")
     if generateFromWebSearch:
-        search_engine.append("PaperSearch")
+        search_engine.append("DocumentSearch")
 
     metadata = {"user_id": user_id, "search_engine": search_engine, "language": language}
     logger.info(f"前端*内容**=====>metadata数据为：{metadata}")
