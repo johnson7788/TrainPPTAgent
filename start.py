@@ -476,7 +476,7 @@ class ProductionStarter:
         print(f"  📝 日志目录: {self.logs_dir}")
 
         print("\n💡 使用说明:")
-        print("  - 按 Ctrl+C 停止所有服务")
+        print("  - 按 Ctrl+C 停止所有服务，请耐心等待5秒，等待Agent启动完成")
         print("  - 在浏览器中访问前端界面开始使用")
         print("  - 服务日志保存在 logs/ 目录中，且已在当前控制台实时展示（tail -f 效果）")
         print("="*80)
