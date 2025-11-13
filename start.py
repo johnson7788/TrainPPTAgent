@@ -19,6 +19,139 @@ import threading
 import http.server
 import socketserver
 from dotenv import load_dotenv
+import glob
+import itertools
+
+# -----------------------------
+#多文件 tail -f 的实现
+# -----------------------------
+class MultiLogTailer:
+    """
+    在同一控制台跟随打印 logs/*.log 的新增内容，行为类似 `tail -f`.
+    - 自动发现新文件
+    - 每行带文件名前缀
+    - 可优雅停止
+    """
+    COLORS = [
+        "\033[95m", "\033[94m", "\033[96m", "\033[92m",
+        "\033[93m", "\033[91m", "\033[90m"
+    ]
+    RESET = "\033[0m"
+
+    def __init__(self, logs_dir: Path, pattern: str = "*.log", poll_interval: float = 1.0, color: bool = True):
+        self.logs_dir = Path(logs_dir)
+        self.pattern = pattern
+        self.poll_interval = poll_interval
+        self.stop_event = threading.Event()
+        self.threads: Dict[Path, threading.Thread] = {}
+        self.opened: Dict[Path, 'io.TextIOWrapper'] = {}
+        self._color = color and sys.stdout.isatty()
+        self._color_map: Dict[Path, str] = {}
+
+    def _color_for(self, path: Path) -> str:
+        if not self._color:
+            return ""
+        if path not in self._color_map:
+            idx = len(self._color_map) % len(self.COLORS)
+            self._color_map[path] = self.COLORS[idx]
+        return self._color_map[path]
+
+    def _prefix(self, path: Path) -> str:
+        color = self._color_for(path)
+        name = path.name
+        return f"{color}[{name}]{self.RESET if color else ''} "
+
+    def _tail_file(self, path: Path):
+        try:
+            f = open(path, "r", encoding="utf-8", errors="ignore")
+            self.opened[path] = f
+            # 定位到文件末尾，仅读取新增
+            f.seek(0, os.SEEK_END)
+            while not self.stop_event.is_set():
+                line = f.readline()
+                if line:
+                    # 去掉末尾多余换行后打印
+                    if line.endswith("\n"):
+                        line = line[:-1]
+                    print(self._prefix(path) + line, flush=True)
+                else:
+                    # 文件可能被轮转/截断，尝试刷新并等待
+                    if not path.exists():
+                        # 若被轮转导致路径不存在，稍等后退出当前线程，等待主 watcher 重新发现新文件
+                        break
+                    time.sleep(0.1)
+        except Exception as e:
+            print(f"[LogTailer] 打开/读取日志失败: {path} -> {e}", flush=True)
+        finally:
+            try:
+                f = self.opened.pop(path, None)
+                if f:
+                    f.close()
+            except Exception:
+                pass
+            # 线程退出时从线程表删除
+            self.threads.pop(path, None)
+
+    def _spawn_tail_thread(self, path: Path):
+        if path in self.threads:
+            return
+        t = threading.Thread(target=self._tail_file, args=(path,), daemon=True)
+        self.threads[path] = t
+        t.start()
+
+    def _watcher(self):
+        # 主 watcher：定期扫描新文件
+        while not self.stop_event.is_set():
+            try:
+                self.logs_dir.mkdir(exist_ok=True)
+                matches = [Path(p) for p in glob.glob(str(self.logs_dir / self.pattern))]
+                # 启动新出现的文件
+                for p in matches:
+                    if p.is_file() and p not in self.threads:
+                        self._spawn_tail_thread(p)
+                # 清理已消失的文件对应线程（线程在文件消失时会自行退出）
+                for p in list(self.threads.keys()):
+                    if not p.exists():
+                        # 线程会在读取时自行退出，这里不强杀
+                        pass
+            except Exception as e:
+                print(f"[LogTailer] 目录扫描失败: {e}", flush=True)
+            finally:
+                time.sleep(self.poll_interval)
+
+    def start(self):
+        # 先对当前存在的文件起 tail
+        initial = [Path(p) for p in glob.glob(str(self.logs_dir / self.pattern))]
+        for p in sorted(initial):
+            if p.is_file():
+                self._spawn_tail_thread(p)
+        # 再起 watcher
+        self.watcher_thread = threading.Thread(target=self._watcher, daemon=True)
+        self.watcher_thread.start()
+
+    def stop(self):
+        self.stop_event.set()
+        # 等待 watcher 退出
+        try:
+            if hasattr(self, 'watcher_thread'):
+                self.watcher_thread.join(timeout=2)
+        except Exception:
+            pass
+        # 关闭所有文件
+        for f in list(self.opened.values()):
+            try:
+                f.close()
+            except Exception:
+                pass
+        self.opened.clear()
+        # 等待子线程退出
+        for t in list(self.threads.values()):
+            try:
+                t.join(timeout=2)
+            except Exception:
+                pass
+        self.threads.clear()
+
 
 class ProductionStarter:
     def __init__(self):
@@ -67,6 +200,7 @@ class ProductionStarter:
         self.host = os.environ.get('HOST', '127.0.0.1')
         self.processes: Dict[str, subprocess.Popen] = {}
         self.frontend_server = None
+        self.log_tailer: Optional[MultiLogTailer] = None
 
     def setup_logging(self):
         """设置日志系统"""
@@ -77,7 +211,7 @@ class ProductionStarter:
             level=logging.INFO,
             format=log_format,
             handlers=[
-                logging.FileHandler(self.logs_dir / 'production.log'),
+                logging.FileHandler(self.logs_dir / 'production.log', encoding='utf-8'),
                 logging.StreamHandler()
             ]
         )
@@ -135,7 +269,7 @@ class ProductionStarter:
         if requirements_file.exists():
             self.logger.info("安装Python依赖...")
             subprocess.run([
-                sys.executable, '-m', 'pip', 'install', '-r', str(requirements_file),
+                sys._base_executable or sys.executable, '-m', 'pip', 'install', '-r', str(requirements_file),
                 '-i', 'https://mirrors.aliyun.com/pypi/simple/'
             ], check=True)
 
@@ -195,6 +329,7 @@ class ProductionStarter:
         if occupied_ports:
             self.logger.warning(f"发现端口占用: {occupied_ports}，清理占用端口")
             self.kill_processes_on_ports(occupied_ports)
+
     def kill_processes_on_ports(self, ports: List[int]):
         """清理占用端口的进程"""
         try:
@@ -233,92 +368,56 @@ class ProductionStarter:
 
         try:
             log_file = self.logs_dir / f"{service_name}.log"
+            # 关键更改：追加模式 + 行缓冲，便于 tailer 及时读到
+            log_f = open(log_file, 'a', encoding='utf-8', buffering=1)
 
-            with open(log_file, 'w', encoding='utf-8') as log_f:
-                process = subprocess.Popen(
-                    [sys.executable, script],
-                    cwd=service_dir,
-                    stdout=log_f,
-                    stderr=subprocess.STDOUT,
-                    text=True
-                )
+            process = subprocess.Popen(
+                [sys.executable, script],
+                cwd=service_dir,
+                stdout=log_f,
+                stderr=subprocess.STDOUT,
+                text=True
+            )
 
-                # 等待服务启动
-                time.sleep(3)
+            # 等待服务启动
+            time.sleep(3)
 
-                if process.poll() is None:
-                    self.logger.info(f"✅ {name}启动成功 (PID: {process.pid})")
-                    return process
-                else:
-                    self.logger.error(f"❌ {name}启动失败，查看日志: {log_file}")
-                    return None
+            if process.poll() is None:
+                self.logger.info(f"✅ {name}启动成功 (PID: {process.pid})")
+                return process
+            else:
+                self.logger.error(f"❌ {name}启动失败，查看日志: {log_file}")
+                return None
 
         except Exception as e:
             self.logger.error(f"启动{name}时出错: {e}")
             return None
 
     def start_frontend_server(self):
-        """启动前端静态文件服务"""
+        """启动前端静态文件服务（开发：vite dev）"""
         self.logger.info(f"启动前端服务 (端口: {self.frontend_port})")
-
-        # 创建一个闭包来传递dist_dir
-        # dist_dir = self.dist_dir
-        #
-        # class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-        #     def __init__(self, *args, **kwargs):
-        #         super().__init__(*args, directory=str(dist_dir), **kwargs)
-        #
-        #     def end_headers(self):
-        #         self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
-        #         self.send_header('Pragma', 'no-cache')
-        #         self.send_header('Expires', '0')
-        #         super().end_headers()
-        #
-        #     def do_GET(self):
-        #         # 处理SPA路由，将所有非文件请求重定向到index.html
-        #         if self.path != '/' and not self.path.startswith('/assets/') and '.' not in self.path:
-        #             self.path = '/index.html'
-        #         return super().do_GET()
-        #
-        # def run_server():
-        #     try:
-        #         # 设置工作目录到dist目录
-        #         os.chdir(dist_dir)
-        #
-        #         with socketserver.TCPServer((self.host, self.frontend_port), CustomHTTPRequestHandler) as httpd:
-        #             self.frontend_server = httpd
-        #             self.logger.info(f"✅ 前端服务启动成功")
-        #             httpd.serve_forever()
-        #     except Exception as e:
-        #         self.logger.error(f"前端服务启动失败: {e}")
-        #     finally:
-        #         # 恢复工作目录
-        #         os.chdir(self.project_root)
-        #
-        # server_thread = threading.Thread(target=run_server, daemon=True)
-        # server_thread.start()
-
         try:
             log_file = self.logs_dir / f"frontend.log"
+            # 关键更改：追加模式 + 行缓冲
+            log_f = open(log_file, 'a', encoding='utf-8', buffering=1)
 
-            with open(log_file, 'w', encoding='utf-8') as log_f:
-                process = subprocess.Popen(
-                    ['npm', 'run', 'dev'],
-                    cwd=self.frontend_dir,
-                    stdout=log_f,
-                    stderr=subprocess.STDOUT,
-                    text=True
-                )
+            process = subprocess.Popen(
+                ['npm', 'run', 'dev'],
+                cwd=self.frontend_dir,
+                stdout=log_f,
+                stderr=subprocess.STDOUT,
+                text=True
+            )
 
-                # 等待服务启动
-                time.sleep(3)
+            # 等待服务启动
+            time.sleep(3)
 
-                if process.poll() is None:
-                    self.logger.info(f"✅ 前端启动成功 (PID: {process.pid})")
-                    return process
-                else:
-                    self.logger.error(f"❌ 前端启动失败，查看日志: {log_file}")
-                    return None
+            if process.poll() is None:
+                self.logger.info(f"✅ 前端启动成功 (PID: {process.pid})")
+                return process
+            else:
+                self.logger.error(f"❌ 前端启动失败，查看日志: {log_file}")
+                return None
 
         except Exception as e:
             self.logger.error(f"启动前端时出错: {e}")
@@ -346,9 +445,25 @@ class ProductionStarter:
         # 显示服务状态
         self.show_service_status()
 
+        # 关键新增：启动多文件日志 tailer
+        self.start_log_tailer()
+
+    def start_log_tailer(self):
+        """启动日志汇总输出（类似 tail -f logs/*.log）"""
+        try:
+            self.log_tailer = MultiLogTailer(self.logs_dir, pattern="*.log", poll_interval=1.0, color=True)
+            print("\n" + "=" * 80)
+            print("🖨️ 实时日志（相当于：tail -f logs/*.log）")
+            print("   - 每行以 [文件名] 为前缀")
+            print("   - 新创建的日志文件会自动开始跟随")
+            print("=" * 80 + "\n")
+            self.log_tailer.start()
+        except Exception as e:
+            print(f"[LogTailer] 启动失败：{e}")
+
     def show_service_status(self):
         """显示服务状态"""
-        print("\\n" + "="*80)
+        print("\n" + "="*80)
         print("🎉 所有服务启动成功!")
         print("="*80)
         print("📋 服务状态:")
@@ -360,10 +475,10 @@ class ProductionStarter:
         print(f"  ✅ 前端界面: http://{self.host}:{self.frontend_port}")
         print(f"  📝 日志目录: {self.logs_dir}")
 
-        print("\\n💡 使用说明:")
+        print("\n💡 使用说明:")
         print("  - 按 Ctrl+C 停止所有服务")
         print("  - 在浏览器中访问前端界面开始使用")
-        print("  - 服务日志保存在 logs/ 目录中，如果前端没有任何响应，那么请检查此目录下每个服务的日志是否报错")
+        print("  - 服务日志保存在 logs/ 目录中，且已在当前控制台实时展示（tail -f 效果）")
         print("="*80)
 
     def monitor_services(self):
@@ -383,8 +498,15 @@ class ProductionStarter:
         """停止所有服务"""
         self.logger.info("停止所有服务...")
 
-        # 停止后端服务
-        for service_name, process in self.processes.items():
+        # 停止日志 tailer
+        if self.log_tailer:
+            try:
+                self.log_tailer.stop()
+            except Exception as e:
+                print(f"[LogTailer] 停止失败：{e}")
+
+        # 停止后端/前端服务
+        for service_name, process in list(self.processes.items()):
             try:
                 self.logger.info(f"停止服务: {service_name}")
                 process.terminate()
@@ -395,7 +517,7 @@ class ProductionStarter:
             except Exception as e:
                 self.logger.error(f"停止服务 {service_name} 时出错: {e}")
 
-        # 停止前端服务
+        # 停止内置前端服务器（如果有）
         if self.frontend_server:
             try:
                 self.frontend_server.shutdown()
@@ -416,13 +538,13 @@ class ProductionStarter:
         # 安装依赖
         self.install_dependencies()
 
-        # 构建前端
+        # 构建前端（如生产需要）
         # self.build_frontend()
 
         # 检查端口
         self.check_ports()
 
-        # 启动所有服务
+        # 启动所有服务 + 日志 tailer
         self.start_all_services()
 
         # 监控服务
@@ -434,7 +556,7 @@ def main():
 
     # 注册信号处理器
     def signal_handler(signum, frame):
-        print("\\n🛑 收到信号，正在停止服务...")
+        print("\n🛑 收到信号，正在停止服务...")
         starter.stop_all_services()
         sys.exit(0)
 
@@ -444,7 +566,7 @@ def main():
     try:
         starter.run()
     except KeyboardInterrupt:
-        print("\\n🛑 用户中断")
+        print("\n🛑 用户中断")
         starter.stop_all_services()
     except Exception as e:
         print(f"❌ 启动失败: {e}")
