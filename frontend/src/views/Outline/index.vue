@@ -48,7 +48,17 @@
               rows="6"
             ></textarea>
             <div class="input-actions">
-              <span class="character-count">{{ keyword.length }}/10000</span>
+              <div class="action-left">
+                <span class="character-count">{{ keyword.length }}/10000</span>
+                <div class="lang-select-wrapper">
+                  <label for="language-select">语言:</label>
+                  <select id="language-select" v-model="language" class="language-select">
+                    <option value="中文">中文</option>
+                    <option value="English">English</option>
+                    <option value="日本語">日本語</option>
+                  </select>
+                </div>
+              </div>
               <div class="buttons-wrapper">
                 <button class="generate-btn" @click="createOutline" :disabled="!keyword.trim() || showProcessingModal">
                   <span class="btn-icon">✨</span>
@@ -89,21 +99,7 @@
           </div>
         </div>
 
-        <div class="config-module">
-          <div class="section-title">
-            <span class="title-text">参数配置</span>
-          </div>
-          <div class="config-grid">
-            <div class="config-item">
-              <label class="config-label">语言</label>
-              <select v-model="language" class="config-select">
-                <option value="中文">中文</option>
-                <option value="English">English</option>
-                <option value="日本語">日本語</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <div class="config-module" style="display: none;"></div>
       </div>
 
       <div v-if="step === 'outline'" class="outline-section">
@@ -567,51 +563,92 @@ const uploadWordAndCreateOutline = async (file: File) => {
       }
 
       .input-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.5rem 1.25rem;
-      gap: 1rem;
-
-      .character-count {
-        font-size: 0.875rem;
-        color: #64748b;
-      }
-
-      .buttons-wrapper {
-        display: flex;
-        gap: 1rem;
-      }
-
-      .generate-btn {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.75rem;
-        font-weight: 600;
-        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
+        justify-content: space-between;
+        margin-top: 16px;
 
-        &:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        .action-left {
+          display: flex;
+          align-items: center;
+          gap: 24px;
         }
 
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+        .character-count {
+          font-size: 0.875rem;
+          color: #64748b;
         }
 
-        .btn-icon {
-          font-size: 1.1rem;
+        .lang-select-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.875rem;
+          color: #64748b;
+
+          .language-select {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            color: #334155;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em;
+            padding-right: 2.5rem;
+
+            &:hover {
+              border-color: #a0aec0;
+            }
+
+            &:focus {
+              border-color: #6366f1;
+              box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            }
+          }
+        }
+
+        .buttons-wrapper {
+          display: flex;
+          gap: 1rem;
+        }
+
+        .generate-btn {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: all 0.3s ease;
+          font-size: 0.95rem;
+
+          &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          .btn-icon {
+            font-size: 1.1rem;
+          }
         }
       }
-    }
 
       .input-meta {
         display: flex;
