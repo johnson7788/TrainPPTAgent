@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
 各种本地的操作的MCP，方便各种cli使用，例如cherry studio ,qwen, claude code ,gemini cli等
+fastmcp>=0.2.0
+cryptography>=41.0.0
 """
 
 import os
@@ -19,9 +21,30 @@ from fastmcp import FastMCP
 mcp = FastMCP("file-system-mcp")
 
 # Security: Define allowed base paths to prevent unauthorized access
-# Default: D drive + C drive Desktop
-_default_paths = f"D:\\;{os.path.join(os.path.expanduser('~'), 'Desktop')}"
-ALLOWED_BASE_PATHS = os.getenv("MCP_ALLOWED_PATHS", _default_paths).split(";")
+# Use OS-specific defaults and os.pathsep (Windows=';', macOS/Linux=':')
+def _get_default_allowed_paths() -> str:
+    home = Path.home()
+    desktop = home / "Desktop"
+    paths = []
+
+    if os.name == "nt":
+        # Include system drive root (usually C:\) and D:\ if it exists, plus Desktop
+        sys_drive = os.environ.get("SystemDrive", "C:") + "\\"
+        paths.append(sys_drive)
+        if Path("D:\\").exists():
+            paths.append("D:\\")
+        paths.append(str(desktop))
+    else:
+        # On macOS/Linux, allow Home and Desktop by default
+        paths.append(str(home))
+        paths.append(str(desktop))
+
+    return os.pathsep.join(paths)
+
+_default_paths = _get_default_allowed_paths()
+ALLOWED_BASE_PATHS = [
+    p for p in os.getenv("MCP_ALLOWED_PATHS", _default_paths).split(os.pathsep) if p
+]
 
 
 def is_path_allowed(path: str) -> bool:
@@ -43,17 +66,22 @@ def validate_path(path: str) -> str:
     return normalized
 
 
-def format_size(size: int) -> str:
-    """Format file size in human-readable format."""
-    for unit in ["B", "KB", "MB", "GB", "TB"]:
-        if size < 1024.0:
-            return f"{size:.2f} {unit}"
-        size /= 1024.0
-    return f"{size:.2f} PB"
+def format_file_info(path: str, stat_info) -> dict:
+    """Format file information for response."""
+    return {
+        "path": path,
+        "name": os.path.basename(path),
+        "size": stat_info.st_size,
+        "created": stat_info.st_ctime,
+        "modified": stat_info.st_mtime,
+        "is_directory": os.path.isdir(path),
+        "is_file": os.path.isfile(path),
+    }
+
 
 
 # ============================================================================
-# FILE READING TOOLS
+# BASIC FILE OPERATIONS
 # ============================================================================
 
 @mcp.tool()
@@ -88,6 +116,38 @@ def read_file(
 
     return content
 
+@mcp.tool()
+def list_files(directory: str, pattern: str = None) -> list[dict]:
+    """
+    List files in a directory with optional regex filtering.
+
+    Args:
+        directory: Directory to list
+        pattern: Optional regex pattern to filter filenames
+
+    Returns:
+        List of file info dictionaries
+    """
+    directory = validate_path(directory)
+
+    if not os.path.isdir(directory):
+        raise NotADirectoryError(f"{directory} is not a directory")
+
+    files = []
+    regex = re.compile(pattern) if pattern else None
+
+    for item in os.listdir(directory):
+        if regex and not regex.search(item):
+            continue
+
+        full_path = os.path.join(directory, item)
+        try:
+            stat_info = os.stat(full_path)
+            files.append(format_file_info(full_path, stat_info))
+        except (OSError, PermissionError):
+            continue
+
+    return files
 
 @mcp.tool()
 def read_hex(
@@ -123,35 +183,30 @@ def read_hex(
     return "\n".join(hex_output)
 
 
-# ============================================================================
-# FILE WRITING/EDITING TOOLS
-# ============================================================================
-
 @mcp.tool()
-def write_file(
-    path: str,
-    content: str,
-    encoding: str = "utf-8"
-) -> str:
+def write_file(file_path: str, content: str, encoding: str = "utf-8") -> str:
     """
-    Write content to a file (creates new or overwrites existing).
+    Write content to a file, creating directories if needed.
 
     Args:
-        path: File path to write
+        file_path: Path to file
         content: Content to write
         encoding: Text encoding (default: utf-8)
 
     Returns:
         Success message
     """
-    path = validate_path(path)
+    file_path = validate_path(file_path)
 
-    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    with open(path, "w", encoding=encoding) as f:
+    # Create parent directories if they don't exist
+    parent_dir = os.path.dirname(file_path)
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
+
+    with open(file_path, "w", encoding=encoding) as f:
         f.write(content)
 
-    return f"Successfully wrote to {path}"
-
+    return f"Successfully wrote to {file_path}"
 
 @mcp.tool()
 def edit_file_by_line(
@@ -237,32 +292,29 @@ def edit_file_by_regex(
 
 
 @mcp.tool()
-def append_file(
-    path: str,
-    content: str,
-    newline: bool = True,
-    encoding: str = "utf-8"
-) -> str:
+def append_file(file_path: str, content: str, encoding: str = "utf-8") -> str:
     """
-    Append content to the end of a file.
+    Append content to a file.
 
     Args:
-        path: File path to append to
+        file_path: Path to file
         content: Content to append
-        newline: Add newline before content (default: true)
         encoding: Text encoding (default: utf-8)
 
     Returns:
         Success message
     """
-    path = validate_path(path)
+    file_path = validate_path(file_path)
 
-    with open(path, "a", encoding=encoding) as f:
-        if newline and os.path.exists(path) and os.path.getsize(path) > 0:
-            f.write("\n")
+    # Create parent directories if they don't exist
+    parent_dir = os.path.dirname(file_path)
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
+
+    with open(file_path, "a", encoding=encoding) as f:
         f.write(content)
 
-    return f"Successfully appended to {path}"
+    return f"Successfully appended to {file_path}"
 
 
 # ============================================================================
@@ -270,46 +322,74 @@ def append_file(
 # ============================================================================
 
 @mcp.tool()
-def delete_file(
-    path: str,
-    recursive: bool = False
-) -> str:
+def delete_file(file_path: str) -> str:
     """
-    Delete a file or directory.
+    Delete a file.
 
     Args:
-        path: File or directory path to delete
-        recursive: Delete directories recursively (default: false)
+        file_path: Path to file to delete
 
     Returns:
         Success message
     """
-    path = validate_path(path)
+    file_path = validate_path(file_path)
 
-    if os.path.isdir(path):
-        if recursive:
-            shutil.rmtree(path)
-        else:
-            os.rmdir(path)
-    else:
-        os.remove(path)
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"{file_path} does not exist")
 
-    return f"Successfully deleted {path}"
+    os.remove(file_path)
+    return f"Successfully deleted {file_path}"
 
 
 @mcp.tool()
-def copy_file(
-    source: str,
-    destination: str,
-    overwrite: bool = False
-) -> str:
+def create_directory(directory_path: str) -> str:
     """
-    Copy a file or directory to a new location.
+    Create a directory (including parent directories if needed).
 
     Args:
-        source: Source path
-        destination: Destination path
-        overwrite: Overwrite if exists (default: false)
+        directory_path: Path to directory to create
+
+    Returns:
+        Success message
+    """
+    directory_path = validate_path(directory_path)
+    os.makedirs(directory_path, exist_ok=True)
+    return f"Successfully created directory {directory_path}"
+
+
+@mcp.tool()
+def delete_directory(directory_path: str, recursive: bool = False) -> str:
+    """
+    Delete a directory.
+
+    Args:
+        directory_path: Path to directory to delete
+        recursive: If True, delete all contents recursively
+
+    Returns:
+        Success message
+    """
+    directory_path = validate_path(directory_path)
+
+    if not os.path.isdir(directory_path):
+        raise NotADirectoryError(f"{directory_path} is not a directory")
+
+    if recursive:
+        shutil.rmtree(directory_path)
+    else:
+        os.rmdir(directory_path)
+
+    return f"Successfully deleted directory {directory_path}"
+
+
+@mcp.tool()
+def copy_file(source: str, destination: str) -> str:
+    """
+    Copy a file from source to destination.
+
+    Args:
+        source: Source file path
+        destination: Destination file path
 
     Returns:
         Success message
@@ -317,33 +397,26 @@ def copy_file(
     source = validate_path(source)
     destination = validate_path(destination)
 
-    if os.path.exists(destination) and not overwrite:
-        raise FileExistsError(f"Destination {destination} already exists")
+    if not os.path.isfile(source):
+        raise FileNotFoundError(f"{source} does not exist")
 
-    if os.path.isdir(source):
-        if os.path.exists(destination):
-            shutil.rmtree(destination)
-        shutil.copytree(source, destination)
-    else:
-        os.makedirs(os.path.dirname(destination) or ".", exist_ok=True)
-        shutil.copy2(source, destination)
+    # Create destination directory if needed
+    dest_dir = os.path.dirname(destination)
+    if dest_dir and not os.path.exists(dest_dir):
+        os.makedirs(dest_dir, exist_ok=True)
 
+    shutil.copy2(source, destination)
     return f"Successfully copied {source} to {destination}"
 
 
 @mcp.tool()
-def move_file(
-    source: str,
-    destination: str,
-    overwrite: bool = False
-) -> str:
+def move_file(source: str, destination: str) -> str:
     """
-    Move or rename a file or directory.
+    Move/rename a file from source to destination.
 
     Args:
-        source: Source path
-        destination: Destination path
-        overwrite: Overwrite if exists (default: false)
+        source: Source file path
+        destination: Destination file path
 
     Returns:
         Success message
@@ -351,75 +424,112 @@ def move_file(
     source = validate_path(source)
     destination = validate_path(destination)
 
-    if os.path.exists(destination) and not overwrite:
-        raise FileExistsError(f"Destination {destination} already exists")
+    if not os.path.exists(source):
+        raise FileNotFoundError(f"{source} does not exist")
 
-    if os.path.exists(destination):
-        if os.path.isdir(destination):
-            shutil.rmtree(destination)
-        else:
-            os.remove(destination)
+    dest_dir = os.path.dirname(destination)
+    if dest_dir and not os.path.exists(dest_dir):
+        os.makedirs(dest_dir, exist_ok=True)
 
     shutil.move(source, destination)
-
     return f"Successfully moved {source} to {destination}"
 
 
 @mcp.tool()
-def create_directory(path: str) -> str:
+def file_exists(path: str) -> bool:
     """
-    Create a new directory (with parent directories if needed).
+    Check if a file or directory exists.
 
     Args:
-        path: Directory path to create
+        path: Path to check
 
     Returns:
-        Success message
+        True if exists, False otherwise
     """
     path = validate_path(path)
-    os.makedirs(path, exist_ok=True)
-    return f"Successfully created directory {path}"
+    return os.path.exists(path)
+
+
+@mcp.tool()
+def get_file_info(path: str) -> dict:
+    """
+    Get detailed information about a file or directory.
+
+    Args:
+        path: Path to file or directory
+
+    Returns:
+        File information dictionary
+    """
+    path = validate_path(path)
+
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"{path} does not exist")
+
+    stat_info = os.stat(path)
+    info = format_file_info(path, stat_info)
+
+    if os.path.isfile(path):
+        info["extension"] = os.path.splitext(path)[1]
+    else:
+        # Directory info
+        try:
+            contents = os.listdir(path)
+            info["item_count"] = len(contents)
+        except PermissionError:
+            info["item_count"] = None
+
+    return info
 
 
 # ============================================================================
-# SEARCH TOOLS
+# SEARCH AND TEXT OPERATIONS
 # ============================================================================
 
 @mcp.tool()
-def search_files(
-    directory: str,
-    pattern: str,
-    recursive: bool = True
-) -> str:
+def search_files(directory: str, query: str, case_sensitive: bool = False,
+                 file_pattern: str = None) -> list[dict]:
     """
-    Search for files by name pattern (supports wildcards).
+    Search for text within files in a directory.
 
     Args:
-        directory: Directory to search in
-        pattern: File name pattern (e.g., '*.txt', 'test*.py')
-        recursive: Search recursively (default: true)
+        directory: Directory to search
+        query: Text to search for
+        case_sensitive: Whether search is case sensitive
+        file_pattern: Optional regex to filter files by name
 
     Returns:
-        List of matching file paths
+        List of matches with file paths and line information
     """
     directory = validate_path(directory)
 
+    if not os.path.isdir(directory):
+        raise NotADirectoryError(f"{directory} is not a directory")
+
     matches = []
-    if recursive:
-        for root, dirs, files in os.walk(directory):
-            for name in files + dirs:
-                full_path = os.path.join(root, name)
-                if Path(full_path).match(pattern):
-                    matches.append(full_path)
-    else:
-        for item in os.listdir(directory):
-            full_path = os.path.join(directory, item)
-            if Path(full_path).match(pattern):
-                matches.append(full_path)
+    file_regex = re.compile(file_pattern) if file_pattern else None
+    flags = 0 if case_sensitive else re.IGNORECASE
 
-    result = f"Found {len(matches)} match(es):\n" + "\n".join(matches)
-    return result
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file_regex and not file_regex.search(file):
+                continue
 
+            file_path = os.path.join(root, file)
+
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    for line_num, line in enumerate(f, 1):
+                        if re.search(query, line, flags):
+                            matches.append({
+                                "file": file_path,
+                                "line_number": line_num,
+                                "line": line.strip()
+                            })
+            except (PermissionError, UnicodeDecodeError):
+                continue
+
+    return matches
 
 @mcp.tool()
 def search_content(
@@ -493,93 +603,55 @@ def search_content(
     return result
 
 
-# ============================================================================
-# FILE INFORMATION TOOLS
-# ============================================================================
-
 @mcp.tool()
-def get_file_info(path: str) -> str:
+def replace_text_in_file(file_path: str, old_text: str, new_text: str,
+                         backup: bool = True, encoding: str = "utf-8") -> str:
     """
-    Get detailed information about a file or directory.
+    Replace text in a file with optional backup.
 
     Args:
-        path: File or directory path
+        file_path: Path to file
+        old_text: Text to replace
+        new_text: Replacement text
+        backup: Whether to create backup file
+        encoding: File encoding
 
     Returns:
-        JSON formatted file information
+        Success message with replacement count
     """
-    path = validate_path(path)
-    stat_info = os.stat(path)
+    file_path = validate_path(file_path)
 
-    info = {
-        "path": path,
-        "type": "directory" if os.path.isdir(path) else "file",
-        "size": stat_info.st_size,
-        "size_human": format_size(stat_info.st_size),
-        "created": stat_info.st_ctime,
-        "modified": stat_info.st_mtime,
-        "accessed": stat_info.st_atime,
-        "permissions": oct(stat_info.st_mode)[-3:],
-    }
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"{file_path} does not exist")
 
-    if os.path.isfile(path):
-        info["extension"] = os.path.splitext(path)[1]
+    # Create backup if requested
+    if backup:
+        backup_path = file_path + ".bak"
+        shutil.copy2(file_path, backup_path)
 
-    return json.dumps(info, indent=2)
+    with open(file_path, "r", encoding=encoding) as f:
+        content = f.read()
 
+    count = content.count(old_text)
+    new_content = content.replace(old_text, new_text)
 
-@mcp.tool()
-def list_directory(
-    path: str,
-    show_hidden: bool = False
-) -> str:
-    """
-    List contents of a directory with detailed information.
+    with open(file_path, "w", encoding=encoding) as f:
+        f.write(new_content)
 
-    Args:
-        path: Directory path to list
-        show_hidden: Show hidden files (default: false)
-
-    Returns:
-        Formatted directory listing
-    """
-    path = validate_path(path)
-
-    items = []
-    for item in os.listdir(path):
-        if not show_hidden and item.startswith("."):
-            continue
-
-        full_path = os.path.join(path, item)
-        stat_info = os.stat(full_path)
-
-        items.append({
-            "name": item,
-            "type": "dir" if os.path.isdir(full_path) else "file",
-            "size": stat_info.st_size if os.path.isfile(full_path) else 0,
-            "size_human": format_size(stat_info.st_size) if os.path.isfile(full_path) else "-",
-            "modified": stat_info.st_mtime,
-        })
-
-    # Sort: directories first, then by name
-    items.sort(key=lambda x: (x["type"] != "dir", x["name"]))
-
-    result = f"Contents of {path} ({len(items)} items):\n\n"
-    for item in items:
-        type_indicator = "[DIR]" if item["type"] == "dir" else "[FILE]"
-        result += f"{type_indicator:6} {item['size_human']:>10} {item['name']}\n"
-
-    return result
+    return f"Successfully replaced {count} occurrences in {file_path}"
 
 
 # ============================================================================
 # COMMAND EXECUTION TOOLS
 # ============================================================================
 
+# Default shell depends on OS
+DEFAULT_SHELL = "powershell" if os.name == "nt" else "bash"
+
 @mcp.tool()
 def execute_command(
     command: str,
-    shell: str = "powershell",
+    shell: str = DEFAULT_SHELL,
     timeout: int = 600,
     working_directory: Optional[str] = None
 ) -> str:
@@ -588,9 +660,9 @@ def execute_command(
 
     Args:
         command: Command to execute
-        shell: Shell to use: 'powershell', 'cmd', or 'bash' (default: powershell)
-        timeout: Timeout in seconds (default: 30)
-        working_directory: Working directory (default: current)
+        shell: Shell to use: 'powershell', 'cmd', 'bash', or 'zsh' (default: OS-specific)
+        timeout: Timeout in seconds (default: 600)
+        working_directory: Optional working directory
 
     Returns:
         Command output including exit code, stdout, and stderr
@@ -599,12 +671,20 @@ def execute_command(
         working_directory = validate_path(working_directory)
 
     # Prepare command based on shell type
+    shell = shell.lower()
+    if shell in ("powershell", "cmd") and os.name != "nt":
+        raise ValueError("'powershell' and 'cmd' shells are only available on Windows. Use 'bash' or 'zsh'.")
+
     if shell == "powershell":
-        cmd = ["powershell.exe", "-Command", command]
+        # Support both Windows PowerShell and PowerShell Core if installed
+        ps_exe = shutil.which("powershell") or shutil.which("pwsh") or "powershell.exe"
+        cmd = [ps_exe, "-Command", command]
     elif shell == "cmd":
         cmd = ["cmd.exe", "/c", command]
     elif shell == "bash":
-        cmd = ["bash", "-c", command]
+        cmd = ["bash", "-lc", command]
+    elif shell == "zsh":
+        cmd = ["zsh", "-lc", command]
     else:
         raise ValueError(f"Unsupported shell type: {shell}")
 
@@ -637,24 +717,25 @@ def run_program(
     working_directory: Optional[str] = None
 ) -> str:
     """
-    Run a program with arguments and optional timeout.
+    Run an external program with arguments.
 
     Args:
-        program: Program path or name
-        arguments: Program arguments (default: [])
-        timeout: Timeout in seconds (default: 30)
-        working_directory: Working directory (default: current)
+        program: Program/executable to run
+        arguments: List of arguments
+        timeout: Timeout in seconds
+        working_directory: Optional working directory
 
     Returns:
-        Program output including exit code, stdout, and stderr
+        Program output
     """
-    if arguments is None:
-        arguments = []
+    program = validate_path(program)
 
     if working_directory:
         working_directory = validate_path(working_directory)
 
-    cmd = [program] + arguments
+    cmd = [program]
+    if arguments:
+        cmd.extend(arguments)
 
     try:
         result = subprocess.run(
@@ -763,84 +844,90 @@ def decompress_file(
 # ============================================================================
 # ENCRYPTION TOOLS
 # ============================================================================
+@mcp.tool()
+def generate_encryption_key() -> str:
+    """
+    Generate a new Fernet encryption key.
+
+    Returns:
+        Encryption key as string
+    """
+    key = Fernet.generate_key()
+    return key.decode('utf-8')
+
 
 @mcp.tool()
-def encrypt_file(
-    source: str,
-    output: str,
-    key: Optional[str] = None
-) -> str:
+def encrypt_file(file_path: str, key: str, output_path: str = None) -> str:
     """
     Encrypt a file using Fernet symmetric encryption.
 
     Args:
-        source: Source file path
-        output: Output encrypted file path
-        key: Encryption key (base64, optional - will generate if not provided)
-
-    Returns:
-        Success message with encryption key if generated
-    """
-    source = validate_path(source)
-    output = validate_path(output)
-
-    # Generate key if not provided
-    if not key:
-        key_bytes = Fernet.generate_key()
-        key_str = key_bytes.decode()
-    else:
-        key_str = key
-        key_bytes = key.encode()
-
-    fernet = Fernet(key_bytes)
-
-    with open(source, "rb") as f:
-        data = f.read()
-
-    encrypted = fernet.encrypt(data)
-
-    with open(output, "wb") as f:
-        f.write(encrypted)
-
-    result = f"Successfully encrypted {source} to {output}\n"
-    if not key:
-        result += f"\nEncryption Key (SAVE THIS): {key_str}"
-
-    return result
-
-
-@mcp.tool()
-def decrypt_file(
-    source: str,
-    output: str,
-    key: str
-) -> str:
-    """
-    Decrypt a file encrypted with Fernet.
-
-    Args:
-        source: Encrypted file path
-        output: Output decrypted file path
-        key: Decryption key (base64)
+        file_path: Path to file to encrypt
+        key: Encryption key (base64)
+        output_path: Optional output path (default: file_path + '.enc')
 
     Returns:
         Success message
     """
-    source = validate_path(source)
-    output = validate_path(output)
-    key_bytes = key.encode()
+    file_path = validate_path(file_path)
 
-    fernet = Fernet(key_bytes)
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"{file_path} does not exist")
 
-    with open(source, "rb") as f:
+    fernet = Fernet(key.encode('utf-8'))
+
+    if not output_path:
+        output_path = file_path + '.enc'
+    output_path = validate_path(output_path)
+
+    with open(file_path, 'rb') as f:
+        data = f.read()
+
+    encrypted_data = fernet.encrypt(data)
+
+    with open(output_path, 'wb') as f:
+        f.write(encrypted_data)
+
+    return f"Successfully encrypted {file_path} to {output_path}"
+
+
+@mcp.tool()
+def decrypt_file(encrypted_path: str, key: str, output_path: str = None) -> str:
+    """
+    Decrypt a file using Fernet symmetric encryption.
+
+    Args:
+        encrypted_path: Path to encrypted file
+        key: Encryption key (base64)
+        output_path: Optional output path (default: original filename)
+
+    Returns:
+        Success message
+    """
+    encrypted_path = validate_path(encrypted_path)
+
+    if not os.path.isfile(encrypted_path):
+        raise FileNotFoundError(f"{encrypted_path} does not exist")
+
+    fernet = Fernet(key.encode('utf-8'))
+
+    if not output_path:
+        # Remove .enc extension if present
+        if encrypted_path.endswith('.enc'):
+            output_path = encrypted_path[:-4]
+        else:
+            output_path = encrypted_path + '.dec'
+    output_path = validate_path(output_path)
+
+    with open(encrypted_path, 'rb') as f:
         encrypted_data = f.read()
 
-    decrypted = fernet.decrypt(encrypted_data)
+    decrypted_data = fernet.decrypt(encrypted_data)
 
-    with open(output, "wb") as f:
-        f.write(decrypted)
+    with open(output_path, 'wb') as f:
+        f.write(decrypted_data)
 
-    return f"Successfully decrypted {source} to {output}"
+    return f"Successfully decrypted {encrypted_path} to {output_path}"
 
 
 @mcp.tool()
