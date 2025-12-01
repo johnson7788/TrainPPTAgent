@@ -6,7 +6,7 @@ services:
       context: ./backend/personaldb
       dockerfile: Dockerfile
     ports:
-      - "9200:9200"
+      - "9100:9100"
     networks:
       - main_ppt_network
     restart: unless-stopped
@@ -80,7 +80,7 @@ services:
     environment:
       - OUTLINE_API=http://ppt_outline_api_app:10001
       - CONTENT_API=http://ppt_content_api_app:10011
-      - PERSONAL_DB=http://ppt_personal_db:9200
+      - PERSONAL_DB=http://ppt_personal_db:9100
     depends_on:
       outline_api:
         condition: service_healthy
