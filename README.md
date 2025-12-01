@@ -85,7 +85,7 @@ python mock_main.py
 #### 新增功能：统一配置 + 一键启动
 
 ```bash
-# 1. 配置环境变量
+# 1. 根目录下配置环境变量
 cp env_template.txt .env
 修改.env # 填入你的API密钥
 
@@ -182,6 +182,7 @@ python start_backend.py
 > **提示**: 前端通过 Vite 代理与后端 API 通信，具体配置请查看 `frontend/vite.config.ts`。
 
 #### 方法四：docker compose一键部署(确保能连接docker hub网络)
+需要先按照手动启动中的方法对每个后端服务的.env都进行配置，确保每个容器都使用各自的.env文件
 docker compose up 
 
 ---

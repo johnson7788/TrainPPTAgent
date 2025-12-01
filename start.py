@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 TrainPPTAgent dev环境一键启动脚本，生产环境需要使用npm run build或者docker
-支持前端构建、后端服务启动、进程管理和监控
+支持前端构建、后端服务启动、进程管理和监控，
+需要依赖根目录下的.env
 """
 
 import os
