@@ -27,17 +27,13 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - OUTLINE_API=http://ppt_outline_api_app:10001
+    volumes:
+      - ./backend/simpleOutline:/app
     command: >
       python main_api.py
       --host 0.0.0.0
       --port 10001
       --agent_url http://ppt_outline_api_app:10001/
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:10001/.well-known/agent.json"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 30s
 
   content_api:
     container_name: ppt_content_api_app
@@ -53,17 +49,13 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - CONTENT_API=http://ppt_content_api_app:10011
+    volumes:
+      - ./backend/slide_agent:/app   # 关键：本地覆盖容器/app
     command: >
       python main_api.py
       --host 0.0.0.0
       --port 10011
       --agent_url http://ppt_content_api_app:10011/
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:10011/.well-known/agent.json"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 30s
 
   main_api:
     container_name: ppt_main_api_app
@@ -74,6 +66,8 @@ services:
       - "6800:6800"
     networks:
       - main_ppt_network
+    volumes:
+      - ./backend/main_api:/app
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -81,13 +75,6 @@ services:
       - OUTLINE_API=http://ppt_outline_api_app:10001
       - CONTENT_API=http://ppt_content_api_app:10011
       - PERSONAL_DB=http://ppt_personal_db:9100
-    depends_on:
-      outline_api:
-        condition: service_healthy
-      content_api:
-        condition: service_healthy
-      personaldb:
-        condition: service_started
 
   frontend:
     container_name: ppt_frontend

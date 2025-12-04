@@ -81,7 +81,8 @@ class PPTWriterSubAgent(LlmAgent):
             after_agent_callback=my_after_agent_callback,
             before_model_callback=my_before_model_callback,
             after_model_callback=my_after_model_callback,
-            tools=[DocumentSearch,KnowledgeBaseSearch,SearchImage],
+            # tools=[DocumentSearch,KnowledgeBaseSearch,SearchImage],
+            tools=[KnowledgeBaseSearch,SearchImage],
             **kwargs
         )
 
