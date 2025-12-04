@@ -139,7 +139,8 @@ class PPTWriterSubAgent(LlmAgent):
         search_engine = metadata.get("search_engine", [])
         # 如果是None，那么没问题，走默认PREFIX_PAGE_PROMPT，如果是空列表，那么使用所有工具
         if search_engine == []:
-            search_engine = ["KnowledgeBaseSearch","DocumentSearch","SearchImage"]
+            # search_engine = ["KnowledgeBaseSearch","DocumentSearch","SearchImage"]
+            search_engine = ["KnowledgeBaseSearch","SearchImage"]
         user_id = metadata.get("user_id", "")
         language = metadata.get("language", "chinese")  # 默认中文
         if not user_id and search_engine and "KnowledgeBaseSearch" in search_engine:
