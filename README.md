@@ -248,6 +248,7 @@ flowchart TD
 * [自定义模板说明](doc/Template.md)
 * [模版制作](doc/Template.md)
 * [不同的模型配置](doc/custom_model.md)
+* [PPT的图片说明]doc/Image.md
 ---
 
 ## 📝 关于前端引用项目（本项目后端免版权，但前端部分为AGPL-3版权）：
