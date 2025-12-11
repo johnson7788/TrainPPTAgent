@@ -9,6 +9,8 @@ services:
       - "9100:9100"
     networks:
       - main_ppt_network
+    volumes:
+      - ./backend/personaldb:/app
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
