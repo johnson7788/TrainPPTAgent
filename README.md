@@ -66,6 +66,14 @@ TrainPPTAgent/
 
 ---
 
+## 💖 赞助商
+
+| 赞助商 | 介绍 |
+| --- | --- |
+| <img src="https://www.aiwts.com/vitas/vitas-logo-transparent.webp" alt="维塔斯AI聚合" width="120"> | **[维塔斯AI聚合](https://www.aiwts.com/)** 是企业级 AI 大模型 API 聚合服务：开发者只需一个 Key，即可统一调用 GPT、Claude、DeepSeek、Gemini 等 200+ 模型（文本/生图/视频），完全兼容 OpenAI 协议，无需海外账号与信用卡 |
+
+---
+
 ## 🚀 快速开始
 
 ### 快速体验
